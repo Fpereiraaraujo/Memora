@@ -1,10 +1,13 @@
 # Memora Frontend
 
-Espaço reservado para a aplicação web do Memora.
+Aplicação web do Memora em React + TypeScript + TailwindCSS.
 
-Stack prevista:
+## Como rodar
 
-- React
-- TypeScript
-- TailwindCSS
+1. Instale as dependências com `npm install`.
+2. Inicie o backend em `http://localhost:8080`.
+3. Rode o frontend com `npm run dev`.
 
+## Variável de ambiente
+
+- `VITE_API_BASE_URL=http://localhost:8080`

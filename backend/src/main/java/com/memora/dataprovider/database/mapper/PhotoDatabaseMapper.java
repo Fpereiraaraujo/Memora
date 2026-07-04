@@ -1,0 +1,42 @@
+package com.memora.dataprovider.database.mapper;
+
+import com.memora.core.domain.model.Photo;
+import com.memora.dataprovider.database.entity.PhotoJpaEntity;
+
+public final class PhotoDatabaseMapper {
+
+	private PhotoDatabaseMapper() {
+	}
+
+	public static PhotoJpaEntity toEntity(Photo photo) {
+		return PhotoJpaEntity.builder()
+			.id(photo.getId())
+			.eventId(photo.getEventId())
+			.originalFilename(photo.getOriginalFilename())
+			.objectKey(photo.getObjectKey())
+			.contentType(photo.getContentType())
+			.sizeBytes(photo.getSizeBytes())
+			.status(photo.getStatus())
+			.guestName(photo.getGuestName())
+			.guestMessage(photo.getGuestMessage())
+			.createdAt(photo.getCreatedAt())
+			.updatedAt(photo.getUpdatedAt())
+			.build();
+	}
+
+	public static Photo toDomain(PhotoJpaEntity entity) {
+		return Photo.builder()
+			.id(entity.getId())
+			.eventId(entity.getEventId())
+			.originalFilename(entity.getOriginalFilename())
+			.objectKey(entity.getObjectKey())
+			.contentType(entity.getContentType())
+			.sizeBytes(entity.getSizeBytes())
+			.status(entity.getStatus())
+			.guestName(entity.getGuestName())
+			.guestMessage(entity.getGuestMessage())
+			.createdAt(entity.getCreatedAt())
+			.updatedAt(entity.getUpdatedAt())
+			.build();
+	}
+}

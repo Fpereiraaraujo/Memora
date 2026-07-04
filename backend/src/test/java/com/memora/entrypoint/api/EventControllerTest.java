@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.memora.config.JwtTokenService;
+import com.memora.config.AppProperties;
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventType;
@@ -16,10 +17,12 @@ import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
+import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.entrypoint.api.controller.EventController;
 import com.memora.entrypoint.api.exception.ApiExceptionHandler;
 import com.memora.entrypoint.api.filter.JwtAuthenticationFilter;
+import com.memora.shared.QrCodeGenerator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -55,6 +58,15 @@ class EventControllerTest {
 
 	@MockBean
 	private UpdateEventUseCase updateEventUseCase;
+
+	@MockBean
+	private ListEventPhotosUseCase listEventPhotosUseCase;
+
+	@MockBean
+	private QrCodeGenerator qrCodeGenerator;
+
+	@MockBean
+	private AppProperties appProperties;
 
 	@MockBean
 	private JwtTokenService jwtTokenService;
