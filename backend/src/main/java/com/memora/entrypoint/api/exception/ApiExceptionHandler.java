@@ -15,6 +15,11 @@ public class ApiExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", exception.getMessage()));
 	}
 
+	@ExceptionHandler(SecurityException.class)
+	public ResponseEntity<Map<String, String>> handleSecurityException(SecurityException exception) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", exception.getMessage()));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException exception) {
 		String message = exception.getBindingResult().getFieldErrors().isEmpty()
@@ -23,4 +28,3 @@ public class ApiExceptionHandler {
 		return ResponseEntity.badRequest().body(Map.of("error", message));
 	}
 }
-

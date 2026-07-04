@@ -1,11 +1,11 @@
-package com.memora.entrypoint.api.mapper;
+package com.memora.dataprovider.database.mapper;
 
 import com.memora.core.domain.model.User;
 import com.memora.dataprovider.database.entity.UserEntity;
 
-public final class UserApiMapper {
+public final class UserDatabaseMapper {
 
-	private UserApiMapper() {
+	private UserDatabaseMapper() {
 	}
 
 	public static UserEntity toEntity(User user) {
@@ -32,4 +32,3 @@ public final class UserApiMapper {
 			.build();
 	}
 }
-

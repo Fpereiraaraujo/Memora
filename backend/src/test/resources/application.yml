@@ -10,3 +10,9 @@ spring:
   flyway:
     enabled: false
 
+memora:
+  security:
+    jwt:
+      secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=
+      expiration-minutes: 120
+      issuer: memora

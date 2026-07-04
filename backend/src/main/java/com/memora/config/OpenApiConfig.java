@@ -1,10 +1,18 @@
 package com.memora.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@io.swagger.v3.oas.annotations.security.SecurityScheme(
+	name = "bearerAuth",
+	type = io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP,
+	scheme = "bearer",
+	bearerFormat = "JWT"
+)
 @Configuration
 public class OpenApiConfig {
 
@@ -14,7 +22,10 @@ public class OpenApiConfig {
 			.info(new Info()
 				.title("Memora API")
 				.version("0.1.0")
-				.description("Base inicial da API do Memora"));
+				.description("Base inicial da API do Memora"))
+			.components(new Components().addSecuritySchemes("bearerAuth", new SecurityScheme()
+				.type(SecurityScheme.Type.HTTP)
+				.scheme("bearer")
+				.bearerFormat("JWT")));
 	}
 }
-
