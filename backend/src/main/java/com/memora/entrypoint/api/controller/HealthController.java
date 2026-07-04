@@ -1,4 +1,4 @@
-package com.memora.entrypoint.api;
+package com.memora.entrypoint.api.controller;
 
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;

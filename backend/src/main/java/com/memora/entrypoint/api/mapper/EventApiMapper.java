@@ -1,11 +1,11 @@
-package com.memora.dataprovider.database.mapper;
+package com.memora.entrypoint.api.mapper;
 
 import com.memora.core.domain.model.Event;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 
-public final class EventJpaMapper {
+public final class EventApiMapper {
 
-	private EventJpaMapper() {
+	private EventApiMapper() {
 	}
 
 	public static EventJpaEntity toEntity(Event event) {
