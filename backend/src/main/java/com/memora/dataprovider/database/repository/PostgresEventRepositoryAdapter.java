@@ -1,9 +1,9 @@
-package com.memora.dataprovider.repository;
+package com.memora.dataprovider.database.repository;
 
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.port.EventRepositoryPort;
-import com.memora.infra.persistence.jpa.mapper.EventJpaMapper;
-import com.memora.infra.persistence.jpa.repository.EventJpaRepository;
+import com.memora.dataprovider.database.mapper.EventJpaMapper;
+import com.memora.dataprovider.database.repository.EventJpaRepository;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -26,4 +26,3 @@ public class PostgresEventRepositoryAdapter implements EventRepositoryPort {
 		return eventJpaRepository.findBySlug(slug).map(EventJpaMapper::toDomain);
 	}
 }
-

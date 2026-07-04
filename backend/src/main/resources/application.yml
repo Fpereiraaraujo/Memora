@@ -2,7 +2,7 @@ spring:
   application:
     name: memora-backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/memora
+    url: jdbc:postgresql://localhost:5433/memora
     username: memora
     password: memora
   jpa:
@@ -24,4 +24,3 @@ management:
     health:
       probes:
         enabled: true
-

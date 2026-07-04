@@ -1,4 +1,4 @@
-package com.memora.infra.persistence.jpa.repository;
+package com.memora.dataprovider.database.repository;
 
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import java.util.Optional;

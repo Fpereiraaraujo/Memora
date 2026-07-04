@@ -7,10 +7,9 @@ services:
       POSTGRES_USER: memora
       POSTGRES_PASSWORD: memora
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - memora_postgres_data:/var/lib/postgresql/data
 
 volumes:
   memora_postgres_data:
-

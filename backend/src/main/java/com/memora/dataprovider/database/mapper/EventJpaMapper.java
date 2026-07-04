@@ -1,4 +1,4 @@
-package com.memora.infra.persistence.jpa.mapper;
+package com.memora.dataprovider.database.mapper;
 
 import com.memora.core.domain.model.Event;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
