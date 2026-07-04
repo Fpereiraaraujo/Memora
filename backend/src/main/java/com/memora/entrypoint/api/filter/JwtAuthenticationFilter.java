@@ -1,7 +1,9 @@
-package com.memora.config;
+package com.memora.entrypoint.api.filter;
 
+import com.memora.config.JwtTokenService;
 import com.memora.core.domain.model.User;
-import com.memora.core.domain.port.UserRepositoryPort;
+import com.memora.core.domain.param.GetCurrentUserParam;
+import com.memora.core.usecase.GetCurrentUserUseCase;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,11 +22,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenService jwtTokenService;
-	private final UserRepositoryPort userRepositoryPort;
+	private final GetCurrentUserUseCase getCurrentUserUseCase;
 
-	public JwtAuthenticationFilter(JwtTokenService jwtTokenService, UserRepositoryPort userRepositoryPort) {
+	public JwtAuthenticationFilter(JwtTokenService jwtTokenService, GetCurrentUserUseCase getCurrentUserUseCase) {
 		this.jwtTokenService = jwtTokenService;
-		this.userRepositoryPort = userRepositoryPort;
+		this.getCurrentUserUseCase = getCurrentUserUseCase;
 	}
 
 	@Override
@@ -40,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			if (jwtTokenService.isTokenValid(token)) {
 				String email = jwtTokenService.extractSubject(token);
-				userRepositoryPort.findByEmail(email).ifPresent(user -> setAuthentication(request, user));
+				User user = getCurrentUserUseCase.execute(new GetCurrentUserParam(email));
+				setAuthentication(request, user);
 			}
 		} catch (JwtException | IllegalArgumentException ignored) {
 			SecurityContextHolder.clearContext();

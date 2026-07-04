@@ -7,14 +7,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.memora.config.JwtAuthenticationFilter;
 import com.memora.config.JwtTokenService;
 import com.memora.core.domain.model.User;
 import com.memora.core.domain.model.UserRole;
+import com.memora.entrypoint.api.controller.AuthController;
 import com.memora.core.usecase.AuthenticateHostUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.RegisterHostUseCase;
-import com.memora.entrypoint.api.controller.AuthController;
+import com.memora.entrypoint.api.filter.JwtAuthenticationFilter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,8 +28,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import com.memora.core.domain.port.UserRepositoryPort;
-
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = true)
 @Import({com.memora.config.SecurityConfig.class, ApiExceptionHandler.class, JwtAuthenticationFilter.class})
@@ -49,9 +47,6 @@ class AuthControllerTest {
 
 	@MockBean
 	private JwtTokenService jwtTokenService;
-
-	@MockBean
-	private UserRepositoryPort userRepositoryPort;
 
 	@Test
 	void shouldRegisterHost() throws Exception {

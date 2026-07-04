@@ -1,14 +1,9 @@
 package com.memora.core.usecase;
 
 import com.memora.core.domain.model.User;
+import com.memora.core.domain.param.AuthenticateHostParam;
 
 public interface AuthenticateHostUseCase {
 
-	User execute(Command command);
-
-	record Command(
-		String email,
-		String rawPassword
-	) {
-	}
+	User execute(AuthenticateHostParam param);
 }

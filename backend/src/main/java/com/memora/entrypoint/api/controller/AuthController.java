@@ -1,6 +1,9 @@
 package com.memora.entrypoint.api.controller;
 
 import com.memora.core.domain.model.User;
+import com.memora.core.domain.param.AuthenticateHostParam;
+import com.memora.core.domain.param.GetCurrentUserParam;
+import com.memora.core.domain.param.RegisterHostParam;
 import com.memora.core.usecase.AuthenticateHostUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.RegisterHostUseCase;
@@ -11,6 +14,7 @@ import com.memora.entrypoint.api.dto.UserLoginResponseDto;
 import com.memora.entrypoint.api.dto.UserProfileResponseDto;
 import com.memora.entrypoint.api.dto.UserRegisterRequestDto;
 import com.memora.entrypoint.api.dto.UserRegisterResponseDto;
+import com.memora.entrypoint.api.mapper.UserApiMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,25 +42,25 @@ public class AuthController implements UserControllerApi {
 
 	@Override
 	public ResponseEntity<UserRegisterResponseDto> register(UserRegisterRequestDto request) {
-		User user = registerHostUseCase.execute(new RegisterHostUseCase.Command(
+		User user = registerHostUseCase.execute(new RegisterHostParam(
 			request.name(),
 			request.email(),
 			request.password()
 		));
 
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(new UserRegisterResponseDto(user.getId(), user.getName(), user.getEmail()));
+			.body(UserApiMapper.toRegisterResponse(user));
 	}
 
 	@Override
 	public ResponseEntity<UserLoginResponseDto> login(UserLoginRequestDto request) {
-		User user = authenticateHostUseCase.execute(new AuthenticateHostUseCase.Command(
+		User user = authenticateHostUseCase.execute(new AuthenticateHostParam(
 			request.email(),
 			request.password()
 		));
 
 		String token = jwtTokenService.generateToken(user);
-		return ResponseEntity.ok(new UserLoginResponseDto(token, user.getId(), user.getName(), user.getEmail()));
+		return ResponseEntity.ok(UserApiMapper.toLoginResponse(token, user));
 	}
 
 	@Override
@@ -73,7 +77,7 @@ public class AuthController implements UserControllerApi {
 			throw new SecurityException("Unauthorized");
 		}
 
-		User user = getCurrentUserUseCase.execute(new GetCurrentUserUseCase.Command(authentication.getName()));
-		return ResponseEntity.ok(new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail()));
+		User user = getCurrentUserUseCase.execute(new GetCurrentUserParam(authentication.getName()));
+		return ResponseEntity.ok(UserApiMapper.toProfileResponse(user));
 	}
 }

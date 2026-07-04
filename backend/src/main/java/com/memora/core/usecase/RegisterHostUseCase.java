@@ -1,16 +1,9 @@
 package com.memora.core.usecase;
 
 import com.memora.core.domain.model.User;
+import com.memora.core.domain.param.RegisterHostParam;
 
 public interface RegisterHostUseCase {
 
-	User execute(Command command);
-
-	record Command(
-		String name,
-		String email,
-		String rawPassword
-	) {
-	}
+	User execute(RegisterHostParam param);
 }
-

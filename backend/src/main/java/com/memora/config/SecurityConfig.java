@@ -1,5 +1,6 @@
 package com.memora.config;
 
+import com.memora.entrypoint.api.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
