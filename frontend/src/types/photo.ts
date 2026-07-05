@@ -7,6 +7,7 @@ export interface Photo {
   contentType: string;
   sizeBytes: number;
   status: PhotoStatus;
+  favorite: boolean;
   guestName: string | null;
   guestMessage: string | null;
   createdAt: string;
@@ -18,4 +19,12 @@ export interface GuestUploadResponse {
   objectKey: string;
   status: PhotoStatus;
   message: string;
+}
+
+export interface PhotoFavoriteUpdateRequest {
+  favorite: boolean;
+}
+
+export interface PhotoStatusUpdateRequest {
+  status: PhotoStatus;
 }

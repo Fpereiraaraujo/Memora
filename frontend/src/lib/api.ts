@@ -1,8 +1,14 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/lib/env';
+import type { PageResponse } from '@/types/api';
 import type { EventCreateRequest, EventSummary, EventUpdateRequest } from '@/types/event';
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
-import type { GuestUploadResponse, Photo } from '@/types/photo';
+import type {
+  GuestUploadResponse,
+  Photo,
+  PhotoFavoriteUpdateRequest,
+  PhotoStatusUpdateRequest,
+} from '@/types/photo';
 
 const http = axios.create({
   baseURL: API_BASE_URL,
@@ -118,11 +124,36 @@ export const api = {
   listEventPhotos(token: string, eventId: string) {
     return request<Photo[]>(`/api/events/${eventId}/photos`, { method: 'GET', token });
   },
+  listEventPhotosPage(token: string, eventId: string, page: number, size: number) {
+    return request<PageResponse<Photo>>(`/api/events/${eventId}/photos/page?page=${page}&size=${size}`, {
+      method: 'GET',
+      token,
+    });
+  },
+  updatePhotoFavorite(token: string, eventId: string, photoId: string, requestBody: PhotoFavoriteUpdateRequest) {
+    return request<Photo>(`/api/events/${eventId}/photos/${photoId}/favorite`, {
+      method: 'PATCH',
+      token,
+      data: requestBody,
+    });
+  },
+  updatePhotoStatus(token: string, eventId: string, photoId: string, requestBody: PhotoStatusUpdateRequest) {
+    return request<Photo>(`/api/events/${eventId}/photos/${photoId}/status`, {
+      method: 'PATCH',
+      token,
+      data: requestBody,
+    });
+  },
   getPublicEvent(slug: string) {
     return request<EventSummary>(`/api/public/events/${slug}`, { method: 'GET' });
   },
   listPublicEventPhotos(slug: string) {
     return request<Photo[]>(`/api/public/events/${slug}/photos`, { method: 'GET' });
+  },
+  listPublicEventPhotosPage(slug: string, page: number, size: number) {
+    return request<PageResponse<Photo>>(`/api/public/events/${slug}/photos/page?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
   },
   uploadGuestPhoto(slug: string, formData: FormData) {
     return request<GuestUploadResponse>(`/api/public/events/${slug}/uploads`, { method: 'POST', data: formData });

@@ -1,19 +1,22 @@
 import { Link } from 'react-router-dom';
 
 import { ExternalIcon } from '@/features/events/components/event-dashboard/event-icons';
-import { formatEventDate } from '@/features/events/utils/event-dashboard-formatters';
+import { formatEventDate, getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
+import { eventDashboardMockImages } from '@/features/events/utils/event-dashboard-mock';
 import type { EventSummary } from '@/types/event';
+import type { Photo } from '@/types/photo';
 
 interface EventUploadHeaderProps {
   event: EventSummary;
+  previewPhotos: Photo[];
 }
 
 function getEventLabel(type: string) {
   const labels: Record<string, string> = {
     WEDDING: 'Casamento',
-    BIRTHDAY: 'Aniversário',
+    BIRTHDAY: 'Aniversario',
     GRADUATION: 'Formatura',
-    BABY_SHOWER: 'Chá de bebê',
+    BABY_SHOWER: 'Cha de bebe',
     BAPTISM: 'Batizado',
     CORPORATE: 'Evento corporativo',
     OTHER: 'Evento especial',
@@ -22,17 +25,25 @@ function getEventLabel(type: string) {
   return labels[type] ?? 'Evento especial';
 }
 
-export function EventUploadHeader({ event }: EventUploadHeaderProps) {
+export function EventUploadHeader({ event, previewPhotos }: EventUploadHeaderProps) {
+  const coverImages = [
+    previewPhotos[0]?.downloadUrl ?? eventDashboardMockImages[1],
+    previewPhotos[1]?.downloadUrl ?? eventDashboardMockImages[2],
+    previewPhotos[2]?.downloadUrl ?? eventDashboardMockImages[3],
+  ];
+
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
       <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[#f4a1aa]/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-[#d8a84f]/16 blur-3xl" />
 
-      <div className="relative grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <div className="relative grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
         <div>
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/80 px-4 text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e]">
-              <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">♥</span>
+              <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
+                *
+              </span>
               {getEventLabel(event.type)}
             </span>
 
@@ -46,7 +57,7 @@ export function EventUploadHeader({ event }: EventUploadHeaderProps) {
           </h1>
 
           <p className="mt-5 max-w-2xl text-[15px] leading-8 text-[#2c2927]/68 sm:text-base">
-            Compartilhe os momentos que você registrou. Sua foto pode virar uma das lembranças preferidas dos anfitriões.
+            Cada olhar, abraco, danca e detalhe faz parte da memoria deste dia. Envie suas fotos e deixe sua versao desse momento registrada para sempre.
           </p>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -66,36 +77,70 @@ export function EventUploadHeader({ event }: EventUploadHeaderProps) {
               <ExternalIcon className="size-4" />
             </Link>
           </div>
+
+          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#2c2927]/70">
+            <span className="inline-flex items-center gap-2">
+              <span className="grid size-5 place-items-center rounded-full bg-[#fff4ef] text-xs text-[#d19a38]">
+                o
+              </span>
+              Upload sem login
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="grid size-5 place-items-center rounded-full bg-[#fff4ef] text-xs text-[#d19a38]">
+                o
+              </span>
+              Fotos enviadas em segundos
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="grid size-5 place-items-center rounded-full bg-[#fff4ef] text-xs text-[#d19a38]">
+                o
+              </span>
+              Recado opcional para os anfitrioes
+            </span>
+          </div>
         </div>
 
-        <div className="relative">
-          <div className="mx-auto max-w-[390px] rounded-[26px] border border-[#f1ddd1] bg-[#fffaf7] p-4 shadow-[0_24px_70px_rgba(96,60,36,0.12)]">
-            <div className="relative h-[360px] overflow-hidden rounded-[22px] bg-[linear-gradient(135deg,#3b2721,#b77955_48%,#f3c4b0)] p-5">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.62),transparent_30%),linear-gradient(135deg,rgba(255,255,255,.18),transparent)]" />
-
-              <div className="relative flex h-full flex-col justify-between">
-                <div className="inline-flex w-fit rounded-full bg-white/82 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#c5922e] backdrop-blur">
-                  Memora
-                </div>
-
-                <div>
-                  <p className="font-display text-[42px] font-semibold leading-none tracking-[-0.045em] text-white">
-                    Compartilhe
-                    <br />
-                    esse momento
-                  </p>
-
-                  <p className="mt-3 max-w-xs text-sm leading-6 text-white/80">
-                    Bastidores, abraços, risadas e detalhes também contam a história.
-                  </p>
-                </div>
-              </div>
+        <div className="grid gap-4 sm:grid-cols-[0.92fr_1.08fr]">
+          <div className="flex flex-col gap-4">
+            <div className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[#fffaf7] p-3 shadow-[0_18px_48px_rgba(96,60,36,0.10)]">
+              <img
+                src={getPhotoSrc(coverImages[0])}
+                alt="Momento do evento"
+                className="h-[240px] w-full rounded-[18px] object-cover"
+              />
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="h-20 rounded-[16px] bg-[#f9d7dc]" />
-              <div className="h-20 rounded-[16px] bg-[#f5c0a7]" />
-              <div className="h-20 rounded-[16px] bg-[#ecd5ad]" />
+            <div className="rounded-[22px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fff7f4,#fff0f2)] p-5 shadow-[0_16px_38px_rgba(96,60,36,0.08)]">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e]">
+                Um recado para voce
+              </p>
+              <p className="mt-3 font-display text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#161314]">
+                Sua foto ajuda a contar essa historia
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[26px] border border-[#f1ddd1] bg-white p-3 shadow-[0_24px_70px_rgba(96,60,36,0.12)]">
+            <img
+              src={getPhotoSrc(coverImages[1])}
+              alt="Noivos celebrando"
+              className="h-[210px] w-full rounded-[20px] object-cover"
+            />
+
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <img
+                src={getPhotoSrc(coverImages[2])}
+                alt="Detalhes da celebracao"
+                className="h-[122px] w-full rounded-[18px] object-cover"
+              />
+              <div className="flex h-[122px] flex-col justify-between rounded-[18px] bg-[linear-gradient(145deg,#2f231d,#be835d_52%,#f6ceb3)] p-4 text-white">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/58">
+                  Memora
+                </span>
+                <p className="font-display text-[26px] font-semibold leading-none tracking-[-0.04em]">
+                  Obrigado por fazer parte deste momento
+                </p>
+              </div>
             </div>
           </div>
         </div>

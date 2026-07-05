@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "memora.upload")
 public record UploadProperties(
 	long maxFileSizeBytes,
-	List<String> allowedContentTypes
+	List<String> allowedContentTypes,
+	int requestsPerMinutePerIp
 ) {
 }

@@ -16,6 +16,7 @@ public final class PhotoApiMapper {
 			photo.getContentType(),
 			photo.getSizeBytes(),
 			photo.getStatus(),
+			photo.isFavorite(),
 			photo.getGuestName(),
 			photo.getGuestMessage(),
 			photo.getCreatedAt(),

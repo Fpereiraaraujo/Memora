@@ -3,18 +3,27 @@ import { Link, useParams } from 'react-router-dom';
 
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
-import { ExternalIcon, HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
-import { formatEventDate, getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
+import { Pagination } from '@/components/ui/pagination';
+import {
+  ExternalIcon,
+  HeartIcon,
+} from '@/features/events/components/event-dashboard/event-icons';
+import {
+  formatEventDate,
+  getPhotoSrc,
+} from '@/features/events/utils/event-dashboard-formatters';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
+const PUBLIC_GALLERY_PAGE_SIZE = 12;
+
 function formatEventType(type: string) {
   const map: Record<string, string> = {
     WEDDING: 'Casamento',
-    BIRTHDAY: 'Aniversário',
+    BIRTHDAY: 'Aniversario',
     GRADUATION: 'Formatura',
-    BABY_SHOWER: 'Chá de bebê',
+    BABY_SHOWER: 'Cha de bebe',
     BAPTISM: 'Batizado',
     CORPORATE: 'Corporativo',
     OTHER: 'Evento especial',
@@ -29,14 +38,14 @@ function getEventSubtitle(event: EventSummary) {
   }
 
   if (event.type === 'BIRTHDAY') {
-    return 'Compartilhe os melhores momentos dessa celebração.';
+    return 'Compartilhe os melhores momentos dessa celebracao.';
   }
 
   if (event.type === 'GRADUATION') {
     return 'Registre os momentos mais marcantes dessa conquista.';
   }
 
-  return 'Compartilhe suas fotos e ajude a montar uma lembrança coletiva.';
+  return 'Compartilhe suas fotos e ajude a montar uma lembranca coletiva.';
 }
 
 function PublicEventLoadingState() {
@@ -57,8 +66,8 @@ function PublicEventNotFoundState() {
     <PublicShell>
       <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
         <EmptyState
-          title="Evento não encontrado"
-          description="Não foi possível encontrar a página pública deste evento."
+          title="Evento nao encontrado"
+          description="Nao foi possivel encontrar a pagina publica deste evento."
         />
       </div>
     </PublicShell>
@@ -70,6 +79,9 @@ export function PublicEventPage() {
 
   const [event, setEvent] = useState<EventSummary | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +98,10 @@ export function PublicEventPage() {
   }, [photos]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [slug]);
+
+  useEffect(() => {
     let active = true;
 
     async function load() {
@@ -94,19 +110,32 @@ export function PublicEventPage() {
         return;
       }
 
+      setLoading(true);
+
       try {
-        const [eventData, photoData] = await Promise.all([
+        const [eventData, photoPage] = await Promise.all([
           api.getPublicEvent(slug),
-          api.listPublicEventPhotos(slug),
+          api.listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE),
         ]);
 
         if (active) {
           setEvent(eventData);
-          setPhotos(photoData);
+          setPhotos(photoPage.content);
+          setTotalElements(photoPage.totalElements);
+          setTotalPages(Math.max(1, photoPage.totalPages));
+          setError(null);
         }
       } catch (exception) {
         if (active) {
-          setError(exception instanceof Error ? exception.message : 'Não foi possível carregar o evento');
+          setEvent(null);
+          setPhotos([]);
+          setTotalElements(0);
+          setTotalPages(1);
+          setError(
+            exception instanceof Error
+              ? exception.message
+              : 'Nao foi possivel carregar o evento',
+          );
         }
       } finally {
         if (active) {
@@ -120,7 +149,7 @@ export function PublicEventPage() {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [currentPage, slug]);
 
   if (!slug) return <PublicEventNotFoundState />;
   if (loading) return <PublicEventLoadingState />;
@@ -144,7 +173,9 @@ export function PublicEventPage() {
               <div>
                 <div className="mb-6 flex flex-wrap items-center gap-3">
                   <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">♥</span>
+                    <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
+                      *
+                    </span>
                     {formatEventType(event.type)}
                   </span>
 
@@ -167,7 +198,7 @@ export function PublicEventPage() {
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] bg-[#ef7885] px-7 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.32)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
                   >
                     Enviar uma foto
-                    <span aria-hidden="true">→</span>
+                    <span aria-hidden="true">-&gt;</span>
                   </Link>
 
                   <a
@@ -180,18 +211,30 @@ export function PublicEventPage() {
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Fotos</p>
-                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{photos.length}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
+                      Fotos
+                    </p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                      {totalElements}
+                    </p>
                   </div>
 
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Convidados</p>
-                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{guestCount}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
+                      Paginas
+                    </p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                      {totalPages}
+                    </p>
                   </div>
 
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Envio</p>
-                    <p className="mt-2 text-sm font-bold text-[#161314]">Sem login</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
+                      Convidados
+                    </p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                      {guestCount}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -200,8 +243,15 @@ export function PublicEventPage() {
                 <div className="mx-auto max-w-[420px] rounded-[26px] border border-[#f1ddd1] bg-white p-4 shadow-[0_24px_70px_rgba(96,60,36,0.12)]">
                   <div className="grid grid-cols-2 gap-3">
                     {(photos.length > 0 ? photos.slice(0, 4) : []).map((photo) => (
-                      <div key={photo.id} className="aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                        <img src={getPhotoSrc(photo.downloadUrl)} alt={photo.originalFilename} className="h-full w-full object-cover" />
+                      <div
+                        key={photo.id}
+                        className="aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]"
+                      >
+                        <img
+                          src={getPhotoSrc(photo.downloadUrl)}
+                          alt={photo.originalFilename}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                     ))}
 
@@ -227,10 +277,13 @@ export function PublicEventPage() {
             </div>
           </section>
 
-          <section id="galeria" className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
+          <section
+            id="galeria"
+            className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-bold text-[#ef7885]">Galeria pública</p>
+                <p className="text-sm font-bold text-[#ef7885]">Galeria publica</p>
                 <h2 className="mt-2 font-display text-[42px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
                   Fotos do evento
                 </h2>
@@ -249,7 +302,7 @@ export function PublicEventPage() {
 
             {photos.length === 0 ? (
               <div className="mt-6 rounded-[18px] bg-[#fff7f2] p-6 text-sm leading-7 text-[#2c2927]/62">
-                Ainda não existem fotos neste evento. Seja a primeira pessoa a compartilhar uma lembrança.
+                Ainda nao existem fotos neste evento. Seja a primeira pessoa a compartilhar uma lembranca.
               </div>
             ) : (
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -262,22 +315,38 @@ export function PublicEventPage() {
                     className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]"
                   >
                     <div className="relative aspect-square overflow-hidden bg-[#f5ded2]">
-                      <img src={getPhotoSrc(photo.downloadUrl)} alt={photo.originalFilename} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <img
+                        src={getPhotoSrc(photo.downloadUrl)}
+                        alt={photo.originalFilename}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
                       <span className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/92 text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
                         <HeartIcon className="size-4" />
                       </span>
                     </div>
 
                     <div className="p-4">
-                      <p className="truncate text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
+                      <p className="truncate text-sm font-bold text-[#161314]">
+                        {photo.guestName || 'Convidado anonimo'}
+                      </p>
                       {photo.guestMessage ? (
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#2c2927]/62">{photo.guestMessage}</p>
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#2c2927]/62">
+                          {photo.guestMessage}
+                        </p>
                       ) : null}
                     </div>
                   </a>
                 ))}
               </div>
             )}
+
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
           </section>
         </div>
       </div>

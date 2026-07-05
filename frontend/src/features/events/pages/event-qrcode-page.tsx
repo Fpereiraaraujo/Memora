@@ -28,8 +28,8 @@ export function EventQrCodePage() {
           <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
             <EventQrCard
               qrPreviewUrl={dashboard.qrPreviewUrl}
-              copied={dashboard.copied}
-              onCopyPublicLink={dashboard.copyPublicLink}
+              copied={dashboard.uploadLinkCopied}
+              onCopyUploadLink={dashboard.copyUploadLink}
             />
 
             <section className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">

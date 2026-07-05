@@ -3,10 +3,10 @@ import { DownloadIcon, LinkIcon } from '@/features/events/components/event-dashb
 interface EventQrCardProps {
   qrPreviewUrl: string | null;
   copied: boolean;
-  onCopyPublicLink: () => void;
+  onCopyUploadLink: () => void;
 }
 
-export function EventQrCard({ qrPreviewUrl, copied, onCopyPublicLink }: EventQrCardProps) {
+export function EventQrCard({ qrPreviewUrl, copied, onCopyUploadLink }: EventQrCardProps) {
   return (
     <section
       id="qr-code"
@@ -43,11 +43,11 @@ export function EventQrCard({ qrPreviewUrl, copied, onCopyPublicLink }: EventQrC
 
           <button
             type="button"
-            onClick={onCopyPublicLink}
+            onClick={onCopyUploadLink}
             className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-[#efb6bb] bg-white px-5 text-sm font-bold text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
           >
             <LinkIcon className="size-4" />
-            {copied ? 'Link copiado' : 'Copiar link'}
+            {copied ? 'Link copiado' : 'Copiar link de upload'}
           </button>
         </div>
       </div>

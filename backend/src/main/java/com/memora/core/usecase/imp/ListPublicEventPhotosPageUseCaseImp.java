@@ -2,31 +2,32 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.EventStatus;
+import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
-import com.memora.core.domain.param.ListPublicEventPhotosParam;
-import com.memora.core.usecase.ListPublicEventPhotosUseCase;
+import com.memora.core.domain.param.ListPublicEventPhotosPageParam;
+import com.memora.core.usecase.ListPublicEventPhotosPageUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
-import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ListPublicEventPhotosUseCaseImp implements ListPublicEventPhotosUseCase {
+public class ListPublicEventPhotosPageUseCaseImp implements ListPublicEventPhotosPageUseCase {
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
 
-	public ListPublicEventPhotosUseCaseImp(EventRepository eventRepository, PhotoRepository photoRepository) {
+	public ListPublicEventPhotosPageUseCaseImp(EventRepository eventRepository, PhotoRepository photoRepository) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
 	}
 
 	@Override
-	public List<Photo> execute(ListPublicEventPhotosParam param) {
+	public PageResult<Photo> execute(ListPublicEventPhotosPageParam param) {
 		Event event = eventRepository.findBySlug(param.slug())
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
@@ -35,9 +36,19 @@ public class ListPublicEventPhotosUseCaseImp implements ListPublicEventPhotosUse
 			throw new NoSuchElementException("Event not found");
 		}
 
-		return photoRepository.findAllByEventIdAndStatusOrderByCreatedAtDesc(event.getId(), PhotoStatus.AVAILABLE)
-			.stream()
-			.map(PhotoDatabaseMapper::toDomain)
-			.toList();
+		var pageResult = photoRepository.findAllByEventIdAndStatusOrderByCreatedAtDesc(
+			event.getId(),
+			PhotoStatus.AVAILABLE,
+			PageRequest.of(param.page(), param.size())
+		);
+
+		return new PageResult<>(
+			pageResult.getContent().stream().map(PhotoDatabaseMapper::toDomain).toList(),
+			pageResult.getNumber(),
+			pageResult.getSize(),
+			pageResult.getTotalElements(),
+			pageResult.getTotalPages(),
+			pageResult.isLast()
+		);
 	}
 }

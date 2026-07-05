@@ -1,12 +1,16 @@
 package com.memora.entrypoint.api.controller;
 
 import com.memora.core.domain.model.Event;
+import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.User;
 import com.memora.core.domain.param.CreateEventParam;
 import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.domain.param.GetEventParam;
 import com.memora.core.domain.param.ListEventsParam;
 import com.memora.core.domain.param.ListEventPhotosParam;
+import com.memora.core.domain.param.ListEventPhotosPageParam;
+import com.memora.core.domain.param.UpdatePhotoFavoriteParam;
+import com.memora.core.domain.param.UpdatePhotoStatusParam;
 import com.memora.core.domain.param.UpdateEventStatusParam;
 import com.memora.core.domain.param.UpdateEventParam;
 import com.memora.core.usecase.CreateEventUseCase;
@@ -14,6 +18,9 @@ import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
+import com.memora.core.usecase.ListEventPhotosPageUseCase;
+import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
+import com.memora.core.usecase.UpdatePhotoStatusUseCase;
 import com.memora.core.usecase.UpdateEventStatusUseCase;
 import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.config.AppProperties;
@@ -23,10 +30,13 @@ import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
+import com.memora.entrypoint.api.dto.PageResponseDto;
+import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
+import com.memora.entrypoint.api.dto.PhotoStatusUpdateRequestDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
-import com.memora.shared.QrCodeGenerator;
+import com.memora.shared.EventQrCodeService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
@@ -46,7 +56,10 @@ public class EventController implements EventControllerApi {
 	private final UpdateEventUseCase updateEventUseCase;
 	private final UpdateEventStatusUseCase updateEventStatusUseCase;
 	private final ListEventPhotosUseCase listEventPhotosUseCase;
-	private final QrCodeGenerator qrCodeGenerator;
+	private final ListEventPhotosPageUseCase listEventPhotosPageUseCase;
+	private final UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase;
+	private final UpdatePhotoStatusUseCase updatePhotoStatusUseCase;
+	private final EventQrCodeService eventQrCodeService;
 	private final AppProperties appProperties;
 
 	public EventController(
@@ -57,7 +70,10 @@ public class EventController implements EventControllerApi {
 		UpdateEventUseCase updateEventUseCase,
 		UpdateEventStatusUseCase updateEventStatusUseCase,
 		ListEventPhotosUseCase listEventPhotosUseCase,
-		QrCodeGenerator qrCodeGenerator,
+		ListEventPhotosPageUseCase listEventPhotosPageUseCase,
+		UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase,
+		UpdatePhotoStatusUseCase updatePhotoStatusUseCase,
+		EventQrCodeService eventQrCodeService,
 		AppProperties appProperties
 	) {
 		this.getCurrentUserUseCase = getCurrentUserUseCase;
@@ -67,7 +83,10 @@ public class EventController implements EventControllerApi {
 		this.updateEventUseCase = updateEventUseCase;
 		this.updateEventStatusUseCase = updateEventStatusUseCase;
 		this.listEventPhotosUseCase = listEventPhotosUseCase;
-		this.qrCodeGenerator = qrCodeGenerator;
+		this.listEventPhotosPageUseCase = listEventPhotosPageUseCase;
+		this.updatePhotoFavoriteUseCase = updatePhotoFavoriteUseCase;
+		this.updatePhotoStatusUseCase = updatePhotoStatusUseCase;
+		this.eventQrCodeService = eventQrCodeService;
 		this.appProperties = appProperties;
 	}
 
@@ -112,10 +131,10 @@ public class EventController implements EventControllerApi {
 			? appProperties.publicBaseUrl().substring(0, appProperties.publicBaseUrl().length() - 1)
 			: appProperties.publicBaseUrl();
 		String publicUrl = publicBaseUrl + "/e/" + event.getSlug() + "/upload";
-		byte[] qrCode = qrCodeGenerator.generatePng(publicUrl, 320);
+		byte[] qrCode = eventQrCodeService.generateCachedPng(publicUrl);
 
 		return ResponseEntity.ok()
-			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"event-qrcode.png\"")
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"memora-" + event.getSlug() + "-qrcode.png\"")
 			.contentType(MediaType.IMAGE_PNG)
 			.body(qrCode);
 	}
@@ -160,12 +179,87 @@ public class EventController implements EventControllerApi {
 		return ResponseEntity.ok(photos);
 	}
 
+	@Override
+	public ResponseEntity<PageResponseDto<PhotoResponseDto>> pagedPhotos(UUID eventId, int page, int size, Authentication authentication) {
+		User user = resolveUser(authentication);
+		PageResult<PhotoResponseDto> result = mapPhotoPage(
+			listEventPhotosPageUseCase.execute(new ListEventPhotosPageParam(
+				user.getId(),
+				eventId,
+				normalizePage(page),
+				normalizeSize(size)
+			))
+		);
+
+		return ResponseEntity.ok(new PageResponseDto<>(
+			result.content(),
+			result.page(),
+			result.size(),
+			result.totalElements(),
+			result.totalPages(),
+			result.last()
+		));
+	}
+
+	@Override
+	public ResponseEntity<PhotoResponseDto> updatePhotoFavorite(UUID eventId, UUID photoId, PhotoFavoriteUpdateRequestDto request, Authentication authentication) {
+		if (request.favorite() == null) {
+			throw new IllegalArgumentException("Favorite value is required");
+		}
+
+		User user = resolveUser(authentication);
+		var photo = updatePhotoFavoriteUseCase.execute(new UpdatePhotoFavoriteParam(
+			user.getId(),
+			eventId,
+			photoId,
+			request.favorite()
+		));
+
+		return ResponseEntity.ok(PhotoApiMapper.toResponse(photo));
+	}
+
+	@Override
+	public ResponseEntity<PhotoResponseDto> updatePhotoStatus(UUID eventId, UUID photoId, PhotoStatusUpdateRequestDto request, Authentication authentication) {
+		if (request.status() == null) {
+			throw new IllegalArgumentException("Photo status is required");
+		}
+
+		User user = resolveUser(authentication);
+		var photo = updatePhotoStatusUseCase.execute(new UpdatePhotoStatusParam(
+			user.getId(),
+			eventId,
+			photoId,
+			request.status()
+		));
+
+		return ResponseEntity.ok(PhotoApiMapper.toResponse(photo));
+	}
+
 	private User resolveUser(Authentication authentication) {
 		if (authentication == null) {
 			throw new SecurityException("Unauthorized");
 		}
 
 		return getCurrentUserUseCase.execute(new GetCurrentUserParam(authentication.getName()));
+	}
+
+	private int normalizePage(int page) {
+		return Math.max(page, 0);
+	}
+
+	private int normalizeSize(int size) {
+		return Math.min(Math.max(size, 1), 100);
+	}
+
+	private PageResult<PhotoResponseDto> mapPhotoPage(PageResult<com.memora.core.domain.model.Photo> result) {
+		return new PageResult<>(
+			result.content().stream().map(PhotoApiMapper::toResponse).toList(),
+			result.page(),
+			result.size(),
+			result.totalElements(),
+			result.totalPages(),
+			result.last()
+		);
 	}
 
 }

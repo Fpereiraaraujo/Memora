@@ -7,14 +7,15 @@ import { EventUploadHeader } from '@/features/public/components/upload/event-upl
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
+import type { Photo } from '@/types/photo';
 
 function PublicUploadNotFoundState() {
   return (
     <div className="min-h-screen bg-[#fff8f3] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <EmptyState
-          title="Evento não encontrado"
-          description="Não foi possível encontrar a página de upload deste evento."
+          title="Evento nao encontrado"
+          description="Nao foi possivel encontrar a pagina de upload deste evento."
         />
       </div>
     </div>
@@ -40,6 +41,7 @@ export function PublicUploadPage() {
   const { slug } = useParams();
 
   const [event, setEvent] = useState<EventSummary | null>(null);
+  const [previewPhotos, setPreviewPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [guestName, setGuestName] = useState('');
@@ -74,14 +76,19 @@ export function PublicUploadPage() {
       }
 
       try {
-        const eventData = await api.getPublicEvent(slug);
+        const [eventData, photoPage] = await Promise.all([
+          api.getPublicEvent(slug),
+          api.listPublicEventPhotosPage(slug, 0, 3),
+        ]);
 
         if (active) {
           setEvent(eventData);
+          setPreviewPhotos(photoPage.content);
         }
       } catch {
         if (active) {
           setEvent(null);
+          setPreviewPhotos([]);
         }
       } finally {
         if (active) {
@@ -106,7 +113,7 @@ export function PublicUploadPage() {
     eventSubmit.preventDefault();
 
     if (!slug) {
-      setError('Evento não encontrado.');
+      setError('Evento nao encontrado.');
       return;
     }
 
@@ -133,7 +140,7 @@ export function PublicUploadPage() {
       setInputKey((current) => current + 1);
       setSuccess(true);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Não foi possível enviar a foto.');
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar a foto.');
     } finally {
       setBusy(false);
     }
@@ -146,7 +153,7 @@ export function PublicUploadPage() {
   return (
     <div className="min-h-screen bg-[#fff8f3] px-4 py-6 text-[#201914] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1280px] space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between gap-4">
           <MemoraLogo />
 
           <Link
@@ -157,7 +164,7 @@ export function PublicUploadPage() {
           </Link>
         </header>
 
-        <EventUploadHeader event={event} />
+        <EventUploadHeader event={event} previewPhotos={previewPhotos} />
 
         <GuestUploadCard
           guestName={guestName}

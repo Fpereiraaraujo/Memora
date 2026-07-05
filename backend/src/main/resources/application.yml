@@ -5,6 +5,12 @@ spring:
     url: jdbc:postgresql://localhost:5433/memora
     username: memora
     password: memora
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
   jpa:
     open-in-view: false
     hibernate:
@@ -34,6 +40,7 @@ memora:
     public-base-url: http://localhost:5173
   upload:
     max-file-size-bytes: 15728640
+    requests-per-minute-per-ip: 10
     allowed-content-types:
       - image/jpeg
       - image/png

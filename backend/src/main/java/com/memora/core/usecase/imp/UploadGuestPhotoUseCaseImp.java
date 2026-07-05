@@ -44,7 +44,7 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (event.getStatus() != EventStatus.ACTIVE) {
+		if (event.getStatus() != EventStatus.ACTIVE && event.getStatus() != EventStatus.DRAFT) {
 			throw new IllegalArgumentException("Event is not accepting uploads");
 		}
 
@@ -65,6 +65,7 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 			.contentType(contentType)
 			.sizeBytes(param.sizeBytes())
 			.status(PhotoStatus.AVAILABLE)
+			.favorite(false)
 			.guestName(param.guestName())
 			.guestMessage(param.guestMessage())
 			.createdAt(now)

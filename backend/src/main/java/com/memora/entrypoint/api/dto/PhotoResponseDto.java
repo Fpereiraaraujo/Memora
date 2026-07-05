@@ -11,6 +11,7 @@ public record PhotoResponseDto(
 	String contentType,
 	Long sizeBytes,
 	PhotoStatus status,
+	Boolean favorite,
 	String guestName,
 	String guestMessage,
 	LocalDateTime createdAt,

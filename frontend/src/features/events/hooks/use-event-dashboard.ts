@@ -7,10 +7,9 @@ import {
   buildMockQrDataUrl,
 } from '@/features/events/utils/event-dashboard-mock';
 import {
-  readStoredFavoriteIds,
-  writeStoredFavoriteIds,
-} from '@/features/events/utils/event-dashboard-storage';
-import { buildPublicEventUrl } from '@/features/events/utils/event-dashboard-formatters';
+  buildPublicEventUrl,
+  buildPublicUploadUrl,
+} from '@/features/events/utils/event-dashboard-formatters';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
@@ -19,17 +18,20 @@ export interface UseEventDashboardResult {
   event: EventSummary | null;
   photos: Photo[];
   qrPreviewUrl: string | null;
-  publicUrl: string;
+  publicPageUrl: string;
+  publicUploadUrl: string;
   loading: boolean;
   mockMode: boolean;
   copied: boolean;
+  uploadLinkCopied: boolean;
   favorites: string[];
   guestCount: number;
   messagePhotos: Photo[];
   favoritePhotos: Photo[];
   galleryPreview: Photo[];
-  toggleFavorite: (photoId: string) => void;
+  toggleFavorite: (photoId: string) => Promise<void>;
   copyPublicLink: () => Promise<void>;
+  copyUploadLink: () => Promise<void>;
   shareEvent: () => Promise<void>;
 }
 
@@ -43,17 +45,8 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   const [loading, setLoading] = useState(true);
   const [mockMode, setMockMode] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [uploadLinkCopied, setUploadLinkCopied] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
-
-  const favoriteStorageKey = eventId ? `memora.favorites.${eventId}` : null;
-
-  useEffect(() => {
-    if (!favoriteStorageKey) {
-      return;
-    }
-
-    setFavorites(readStoredFavoriteIds(favoriteStorageKey));
-  }, [favoriteStorageKey]);
 
   useEffect(() => {
     let active = true;
@@ -83,13 +76,16 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
         if (active) {
           setEvent(eventData);
           setPhotos(photoData);
+          setFavorites(photoData.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(objectUrl);
           setMockMode(false);
         }
       } catch {
         if (active) {
+          const mockPhotos = buildMockPhotos(eventId);
           setEvent(buildMockEvent(eventId));
-          setPhotos(buildMockPhotos(eventId));
+          setPhotos(mockPhotos);
+          setFavorites(mockPhotos.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(buildMockQrDataUrl());
           setMockMode(true);
         }
@@ -111,12 +107,20 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     };
   }, [eventId, token]);
 
-  const publicUrl = useMemo(() => {
+  const publicPageUrl = useMemo(() => {
     if (!event) {
       return '';
     }
 
     return buildPublicEventUrl(event.slug);
+  }, [event]);
+
+  const publicUploadUrl = useMemo(() => {
+    if (!event) {
+      return '';
+    }
+
+    return buildPublicUploadUrl(event.slug);
   }, [event]);
 
   const guestCount = useMemo(() => {
@@ -144,28 +148,50 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
 
   const galleryPreview = useMemo(() => photos.slice(0, 6), [photos]);
 
-  function toggleFavorite(photoId: string) {
-    if (!favoriteStorageKey) {
+  async function toggleFavorite(photoId: string) {
+    if (!eventId) {
       return;
     }
 
-    setFavorites((current) => {
-      const next = current.includes(photoId)
-        ? current.filter((id) => id !== photoId)
-        : [...current, photoId];
+    const targetPhoto = photos.find((photo) => photo.id === photoId);
+    if (!targetPhoto) {
+      return;
+    }
 
-      writeStoredFavoriteIds(favoriteStorageKey, next);
+    const nextFavorite = !targetPhoto.favorite;
 
-      return next;
+    if (mockMode || !token) {
+      setPhotos((current) =>
+        current.map((photo) =>
+          photo.id === photoId ? { ...photo, favorite: nextFavorite } : photo,
+        ),
+      );
+      setFavorites((current) =>
+        nextFavorite ? [...current, photoId] : current.filter((id) => id !== photoId),
+      );
+      return;
+    }
+
+    const updatedPhoto = await api.updatePhotoFavorite(token, eventId, photoId, {
+      favorite: nextFavorite,
     });
+
+    setPhotos((current) =>
+      current.map((photo) => (photo.id === photoId ? updatedPhoto : photo)),
+    );
+    setFavorites((current) =>
+      updatedPhoto.favorite
+        ? Array.from(new Set([...current, photoId]))
+        : current.filter((id) => id !== photoId),
+    );
   }
 
   async function copyPublicLink() {
-    if (!publicUrl) {
+    if (!publicPageUrl) {
       return;
     }
 
-    await navigator.clipboard.writeText(publicUrl);
+    await navigator.clipboard.writeText(publicPageUrl);
     setCopied(true);
 
     window.setTimeout(() => {
@@ -173,8 +199,21 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     }, 1800);
   }
 
+  async function copyUploadLink() {
+    if (!publicUploadUrl) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(publicUploadUrl);
+    setUploadLinkCopied(true);
+
+    window.setTimeout(() => {
+      setUploadLinkCopied(false);
+    }, 1800);
+  }
+
   async function shareEvent() {
-    if (!publicUrl) {
+    if (!publicPageUrl) {
       return;
     }
 
@@ -182,7 +221,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
       await navigator.share({
         title: event?.title,
         text: 'Compartilhe fotos e recados deste evento pela Memora.',
-        url: publicUrl,
+        url: publicPageUrl,
       });
 
       return;
@@ -195,10 +234,12 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     event,
     photos,
     qrPreviewUrl,
-    publicUrl,
+    publicPageUrl,
+    publicUploadUrl,
     loading,
     mockMode,
     copied,
+    uploadLinkCopied,
     favorites,
     guestCount,
     messagePhotos,
@@ -206,6 +247,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     galleryPreview,
     toggleFavorite,
     copyPublicLink,
+    copyUploadLink,
     shareEvent,
   };
 }

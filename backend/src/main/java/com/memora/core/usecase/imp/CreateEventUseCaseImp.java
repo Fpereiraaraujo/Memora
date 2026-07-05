@@ -37,7 +37,7 @@ public class CreateEventUseCaseImp implements CreateEventUseCase {
 			.slug(slug)
 			.eventDate(param.eventDate())
 			.location(param.location())
-			.status(EventStatus.DRAFT)
+			.status(EventStatus.ACTIVE)
 			.createdAt(now)
 			.updatedAt(now)
 			.build();

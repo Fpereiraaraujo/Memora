@@ -40,4 +40,10 @@ public class ApiExceptionHandler {
 		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
 			.body(Map.of("error", "Photo file exceeds maximum allowed size"));
 	}
+
+	@ExceptionHandler(TooManyRequestsException.class)
+	public ResponseEntity<Map<String, String>> handleTooManyRequestsException(TooManyRequestsException exception) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+			.body(Map.of("error", exception.getMessage()));
+	}
 }

@@ -47,8 +47,8 @@ export function EventDetailPage() {
           <section className="grid gap-6 xl:grid-cols-[0.9fr_1.15fr_0.95fr]">
             <EventQrCard
               qrPreviewUrl={dashboard.qrPreviewUrl}
-              copied={dashboard.copied}
-              onCopyPublicLink={dashboard.copyPublicLink}
+              copied={dashboard.uploadLinkCopied}
+              onCopyUploadLink={dashboard.copyUploadLink}
             />
 
             <EventGalleryPreview

@@ -74,3 +74,7 @@ export function getInitials(name: string | null) {
 export function buildPublicEventUrl(slug: string) {
   return new URL(`/e/${slug}`, window.location.origin).toString();
 }
+
+export function buildPublicUploadUrl(slug: string) {
+  return new URL(`/e/${slug}/upload`, window.location.origin).toString();
+}
