@@ -11,8 +11,12 @@ spring:
     enabled: false
 
 memora:
+  app:
+    public-base-url: http://localhost:5173
   security:
     jwt:
       secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=
       expiration-minutes: 120
       issuer: memora
+  storage:
+    local-path: ./data/uploads-test

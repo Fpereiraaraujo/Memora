@@ -3,6 +3,7 @@ package com.memora.entrypoint.api.mapper;
 import com.memora.core.domain.model.Event;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
+import com.memora.entrypoint.api.dto.PublicEventResponseDto;
 
 public final class EventApiMapper {
 
@@ -23,6 +24,18 @@ public final class EventApiMapper {
 
 	public static EventResponseDto toResponse(Event event) {
 		return new EventResponseDto(
+			event.getId(),
+			event.getType(),
+			event.getTitle(),
+			event.getSlug(),
+			event.getEventDate(),
+			event.getLocation(),
+			event.getStatus()
+		);
+	}
+
+	public static PublicEventResponseDto toPublicResponse(Event event) {
+		return new PublicEventResponseDto(
 			event.getId(),
 			event.getType(),
 			event.getTitle(),

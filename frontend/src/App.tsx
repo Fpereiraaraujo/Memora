@@ -1,0 +1,104 @@
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
+
+import { ProtectedRoute } from '@/components/layout/protected-route';
+import { PublicShell } from '@/components/layout/public-shell';
+import { Card } from '@/components/ui/card';
+import { AuthProvider, useAuth } from '@/features/auth/auth-context';
+import { LoginPage } from '@/features/auth/pages/login-page';
+import { RegisterPage } from '@/features/auth/pages/register-page';
+import { DashboardPage } from '@/features/dashboard/pages/dashboard-page';
+import { EventDetailPage } from '@/features/events/pages/event-detail-page';
+import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
+import { HomePage } from '@/features/home/pages/home-page';
+import { PublicEventPage } from '@/features/public/pages/public-event-page';
+import { PublicUploadPage } from '@/features/public/pages/public-upload-page';
+
+function RootRedirect() {
+  const { token, ready } = useAuth();
+
+  if (!ready) {
+    return null;
+  }
+
+  return <Navigate to={token ? '/app' : '/login'} replace />;
+}
+
+function NotFoundPage() {
+  return (
+    <PublicShell>
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
+        <Card className="space-y-5 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.34em] text-[#b9852f]">404</p>
+
+          <h1 className="font-display text-5xl font-semibold tracking-[-0.04em] text-ink-900">
+            Página não encontrada
+          </h1>
+
+          <p className="mx-auto max-w-xl text-sm leading-7 text-ink-800/72">
+            O caminho acessado não existe. Volte para a página inicial ou entre na sua conta para gerenciar seus eventos.
+          </p>
+
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              className="inline-flex items-center justify-center rounded-2xl bg-[#ef7885] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.25)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+              to="/"
+            >
+              Voltar para início
+            </Link>
+
+            <Link
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
+              to="/login"
+            >
+              Entrar
+            </Link>
+          </div>
+        </Card>
+      </div>
+    </PublicShell>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/start" element={<RootRedirect />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        <Route
+          path="/app"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId"
+          element={
+            <ProtectedRoute>
+              <EventDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/gallery"
+          element={
+            <ProtectedRoute>
+              <EventGalleryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/e/:slug" element={<PublicEventPage />} />
+        <Route path="/e/:slug/upload" element={<PublicUploadPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </AuthProvider>
+  );
+}
