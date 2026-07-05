@@ -2,6 +2,10 @@ export function buildEventOverviewPath(eventId: string) {
   return `/app/events/${eventId}`;
 }
 
+export function buildEventCheckoutPath(eventId: string) {
+  return `/app/events/${eventId}/checkout`;
+}
+
 export function buildEventQrPath(eventId: string) {
   return `/app/events/${eventId}/qrcode`;
 }

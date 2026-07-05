@@ -3,6 +3,7 @@ import { API_BASE_URL } from '@/lib/env';
 import type { PageResponse } from '@/types/api';
 import type { EventCreateRequest, EventSummary, EventUpdateRequest } from '@/types/event';
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
+import type { EventCheckoutRequest, EventCheckoutResponse } from '@/types/payment';
 import type {
   GuestUploadResponse,
   Photo,
@@ -101,6 +102,13 @@ export const api = {
   },
   createEvent(token: string, requestBody: EventCreateRequest) {
     return request<EventSummary>('/api/events', { method: 'POST', token, data: requestBody });
+  },
+  createEventCheckout(token: string, eventId: string, requestBody: EventCheckoutRequest) {
+    return request<EventCheckoutResponse>(`/api/events/${eventId}/checkout`, {
+      method: 'POST',
+      token,
+      data: requestBody,
+    });
   },
   updateEvent(token: string, eventId: string, requestBody: EventUpdateRequest) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'PATCH', token, data: requestBody });

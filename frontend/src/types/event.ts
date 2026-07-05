@@ -8,6 +8,7 @@ export type EventType =
   | 'OTHER';
 
 export type EventStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED';
+export type EventPlanCode = 'ESSENTIAL' | 'EVENT' | 'PREMIUM';
 
 export interface EventSummary {
   id: string;
@@ -17,6 +18,10 @@ export interface EventSummary {
   eventDate: string | null;
   location: string | null;
   status: EventStatus;
+  planCode: EventPlanCode | null;
+  photoLimit: number | null;
+  storageExpiresAt: string | null;
+  paidAt: string | null;
 }
 
 export interface EventCreateRequest {
