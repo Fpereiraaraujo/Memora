@@ -14,10 +14,16 @@ export interface Photo {
   downloadUrl: string;
 }
 
-export interface GuestUploadResponse {
+export interface GuestUploadItemResponse {
   photoId: string;
   objectKey: string;
   status: PhotoStatus;
+  originalFilename: string;
+}
+
+export interface GuestUploadResponse {
+  uploadedCount: number;
+  photos: GuestUploadItemResponse[];
   message: string;
 }
 

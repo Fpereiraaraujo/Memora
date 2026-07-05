@@ -22,8 +22,10 @@ import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.entrypoint.api.mapper.PublicPhotoApiMapper;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import com.memora.shared.PublicUploadRateLimiter;
+import com.memora.config.UploadProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,19 +38,22 @@ public class PublicEventController implements PublicEventControllerApi {
 	private final ListPublicEventPhotosPageUseCase listPublicEventPhotosPageUseCase;
 	private final UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
 	private final PublicUploadRateLimiter publicUploadRateLimiter;
+	private final UploadProperties uploadProperties;
 
 	public PublicEventController(
 		GetPublicEventUseCase getPublicEventUseCase,
 		ListPublicEventPhotosUseCase listPublicEventPhotosUseCase,
 		ListPublicEventPhotosPageUseCase listPublicEventPhotosPageUseCase,
 		UploadGuestPhotoUseCase uploadGuestPhotoUseCase,
-		PublicUploadRateLimiter publicUploadRateLimiter
+		PublicUploadRateLimiter publicUploadRateLimiter,
+		UploadProperties uploadProperties
 	) {
 		this.getPublicEventUseCase = getPublicEventUseCase;
 		this.listPublicEventPhotosUseCase = listPublicEventPhotosUseCase;
 		this.listPublicEventPhotosPageUseCase = listPublicEventPhotosPageUseCase;
 		this.uploadGuestPhotoUseCase = uploadGuestPhotoUseCase;
 		this.publicUploadRateLimiter = publicUploadRateLimiter;
+		this.uploadProperties = uploadProperties;
 	}
 
 	@Override
@@ -89,23 +94,38 @@ public class PublicEventController implements PublicEventControllerApi {
 
 	@Override
 	public ResponseEntity<PublicGuestUploadResponseDto> uploadGuestPhoto(String slug, PublicGuestUploadRequestDto request, HttpServletRequest httpServletRequest) {
-		if (request.getFile() == null || request.getFile().isEmpty()) {
-			throw new IllegalArgumentException("Photo file is required");
+		List<MultipartFile> files = request.resolveFiles();
+		if (files.isEmpty()) {
+			throw new IllegalArgumentException("At least one photo file is required");
+		}
+
+		if (files.size() > uploadProperties.maxFilesPerRequest()) {
+			throw new IllegalArgumentException("Too many files in a single upload request");
 		}
 
 		publicUploadRateLimiter.checkLimit(slug, resolveClientIp(httpServletRequest));
 
 		try {
-			Photo photo = uploadGuestPhotoUseCase.execute(new UploadGuestPhotoParam(
+			List<Photo> uploadedPhotos = files.stream()
+				.map(file -> uploadPhoto(slug, request, file))
+				.toList();
+			return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toBatchResponse(uploadedPhotos));
+		} catch (IOException exception) {
+			throw new IllegalStateException("Unable to read uploaded file", exception);
+		}
+	}
+
+	private Photo uploadPhoto(String slug, PublicGuestUploadRequestDto request, MultipartFile file) {
+		try {
+			return uploadGuestPhotoUseCase.execute(new UploadGuestPhotoParam(
 				slug,
 				request.getGuestName(),
 				request.getGuestMessage(),
-				request.getFile().getOriginalFilename(),
-				request.getFile().getContentType(),
-				request.getFile().getSize(),
-				request.getFile().getBytes()
+				file.getOriginalFilename(),
+				file.getContentType(),
+				file.getSize(),
+				file.getBytes()
 			));
-			return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toResponse(photo));
 		} catch (IOException exception) {
 			throw new IllegalStateException("Unable to read uploaded file", exception);
 		}
