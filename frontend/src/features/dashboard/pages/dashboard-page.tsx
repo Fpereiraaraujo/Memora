@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { useAuth } from '@/features/auth/auth-context';
 import { EventCard } from '@/features/events/components/event-card';
 import { EventForm } from '@/features/events/components/event-form';
+import { buildEventCheckoutPath } from '@/features/events/utils/event-routes';
 import { buildMockEvents } from '@/features/events/utils/event-dashboard-mock';
 import { api } from '@/lib/api';
 import type { EventCreateRequest, EventSummary } from '@/types/event';
@@ -30,6 +31,7 @@ function formatFirstName(name?: string | null) {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const { token, user } = useAuth();
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,6 +124,7 @@ export function DashboardPage() {
       setForm(defaultForm);
       setMockMode(false);
       setCurrentPage(1);
+      navigate(buildEventCheckoutPath(created.id));
     } catch (exception) {
       setError(
         exception instanceof Error
@@ -158,7 +161,7 @@ export function DashboardPage() {
               </h1>
 
               <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                Crie eventos, gere QR Codes, acompanhe uploads em tempo real e navegue por galerias, favoritas, downloads e recados dos convidados.
+                Crie eventos, escolha um plano, conclua o checkout e libere QR Code, uploads em tempo real, galerias, favoritas, downloads e recados dos convidados.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -247,7 +250,7 @@ export function DashboardPage() {
               </h2>
 
               <p className="mt-3 text-sm leading-7 text-ink-800/70">
-                Comece com nome, data e local. Depois você terá um painel com QR Code, link público, galeria, favoritas, downloads e recados.
+                Comece com nome, data e local. Depois disso, você escolhe um plano e ativa o evento para liberar QR Code, link público, galeria, favoritas, downloads e recados.
               </p>
             </div>
 

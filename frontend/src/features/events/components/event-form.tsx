@@ -140,8 +140,7 @@ export function EventForm({
                 </p>
 
                 <p className="mt-2 text-sm leading-7 text-white/75">
-                    Depois de criar o evento, você poderá acessar o painel com QR Code,
-                    link público e galeria de fotos.
+                    Depois de criar o evento, voce escolhe um plano e segue para o checkout da InfinityPay. Assim que o pagamento for aprovado, o QR Code, o link publico e a galeria ficam liberados.
                 </p>
             </div>
 

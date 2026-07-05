@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
-import type { EventStatus, EventSummary, EventType } from '@/types/event';
+import { buildEventCheckoutPath, buildEventOverviewPath } from '@/features/events/utils/event-routes';
+import type { EventPlanCode, EventStatus, EventSummary, EventType } from '@/types/event';
 
 interface EventCardProps {
   event: EventSummary;
@@ -15,6 +16,12 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   BAPTISM: 'Batizado',
   CORPORATE: 'Corporativo',
   OTHER: 'Outro evento',
+};
+
+const EVENT_PLAN_LABELS: Record<EventPlanCode, string> = {
+  ESSENTIAL: 'Essencial',
+  EVENT: 'Evento',
+  PREMIUM: 'Premium',
 };
 
 function formatStatusTone(status: EventStatus) {
@@ -59,6 +66,8 @@ function formatDate(date: string | null) {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const isDraft = event.status === 'DRAFT';
+
   return (
     <article className="rounded-[2rem] border border-[#f0d8ca] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,248,243,0.82))] p-5 shadow-[0_18px_46px_rgba(96,60,36,0.06)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -83,22 +92,53 @@ export function EventCard({ event }: EventCardProps) {
           <div className="rounded-[1.4rem] border border-[#f0ddd0] bg-white/84 px-4 py-3 text-sm text-ink-800/72">
             <span className="font-bold text-ink-900">Slug:</span> {event.slug}
           </div>
+
+          {event.planCode ? (
+            <div className="rounded-[1.4rem] border border-[#f7e4bf] bg-[#fff8ea] px-4 py-3 text-sm text-[#8f6228]">
+              <span className="font-bold">Plano:</span> {EVENT_PLAN_LABELS[event.planCode]}
+              {event.photoLimit ? ` • ${event.photoLimit} fotos` : ''}
+            </div>
+          ) : null}
+
+          {isDraft ? (
+            <div className="rounded-[1.4rem] border border-[#f7dec7] bg-[#fff7ef] px-4 py-3 text-sm text-[#8f6228]">
+              Este evento ainda esta em rascunho. Escolha um plano e conclua o pagamento para liberar a pagina publica e o QR Code.
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-3 md:min-w-[180px]">
-          <Link
-            to={`/app/events/${event.id}`}
-            className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
-          >
-            Abrir painel
-          </Link>
+          {isDraft ? (
+            <Link
+              to={buildEventCheckoutPath(event.id)}
+              className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
+            >
+              Escolher plano
+            </Link>
+          ) : (
+            <Link
+              to={buildEventOverviewPath(event.id)}
+              className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
+            >
+              Abrir painel
+            </Link>
+          )}
 
-          <Link
-            to={`/e/${event.slug}`}
-            className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
-          >
-            Ver pagina publica
-          </Link>
+          {isDraft ? (
+            <Link
+              to={buildEventOverviewPath(event.id)}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
+            >
+              Revisar evento
+            </Link>
+          ) : (
+            <Link
+              to={`/e/${event.slug}`}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
+            >
+              Ver pagina publica
+            </Link>
+          )}
         </div>
       </div>
     </article>

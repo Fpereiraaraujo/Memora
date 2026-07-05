@@ -11,6 +11,7 @@ import { EventDetailPage } from '@/features/events/pages/event-detail-page';
 import { EventDownloadsPage } from '@/features/events/pages/event-downloads-page';
 import { EventFavoritesPage } from '@/features/events/pages/event-favorites-page';
 import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
+import { EventCheckoutPage } from '@/features/events/pages/event-checkout-page';
 import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
 import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { HomePage } from '@/features/home/pages/home-page';
@@ -77,6 +78,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/checkout"
+          element={
+            <ProtectedRoute>
+              <EventCheckoutPage />
             </ProtectedRoute>
           }
         />
