@@ -18,7 +18,11 @@ public final class EventApiMapper {
 			event.getSlug(),
 			event.getEventDate(),
 			event.getLocation(),
-			event.getStatus()
+			event.getStatus(),
+			event.getPlanCode(),
+			event.getPhotoLimit(),
+			event.getStorageExpiresAt(),
+			event.getPaidAt()
 		);
 	}
 
@@ -30,7 +34,11 @@ public final class EventApiMapper {
 			event.getSlug(),
 			event.getEventDate(),
 			event.getLocation(),
-			event.getStatus()
+			event.getStatus(),
+			event.getPlanCode(),
+			event.getPhotoLimit(),
+			event.getStorageExpiresAt(),
+			event.getPaidAt()
 		);
 	}
 
@@ -42,7 +50,11 @@ public final class EventApiMapper {
 			event.getSlug(),
 			event.getEventDate(),
 			event.getLocation(),
-			event.getStatus()
+			event.getStatus(),
+			event.getPlanCode(),
+			event.getPhotoLimit(),
+			event.getStorageExpiresAt(),
+			event.getPaidAt()
 		);
 	}
 }

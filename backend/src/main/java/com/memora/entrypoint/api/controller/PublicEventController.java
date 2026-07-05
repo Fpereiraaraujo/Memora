@@ -105,14 +105,10 @@ public class PublicEventController implements PublicEventControllerApi {
 
 		publicUploadRateLimiter.checkLimit(slug, resolveClientIp(httpServletRequest));
 
-		try {
-			List<Photo> uploadedPhotos = files.stream()
-				.map(file -> uploadPhoto(slug, request, file))
-				.toList();
-			return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toBatchResponse(uploadedPhotos));
-		} catch (IOException exception) {
-			throw new IllegalStateException("Unable to read uploaded file", exception);
-		}
+		List<Photo> uploadedPhotos = files.stream()
+			.map(file -> uploadPhoto(slug, request, file))
+			.toList();
+		return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toBatchResponse(uploadedPhotos));
 	}
 
 	private Photo uploadPhoto(String slug, PublicGuestUploadRequestDto request, MultipartFile file) {

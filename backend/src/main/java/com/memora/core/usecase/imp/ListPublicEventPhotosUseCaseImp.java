@@ -31,7 +31,7 @@ public class ListPublicEventPhotosUseCaseImp implements ListPublicEventPhotosUse
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (event.getStatus() != EventStatus.ACTIVE && event.getStatus() != EventStatus.DRAFT) {
+		if (event.getStatus() != EventStatus.ACTIVE) {
 			throw new NoSuchElementException("Event not found");
 		}
 

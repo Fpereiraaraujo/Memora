@@ -46,25 +46,24 @@ export function PublicUploadPage() {
 
   const [guestName, setGuestName] = useState('');
   const [guestMessage, setGuestMessage] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [inputKey, setInputKey] = useState(0);
 
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const previewUrl = useMemo(() => {
-    if (!file) return null;
-    return URL.createObjectURL(file);
-  }, [file]);
+  const previewUrls = useMemo(
+    () => files.map((file) => URL.createObjectURL(file)),
+    [files],
+  );
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previewUrl]);
+  }, [previewUrls]);
 
   useEffect(() => {
     let active = true;
@@ -104,9 +103,18 @@ export function PublicUploadPage() {
     };
   }, [slug]);
 
-  function handleClearFile() {
-    setFile(null);
+  function handleClearFiles() {
+    setFiles([]);
     setInputKey((current) => current + 1);
+  }
+
+  function handleRemoveFile(index: number) {
+    setFiles((current) => current.filter((_, currentIndex) => currentIndex !== index));
+  }
+
+  async function refreshPreviewPhotos(currentSlug: string) {
+    const photoPage = await api.listPublicEventPhotosPage(currentSlug, 0, 3);
+    setPreviewPhotos(photoPage.content);
   }
 
   async function handleSubmit(eventSubmit: FormEvent<HTMLFormElement>) {
@@ -117,30 +125,39 @@ export function PublicUploadPage() {
       return;
     }
 
-    if (!file) {
-      setError('Selecione uma foto antes de enviar.');
+    if (files.length === 0) {
+      setError('Selecione pelo menos uma foto antes de enviar.');
       return;
     }
 
     setBusy(true);
     setError(null);
     setSuccess(false);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
       formData.append('guestName', guestName.trim());
       formData.append('guestMessage', guestMessage.trim());
 
-      await api.uploadGuestPhoto(slug, formData);
+      const response = await api.uploadGuestPhoto(slug, formData);
 
       setGuestName('');
       setGuestMessage('');
-      setFile(null);
+      setFiles([]);
       setInputKey((current) => current + 1);
       setSuccess(true);
+      setSuccessMessage(
+        response.uploadedCount > 1
+          ? `${response.uploadedCount} fotos enviadas com sucesso. Obrigado por compartilhar esse momento!`
+          : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
+      );
+      await refreshPreviewPhotos(slug);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar a foto.');
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar as fotos.');
     } finally {
       setBusy(false);
     }
@@ -169,26 +186,31 @@ export function PublicUploadPage() {
         <GuestUploadCard
           guestName={guestName}
           guestMessage={guestMessage}
-          file={file}
-          previewUrl={previewUrl}
+          files={files}
+          previewUrls={previewUrls}
           busy={busy}
           success={success}
+          successMessage={successMessage}
           error={error}
           inputKey={inputKey}
           onGuestNameChange={(value) => {
             setGuestName(value);
             setSuccess(false);
+            setSuccessMessage(null);
           }}
           onGuestMessageChange={(value) => {
             setGuestMessage(value);
             setSuccess(false);
+            setSuccessMessage(null);
           }}
-          onFileChange={(selectedFile) => {
-            setFile(selectedFile);
+          onFilesChange={(selectedFiles) => {
+            setFiles(selectedFiles);
             setError(null);
             setSuccess(false);
+            setSuccessMessage(null);
           }}
-          onClearFile={handleClearFile}
+          onRemoveFile={handleRemoveFile}
+          onClearFiles={handleClearFiles}
           onSubmit={handleSubmit}
         />
       </div>

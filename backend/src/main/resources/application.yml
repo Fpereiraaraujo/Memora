@@ -38,6 +38,13 @@ management:
 memora:
   app:
     public-base-url: http://localhost:5173
+    api-base-url: http://localhost:8080
+    infinitepay-webhook-token: memora-infinitepay-local-token
+  infinitepay:
+    api-base-url: https://api.checkout.infinitepay.io
+    handle: ""
+    auth-header-name: ""
+    auth-header-value: ""
   upload:
     max-file-size-bytes: 15728640
     requests-per-minute-per-ip: 10

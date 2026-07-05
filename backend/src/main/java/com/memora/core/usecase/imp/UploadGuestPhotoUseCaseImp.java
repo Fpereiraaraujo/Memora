@@ -44,8 +44,19 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (event.getStatus() != EventStatus.ACTIVE && event.getStatus() != EventStatus.DRAFT) {
+		if (event.getStatus() != EventStatus.ACTIVE) {
 			throw new IllegalArgumentException("Event is not accepting uploads");
+		}
+
+		if (event.getStorageExpiresAt() != null && event.getStorageExpiresAt().isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
+			throw new IllegalArgumentException("Event storage period has expired");
+		}
+
+		if (event.getPhotoLimit() != null) {
+			long currentPhotos = photoRepository.countByEventId(event.getId());
+			if (currentPhotos >= event.getPhotoLimit()) {
+				throw new IllegalArgumentException("Event photo limit has been reached");
+			}
 		}
 
 		validateUpload(param);

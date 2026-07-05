@@ -2,8 +2,10 @@ package com.memora.entrypoint.api.controller;
 
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.PageResult;
+import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.User;
 import com.memora.core.domain.param.CreateEventParam;
+import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.domain.param.GetEventParam;
 import com.memora.core.domain.param.ListEventsParam;
@@ -14,6 +16,7 @@ import com.memora.core.domain.param.UpdatePhotoStatusParam;
 import com.memora.core.domain.param.UpdateEventStatusParam;
 import com.memora.core.domain.param.UpdateEventParam;
 import com.memora.core.usecase.CreateEventUseCase;
+import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
@@ -27,6 +30,8 @@ import com.memora.config.AppProperties;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
+import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
@@ -51,6 +56,7 @@ public class EventController implements EventControllerApi {
 
 	private final GetCurrentUserUseCase getCurrentUserUseCase;
 	private final CreateEventUseCase createEventUseCase;
+	private final CreateEventCheckoutUseCase createEventCheckoutUseCase;
 	private final ListEventsUseCase listEventsUseCase;
 	private final GetEventUseCase getEventUseCase;
 	private final UpdateEventUseCase updateEventUseCase;
@@ -65,6 +71,7 @@ public class EventController implements EventControllerApi {
 	public EventController(
 		GetCurrentUserUseCase getCurrentUserUseCase,
 		CreateEventUseCase createEventUseCase,
+		CreateEventCheckoutUseCase createEventCheckoutUseCase,
 		ListEventsUseCase listEventsUseCase,
 		GetEventUseCase getEventUseCase,
 		UpdateEventUseCase updateEventUseCase,
@@ -78,6 +85,7 @@ public class EventController implements EventControllerApi {
 	) {
 		this.getCurrentUserUseCase = getCurrentUserUseCase;
 		this.createEventUseCase = createEventUseCase;
+		this.createEventCheckoutUseCase = createEventCheckoutUseCase;
 		this.listEventsUseCase = listEventsUseCase;
 		this.getEventUseCase = getEventUseCase;
 		this.updateEventUseCase = updateEventUseCase;
@@ -103,6 +111,24 @@ public class EventController implements EventControllerApi {
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(EventApiMapper.toCreateResponse(event));
+	}
+
+	@Override
+	public ResponseEntity<EventCheckoutResponseDto> createCheckout(UUID eventId, EventCheckoutRequestDto request, Authentication authentication) {
+		User user = resolveUser(authentication);
+		PaymentOrder paymentOrder = createEventCheckoutUseCase.execute(new CreateEventCheckoutParam(
+			user.getId(),
+			eventId,
+			request.planCode()
+		));
+
+		return ResponseEntity.ok(new EventCheckoutResponseDto(
+			paymentOrder.getId(),
+			paymentOrder.getPlanCode(),
+			paymentOrder.getStatus(),
+			paymentOrder.getAmountCents(),
+			paymentOrder.getCheckoutUrl()
+		));
 	}
 
 	@Override

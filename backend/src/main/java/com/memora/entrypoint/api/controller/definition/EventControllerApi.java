@@ -2,6 +2,8 @@ package com.memora.entrypoint.api.controller.definition;
 
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
+import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
@@ -43,6 +45,24 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventCreateResponseDto> create(@Valid @RequestBody EventCreateRequestDto request, Authentication authentication);
+
+	@PostMapping("/api/events/{eventId}/checkout")
+	@Operation(
+		summary = "Create event checkout",
+		description = "Creates an InfinitePay checkout link for the selected event plan.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Checkout created"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventCheckoutResponseDto> createCheckout(
+		@PathVariable UUID eventId,
+		@Valid @RequestBody EventCheckoutRequestDto request,
+		Authentication authentication
+	);
 
 	@GetMapping("/api/events")
 	@Operation(

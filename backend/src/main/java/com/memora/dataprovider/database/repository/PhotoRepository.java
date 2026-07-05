@@ -20,4 +20,6 @@ public interface PhotoRepository extends JpaRepository<PhotoJpaEntity, UUID> {
 	Page<PhotoJpaEntity> findAllByEventIdAndStatusOrderByCreatedAtDesc(UUID eventId, PhotoStatus status, Pageable pageable);
 
 	Optional<PhotoJpaEntity> findByIdAndEventId(UUID id, UUID eventId);
+
+	long countByEventId(UUID eventId);
 }

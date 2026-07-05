@@ -32,6 +32,7 @@ public class SecurityConfig {
 				"/swagger-ui/**",
 				"/swagger-ui.html",
 				"/api/public/**",
+				"/api/payments/infinitepay/webhook",
 				"/uploads/**",
 				"/api/auth/register",
 				"/api/auth/login"
