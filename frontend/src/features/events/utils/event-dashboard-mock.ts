@@ -24,6 +24,48 @@ export function buildMockEvent(eventId: string): EventSummary {
   };
 }
 
+export function buildMockEvents(): EventSummary[] {
+  return [
+    buildMockEvent('demo-event'),
+    {
+      id: 'pedido-noivado',
+      type: 'WEDDING',
+      title: 'Noivado Isadora & Fernando',
+      slug: 'noivado-isadora-fernando',
+      eventDate: '2024-02-14',
+      location: 'Jardim das Camélias',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'cha-bar',
+      type: 'OTHER',
+      title: 'Chá Bar Isadora & Fernando',
+      slug: 'cha-bar-isadora-fernando',
+      eventDate: '2024-04-07',
+      location: 'Espaço Villa Aurora',
+      status: 'DRAFT',
+    },
+    {
+      id: 'civil',
+      type: 'WEDDING',
+      title: 'Cerimônia Civil',
+      slug: 'cerimonia-civil-isadora-fernando',
+      eventDate: '2024-05-10',
+      location: 'Cartório Central',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'pos-wedding',
+      type: 'OTHER',
+      title: 'Brunch Pós Wedding',
+      slug: 'brunch-pos-wedding',
+      eventDate: '2024-05-26',
+      location: 'Casa Família Ferreira',
+      status: 'PAUSED',
+    },
+  ];
+}
+
 export function buildMockPhotos(eventId: string): Photo[] {
   const now = Date.now();
 

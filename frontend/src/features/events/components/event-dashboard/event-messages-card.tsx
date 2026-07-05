@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom';
+
 import { formatRelativeTime, getInitials } from '@/features/events/utils/event-dashboard-formatters';
 import type { Photo } from '@/types/photo';
 
 interface EventMessagesCardProps {
   messages: Photo[];
+  messagesPath: string;
 }
 
 function MessageAvatar({ name }: { name: string | null }) {
@@ -13,7 +16,7 @@ function MessageAvatar({ name }: { name: string | null }) {
   );
 }
 
-export function EventMessagesCard({ messages }: EventMessagesCardProps) {
+export function EventMessagesCard({ messages, messagesPath }: EventMessagesCardProps) {
   return (
     <section
       id="recados"
@@ -22,7 +25,9 @@ export function EventMessagesCard({ messages }: EventMessagesCardProps) {
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-black text-[#161314]">Recados dos convidados</h2>
 
-        <span className="text-sm font-bold text-[#ef7885]">Ver todos</span>
+        <Link to={messagesPath} className="text-sm font-bold text-[#ef7885] transition hover:text-[#e86d7b]">
+          Ver todos
+        </Link>
       </div>
 
       <div className="mt-6 divide-y divide-[#f0ded4]">

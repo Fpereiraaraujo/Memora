@@ -15,7 +15,7 @@ import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
-interface UseEventDashboardResult {
+export interface UseEventDashboardResult {
   event: EventSummary | null;
   photos: Photo[];
   qrPreviewUrl: string | null;

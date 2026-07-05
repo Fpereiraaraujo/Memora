@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import { MemoraLogo } from '@/components/brand/memora-logo';
 import {
@@ -8,9 +8,18 @@ import {
   HeartIcon,
   ImagesIcon,
   LinkIcon,
+  MessageIcon,
   QrIcon,
 } from '@/features/events/components/event-dashboard/event-icons';
 import { eventDashboardProfileImage } from '@/features/events/utils/event-dashboard-mock';
+import {
+  buildEventDownloadsPath,
+  buildEventFavoritesPath,
+  buildEventGalleryPath,
+  buildEventMessagesPath,
+  buildEventOverviewPath,
+  buildEventQrPath,
+} from '@/features/events/utils/event-routes';
 import type { EventSummary } from '@/types/event';
 
 interface EventSidebarProps {
@@ -20,10 +29,10 @@ interface EventSidebarProps {
 }
 
 interface SidebarItemProps {
-  href: string;
+  to: string;
   label: string;
-  active?: boolean;
-  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download';
+  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message';
+  end?: boolean;
 }
 
 function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
@@ -34,42 +43,40 @@ function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
   if (icon === 'qr') return <QrIcon className={className} />;
   if (icon === 'gallery') return <ImagesIcon className={className} />;
   if (icon === 'heart') return <HeartIcon className={className} />;
+  if (icon === 'message') return <MessageIcon className={className} />;
   return <DownloadIcon className={className} />;
 }
 
-function SidebarItem({ href, label, icon, active = false }: SidebarItemProps) {
-  const className = [
-    'flex h-[52px] items-center gap-4 rounded-[14px] px-4 text-[15px] font-semibold transition',
-    active
-      ? 'bg-[#fff0f1] text-[#ef7885]'
-      : 'text-[#2c2927]/78 hover:bg-[#fff7f2] hover:text-[#201914]',
-  ].join(' ');
-
-  const content = (
-    <>
+function SidebarItem({ to, label, icon, end = false }: SidebarItemProps) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        [
+          'flex h-[52px] items-center gap-4 rounded-[14px] px-4 text-[15px] font-semibold transition',
+          isActive
+            ? 'bg-[#fff0f1] text-[#ef7885]'
+            : 'text-[#2c2927]/78 hover:bg-[#fff7f2] hover:text-[#201914]',
+        ].join(' ')
+      }
+    >
       <span className="grid size-6 shrink-0 place-items-center">
         <SidebarIcon icon={icon} />
       </span>
       <span>{label}</span>
-    </>
-  );
-
-  if (href.startsWith('/')) {
-    return (
-      <Link to={href} className={className}>
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <a href={href} className={className}>
-      {content}
-    </a>
+    </NavLink>
   );
 }
 
 export function EventSidebar({ event, copied, onCopyPublicLink }: EventSidebarProps) {
+  const overviewPath = buildEventOverviewPath(event.id);
+  const qrPath = buildEventQrPath(event.id);
+  const galleryPath = buildEventGalleryPath(event.id);
+  const favoritesPath = buildEventFavoritesPath(event.id);
+  const downloadsPath = buildEventDownloadsPath(event.id);
+  const messagesPath = buildEventMessagesPath(event.id);
+
   return (
     <aside className="h-fit rounded-[28px] border border-[#f1ddd1] bg-white/92 p-5 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur">
       <div className="px-2 pt-1">
@@ -79,12 +86,13 @@ export function EventSidebar({ event, copied, onCopyPublicLink }: EventSidebarPr
       <div className="mt-7 h-px bg-[#f2e4da]" />
 
       <nav className="mt-4 space-y-1.5">
-        <SidebarItem href="#painel" label="Painel" icon="panel" active />
-        <SidebarItem href="/app" label="Meus eventos" icon="events" />
-        <SidebarItem href="#qr-code" label="QR Code" icon="qr" />
-        <SidebarItem href="#galeria" label="Galeria" icon="gallery" />
-        <SidebarItem href="#favoritas" label="Favoritas" icon="heart" />
-        <SidebarItem href="#downloads" label="Downloads" icon="download" />
+        <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
+        <SidebarItem to="/app" label="Meus eventos" icon="events" end />
+        <SidebarItem to={qrPath} label="QR Code" icon="qr" />
+        <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
+        <SidebarItem to={favoritesPath} label="Favoritas" icon="heart" />
+        <SidebarItem to={downloadsPath} label="Downloads" icon="download" />
+        <SidebarItem to={messagesPath} label="Recados" icon="message" />
       </nav>
 
       <div className="mt-[54px] rounded-[20px] border border-[#f2dfd4] bg-white p-5 shadow-[0_12px_28px_rgba(96,60,36,0.05)]">

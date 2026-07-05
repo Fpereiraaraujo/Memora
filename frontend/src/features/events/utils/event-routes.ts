@@ -1,0 +1,23 @@
+export function buildEventOverviewPath(eventId: string) {
+  return `/app/events/${eventId}`;
+}
+
+export function buildEventQrPath(eventId: string) {
+  return `/app/events/${eventId}/qrcode`;
+}
+
+export function buildEventGalleryPath(eventId: string) {
+  return `/app/events/${eventId}/gallery`;
+}
+
+export function buildEventFavoritesPath(eventId: string) {
+  return `/app/events/${eventId}/favorites`;
+}
+
+export function buildEventDownloadsPath(eventId: string) {
+  return `/app/events/${eventId}/downloads`;
+}
+
+export function buildEventMessagesPath(eventId: string) {
+  return `/app/events/${eventId}/messages`;
+}

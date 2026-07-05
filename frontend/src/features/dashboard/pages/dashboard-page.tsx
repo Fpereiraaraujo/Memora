@@ -4,9 +4,11 @@ import { Link, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Pagination } from '@/components/ui/pagination';
+import { useAuth } from '@/features/auth/auth-context';
 import { EventCard } from '@/features/events/components/event-card';
 import { EventForm } from '@/features/events/components/event-form';
-import { useAuth } from '@/features/auth/auth-context';
+import { buildMockEvents } from '@/features/events/utils/event-dashboard-mock';
 import { api } from '@/lib/api';
 import type { EventCreateRequest, EventSummary } from '@/types/event';
 
@@ -16,6 +18,8 @@ const defaultForm: EventCreateRequest = {
   eventDate: null,
   location: null,
 };
+
+const EVENTS_PER_PAGE = 4;
 
 function formatFirstName(name?: string | null) {
   if (!name) {
@@ -32,6 +36,8 @@ export function DashboardPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<EventCreateRequest>(defaultForm);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [mockMode, setMockMode] = useState(false);
 
   const stats = useMemo(() => {
     const activeEvents = events.filter((event) => event.status === 'ACTIVE').length;
@@ -59,6 +65,13 @@ export function DashboardPage() {
     ];
   }, [events]);
 
+  const totalPages = Math.max(1, Math.ceil(events.length / EVENTS_PER_PAGE));
+
+  const visibleEvents = useMemo(() => {
+    const start = (currentPage - 1) * EVENTS_PER_PAGE;
+    return events.slice(start, start + EVENTS_PER_PAGE);
+  }, [currentPage, events]);
+
   useEffect(() => {
     let active = true;
 
@@ -72,14 +85,12 @@ export function DashboardPage() {
 
         if (active) {
           setEvents(data);
+          setMockMode(false);
         }
-      } catch (exception) {
+      } catch {
         if (active) {
-          setError(
-              exception instanceof Error
-                  ? exception.message
-                  : 'Não foi possível carregar eventos',
-          );
+          setEvents(buildMockEvents());
+          setMockMode(true);
         }
       } finally {
         if (active) {
@@ -107,205 +118,206 @@ export function DashboardPage() {
 
     try {
       const created = await api.createEvent(token, form);
-
       setEvents((current) => [created, ...current]);
       setForm(defaultForm);
+      setMockMode(false);
+      setCurrentPage(1);
     } catch (exception) {
       setError(
-          exception instanceof Error
-              ? exception.message
-              : 'Não foi possível criar o evento',
+        exception instanceof Error
+          ? exception.message
+          : 'Não foi possível criar o evento',
       );
     } finally {
       setBusy(false);
     }
   }
 
-  const primaryEvent = useMemo(
-      () => events.find((item) => item.status === 'ACTIVE') ?? events[0] ?? null,
-      [events],
-  );
-
   if (!token) {
-    return <Navigate to="/app/events/demo-event" replace />;
-  }
-
-  if (!loading && primaryEvent) {
-    return <Navigate to={`/app/events/${primaryEvent.id}`} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (
-      <AppShell>
-        <div className="space-y-8">
-          <section className="relative overflow-hidden rounded-[2.8rem] border border-[#f0d8ca] bg-white/62 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
-            <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-[#d8a84f]/20 blur-3xl" />
+    <AppShell>
+      <div className="space-y-8">
+        <section className="relative overflow-hidden rounded-[2.8rem] border border-[#f0d8ca] bg-white/62 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-[#d8a84f]/20 blur-3xl" />
 
-            <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
-              <div>
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
+          <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
+            <div>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
                 <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
                   ♥
                 </span>
-                  Painel do anfitrião
-                </div>
-
-                <h1 className="max-w-3xl font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-ink-900 md:text-6xl">
-                  {formatFirstName(user?.name)}, vamos organizar as memórias do seu evento?
-                </h1>
-
-                <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                  Crie eventos, gere QR Codes, compartilhe com os convidados e acompanhe as
-                  fotos recebidas em uma galeria privada.
-                </p>
-
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <a
-                      href="#novo-evento"
-                      className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#ef7885] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.28)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-                  >
-                    Criar evento
-                    <span aria-hidden="true">→</span>
-                  </a>
-
-                  <Link
-                      to="/"
-                      className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
-                  >
-                    Ver site público
-                  </Link>
-                </div>
+                Meus eventos
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                {[
-                  'Crie uma página pública personalizada para cada evento.',
-                  'Compartilhe um QR Code simples com convidados.',
-                  'Receba fotos em uma galeria privada para baixar depois.',
-                ].map((item, index) => (
-                    <div
-                        key={item}
-                        className="rounded-[2rem] border border-[#f0d8ca] bg-white/72 p-5 shadow-[0_16px_46px_rgba(96,60,36,0.06)]"
-                    >
-                      <div className="mb-4 grid size-10 place-items-center rounded-2xl bg-[#fff1f2] text-sm font-bold text-[#ef7885]">
-                        0{index + 1}
-                      </div>
+              <h1 className="max-w-3xl font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-ink-900 md:text-6xl">
+                {formatFirstName(user?.name)}, vamos organizar as memórias do seu evento?
+              </h1>
 
-                      <p className="text-sm leading-7 text-ink-800/72">
-                        {item}
-                      </p>
-                    </div>
-                ))}
-              </div>
-            </div>
-          </section>
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
+                Crie eventos, gere QR Codes, acompanhe uploads em tempo real e navegue por galerias, favoritas, downloads e recados dos convidados.
+              </p>
 
-          <section className="grid gap-4 md:grid-cols-3">
-            {stats.map((stat) => (
-                <Card
-                    key={stat.label}
-                    className="relative overflow-hidden border-[#f0d8ca] bg-white/72"
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href="#novo-evento"
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#ef7885] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.28)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
                 >
-                  <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-[#f4a1aa]/16 blur-2xl" />
+                  Criar evento
+                  <span aria-hidden="true">→</span>
+                </a>
 
-                  <div className="relative flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                        {stat.label}
-                      </p>
+                <Link
+                  to="/"
+                  className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  Ver site público
+                </Link>
+              </div>
 
-                      <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-ink-900">
-                        {stat.value}
-                      </p>
+              {mockMode ? (
+                <p className="mt-4 text-sm font-semibold text-[#c5922e]">
+                  Exibindo dados demonstrativos até as rotas do backend estarem prontas.
+                </p>
+              ) : null}
+            </div>
 
-                      <p className="mt-2 text-sm text-ink-800/62">
-                        {stat.description}
-                      </p>
-                    </div>
-
-                    <div className="grid size-12 place-items-center rounded-2xl bg-[#fff1f2] text-xl text-[#ef7885]">
-                      {stat.icon}
-                    </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {[
+                'Cada evento recebe um painel próprio com visão geral e página pública.',
+                'O QR Code pode ser baixado e compartilhado com convidados em segundos.',
+                'Galeria, curtidas, downloads e recados ficam separados por área.',
+              ].map((item, index) => (
+                <div
+                  key={item}
+                  className="rounded-[2rem] border border-[#f0d8ca] bg-white/72 p-5 shadow-[0_16px_46px_rgba(96,60,36,0.06)]"
+                >
+                  <div className="mb-4 grid size-10 place-items-center rounded-2xl bg-[#fff1f2] text-sm font-bold text-[#ef7885]">
+                    0{index + 1}
                   </div>
-                </Card>
-            ))}
-          </section>
 
-          <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+                  <p className="text-sm leading-7 text-ink-800/72">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
             <Card
-                id="novo-evento"
-                className="space-y-5 border-[#f0d8ca] bg-white/72"
+              key={stat.label}
+              className="relative overflow-hidden border-[#f0d8ca] bg-white/72"
             >
+              <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-[#f4a1aa]/16 blur-2xl" />
+
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#b9852f]">
+                    {stat.label}
+                  </p>
+
+                  <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-ink-900">
+                    {stat.value}
+                  </p>
+
+                  <p className="mt-2 text-sm text-ink-800/62">{stat.description}</p>
+                </div>
+
+                <div className="grid size-12 place-items-center rounded-2xl bg-[#fff1f2] text-xl text-[#ef7885]">
+                  {stat.icon}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <Card id="novo-evento" className="space-y-5 border-[#f0d8ca] bg-white/72">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">
+                Novo evento
+              </p>
+
+              <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
+                Crie um novo espaço para memórias
+              </h2>
+
+              <p className="mt-3 text-sm leading-7 text-ink-800/70">
+                Comece com nome, data e local. Depois você terá um painel com QR Code, link público, galeria, favoritas, downloads e recados.
+              </p>
+            </div>
+
+            <EventForm
+              value={form}
+              onChange={setForm}
+              onSubmit={handleCreate}
+              busy={busy}
+            />
+
+            {error ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
+                {error}
+              </div>
+            ) : null}
+          </Card>
+
+          <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">
-                  Novo evento
+                  Eventos criados
                 </p>
 
                 <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                  Crie seu primeiro evento
+                  Seus eventos
                 </h2>
 
-                <p className="mt-3 text-sm leading-7 text-ink-800/70">
-                  Comece com nome, data e local. Depois você terá um painel com QR Code,
-                  link público e galeria privada.
+                <p className="mt-3 max-w-xl text-sm leading-7 text-ink-800/70">
+                  Abra um evento para visualizar o painel, QR Code, galeria completa, favoritas, downloads e todos os recados enviados.
                 </p>
               </div>
 
-              <EventForm
-                  value={form}
-                  onChange={setForm}
-                  onSubmit={handleCreate}
-                  busy={busy}
-              />
+              <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
+                Página {currentPage} de {totalPages}
+              </span>
+            </div>
 
-              {error ? (
-                  <div className="rounded-2xl border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
-                    {error}
-                  </div>
-              ) : null}
-            </Card>
-
-            <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">
-                    Eventos criados
-                  </p>
-
-                  <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                    Seus eventos
-                  </h2>
-
-                  <p className="mt-3 max-w-xl text-sm leading-7 text-ink-800/70">
-                    Abra um evento para visualizar QR Code, página pública e fotos recebidas.
-                  </p>
-                </div>
-              </div>
-
-              {loading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 2 }).map((_, index) => (
-                        <div
-                            key={index}
-                            className="h-44 animate-pulse rounded-[2rem] bg-white/55"
-                        />
-                    ))}
-                  </div>
-              ) : events.length === 0 ? (
-                  <EmptyState
-                      title="Nenhum evento ainda"
-                      description="Assim que você criar o primeiro evento, ele aparece aqui com QR Code, página pública e painel privado."
+            {loading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-44 animate-pulse rounded-[2rem] bg-white/55"
                   />
-              ) : (
-                  <div className="grid gap-4">
-                    {events.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                    ))}
-                  </div>
-              )}
-            </Card>
-          </section>
-        </div>
-      </AppShell>
+                ))}
+              </div>
+            ) : events.length === 0 ? (
+              <EmptyState
+                title="Nenhum evento ainda"
+                description="Assim que você criar o primeiro evento, ele aparece aqui com QR Code, página pública e painel privado."
+              />
+            ) : (
+              <>
+                <div className="grid gap-4">
+                  {visibleEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </>
+            )}
+          </Card>
+        </section>
+      </div>
+    </AppShell>
   );
 }

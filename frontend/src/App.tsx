@@ -8,7 +8,11 @@ import { LoginPage } from '@/features/auth/pages/login-page';
 import { RegisterPage } from '@/features/auth/pages/register-page';
 import { DashboardPage } from '@/features/dashboard/pages/dashboard-page';
 import { EventDetailPage } from '@/features/events/pages/event-detail-page';
+import { EventDownloadsPage } from '@/features/events/pages/event-downloads-page';
+import { EventFavoritesPage } from '@/features/events/pages/event-favorites-page';
 import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
+import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
+import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
 import { PublicUploadPage } from '@/features/public/pages/public-upload-page';
@@ -91,6 +95,42 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EventGalleryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/qrcode"
+          element={
+            <ProtectedRoute>
+              <EventQrCodePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/favorites"
+          element={
+            <ProtectedRoute>
+              <EventFavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/downloads"
+          element={
+            <ProtectedRoute>
+              <EventDownloadsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/messages"
+          element={
+            <ProtectedRoute>
+              <EventMessagesPage />
             </ProtectedRoute>
           }
         />

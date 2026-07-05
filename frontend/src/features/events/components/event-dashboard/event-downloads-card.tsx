@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 
+import { buildEventFavoritesPath } from '@/features/events/utils/event-routes';
+
 interface EventDownloadsCardProps {
+  eventId: string;
   photosCount: number;
   favoritesCount: number;
   galleryPath: string;
 }
 
-export function EventDownloadsCard({ photosCount, favoritesCount, galleryPath }: EventDownloadsCardProps) {
+export function EventDownloadsCard({ eventId, photosCount, favoritesCount, galleryPath }: EventDownloadsCardProps) {
   return (
     <section
       id="downloads"
@@ -34,12 +37,12 @@ export function EventDownloadsCard({ photosCount, favoritesCount, galleryPath }:
           Abrir galeria
         </Link>
 
-        <a
-          href="#favoritas"
+        <Link
+          to={buildEventFavoritesPath(eventId)}
           className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#efb6bb] bg-white px-5 text-sm font-bold text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
         >
           Ver favoritas
-        </a>
+        </Link>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
