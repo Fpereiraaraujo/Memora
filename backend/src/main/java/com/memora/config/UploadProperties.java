@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record UploadProperties(
 	long maxFileSizeBytes,
 	List<String> allowedContentTypes,
-	int requestsPerMinutePerIp
+	int requestsPerMinutePerIp,
+	int maxFilesPerRequest
 ) {
 }

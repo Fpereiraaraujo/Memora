@@ -41,6 +41,7 @@ memora:
   upload:
     max-file-size-bytes: 15728640
     requests-per-minute-per-ip: 10
+    max-files-per-request: 20
     allowed-content-types:
       - image/jpeg
       - image/png
