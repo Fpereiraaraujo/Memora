@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -32,5 +33,11 @@ public class ApiExceptionHandler {
 			? "Validation failed"
 			: exception.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
 		return ResponseEntity.badRequest().body(Map.of("error", message));
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
+		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+			.body(Map.of("error", "Photo file exceeds maximum allowed size"));
 	}
 }

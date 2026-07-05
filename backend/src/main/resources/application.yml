@@ -14,6 +14,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
 
 management:
   endpoints:
@@ -28,6 +32,14 @@ management:
 memora:
   app:
     public-base-url: http://localhost:5173
+  upload:
+    max-file-size-bytes: 15728640
+    allowed-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+      - image/heic
+      - image/heif
   security:
     jwt:
       secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=

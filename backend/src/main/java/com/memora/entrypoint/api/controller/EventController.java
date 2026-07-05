@@ -7,18 +7,21 @@ import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.domain.param.GetEventParam;
 import com.memora.core.domain.param.ListEventsParam;
 import com.memora.core.domain.param.ListEventPhotosParam;
+import com.memora.core.domain.param.UpdateEventStatusParam;
 import com.memora.core.domain.param.UpdateEventParam;
 import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
+import com.memora.core.usecase.UpdateEventStatusUseCase;
 import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.config.AppProperties;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
+import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
@@ -41,6 +44,7 @@ public class EventController implements EventControllerApi {
 	private final ListEventsUseCase listEventsUseCase;
 	private final GetEventUseCase getEventUseCase;
 	private final UpdateEventUseCase updateEventUseCase;
+	private final UpdateEventStatusUseCase updateEventStatusUseCase;
 	private final ListEventPhotosUseCase listEventPhotosUseCase;
 	private final QrCodeGenerator qrCodeGenerator;
 	private final AppProperties appProperties;
@@ -51,6 +55,7 @@ public class EventController implements EventControllerApi {
 		ListEventsUseCase listEventsUseCase,
 		GetEventUseCase getEventUseCase,
 		UpdateEventUseCase updateEventUseCase,
+		UpdateEventStatusUseCase updateEventStatusUseCase,
 		ListEventPhotosUseCase listEventPhotosUseCase,
 		QrCodeGenerator qrCodeGenerator,
 		AppProperties appProperties
@@ -60,6 +65,7 @@ public class EventController implements EventControllerApi {
 		this.listEventsUseCase = listEventsUseCase;
 		this.getEventUseCase = getEventUseCase;
 		this.updateEventUseCase = updateEventUseCase;
+		this.updateEventStatusUseCase = updateEventStatusUseCase;
 		this.listEventPhotosUseCase = listEventPhotosUseCase;
 		this.qrCodeGenerator = qrCodeGenerator;
 		this.appProperties = appProperties;
@@ -105,7 +111,7 @@ public class EventController implements EventControllerApi {
 		String publicBaseUrl = appProperties.publicBaseUrl().endsWith("/")
 			? appProperties.publicBaseUrl().substring(0, appProperties.publicBaseUrl().length() - 1)
 			: appProperties.publicBaseUrl();
-		String publicUrl = publicBaseUrl + "/e/" + event.getSlug();
+		String publicUrl = publicBaseUrl + "/e/" + event.getSlug() + "/upload";
 		byte[] qrCode = qrCodeGenerator.generatePng(publicUrl, 320);
 
 		return ResponseEntity.ok()
@@ -128,6 +134,17 @@ public class EventController implements EventControllerApi {
 			request.title(),
 			request.eventDate(),
 			request.location()
+		));
+		return ResponseEntity.ok(EventApiMapper.toResponse(event));
+	}
+
+	@Override
+	public ResponseEntity<EventResponseDto> updateStatus(UUID eventId, EventStatusUpdateRequestDto request, Authentication authentication) {
+		User user = resolveUser(authentication);
+		Event event = updateEventStatusUseCase.execute(new UpdateEventStatusParam(
+			user.getId(),
+			eventId,
+			request.status()
 		));
 		return ResponseEntity.ok(EventApiMapper.toResponse(event));
 	}

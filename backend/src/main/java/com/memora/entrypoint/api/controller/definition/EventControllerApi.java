@@ -3,6 +3,7 @@ package com.memora.entrypoint.api.controller.definition;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
+import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,4 +104,18 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventResponseDto> update(@PathVariable UUID eventId, @Valid @RequestBody EventUpdateRequestDto request, Authentication authentication);
+
+	@PatchMapping("/api/events/{eventId}/status")
+	@Operation(
+		summary = "Update event status",
+		description = "Activates or pauses an event for the authenticated host.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Event status updated"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventResponseDto> updateStatus(@PathVariable UUID eventId, @Valid @RequestBody EventStatusUpdateRequestDto request, Authentication authentication);
 }
