@@ -15,6 +15,7 @@ public class Photo {
 	String contentType;
 	Long sizeBytes;
 	PhotoStatus status;
+	boolean favorite;
 	String guestName;
 	String guestMessage;
 	LocalDateTime createdAt;

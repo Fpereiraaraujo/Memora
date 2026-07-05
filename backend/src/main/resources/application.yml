@@ -5,6 +5,12 @@ spring:
     url: jdbc:postgresql://localhost:5433/memora
     username: memora
     password: memora
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
   jpa:
     open-in-view: false
     hibernate:
@@ -14,6 +20,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
 
 management:
   endpoints:
@@ -28,6 +38,23 @@ management:
 memora:
   app:
     public-base-url: http://localhost:5173
+    api-base-url: http://localhost:8080
+    infinitepay-webhook-token: memora-infinitepay-local-token
+  infinitepay:
+    api-base-url: https://api.checkout.infinitepay.io
+    handle: ""
+    auth-header-name: ""
+    auth-header-value: ""
+  upload:
+    max-file-size-bytes: 15728640
+    requests-per-minute-per-ip: 10
+    max-files-per-request: 20
+    allowed-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+      - image/heic
+      - image/heif
   security:
     jwt:
       secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=

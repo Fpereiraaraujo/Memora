@@ -1,137 +1,86 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { AppShell } from '@/components/layout/app-shell';
-import { Card } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
-import { SectionHeading } from '@/components/ui/section-heading';
-import { Badge } from '@/components/ui/badge';
-import { EventQrPanel } from '@/features/events/components/event-qr-panel';
-import { PhotoGrid } from '@/features/events/components/photo-grid';
-import { api } from '@/lib/api';
-import { useAuth } from '@/features/auth/auth-context';
-import type { EventSummary } from '@/types/event';
-import type { Photo } from '@/types/photo';
+import { useParams } from 'react-router-dom';
+
+import { EventDownloadsCard } from '@/features/events/components/event-dashboard/event-downloads-card';
+import { EventFavoritesSection } from '@/features/events/components/event-dashboard/event-favorites-section';
+import { EventGalleryPreview } from '@/features/events/components/event-dashboard/event-gallery-preview';
+import { EventHeader } from '@/features/events/components/event-dashboard/event-header';
+import { EventMessagesCard } from '@/features/events/components/event-dashboard/event-messages-card';
+import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
+import { EventPublicPageCard } from '@/features/events/components/event-dashboard/event-public-page-card';
+import { EventQrCard } from '@/features/events/components/event-dashboard/event-qr-card';
+import { EventStatsSection } from '@/features/events/components/event-dashboard/event-stats-section';
+import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
+import {
+  buildEventGalleryPath,
+  buildEventMessagesPath,
+} from '@/features/events/utils/event-routes';
 
 export function EventDetailPage() {
   const { eventId } = useParams();
-  const { token } = useAuth();
-  const [event, setEvent] = useState<EventSummary | null>(null);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dashboard = useEventDashboard(eventId);
 
-  useEffect(() => {
-    let active = true;
-
-    async function load() {
-      if (!token || !eventId) {
-        return;
-      }
-
-      try {
-        const [eventData, photoData] = await Promise.all([api.getEvent(token, eventId), api.listEventPhotos(token, eventId)]);
-        if (active) {
-          setEvent(eventData);
-          setPhotos(photoData);
-        }
-      } catch (exception) {
-        if (active) {
-          setError(exception instanceof Error ? exception.message : 'Não foi possível carregar o evento');
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      active = false;
-    };
-  }, [eventId, token]);
-
-  const publicUrl = useMemo(() => (event ? `/e/${event.slug}` : ''), [event]);
-
-  if (!eventId) {
-    return (
-      <AppShell>
-        <EmptyState title="Evento não encontrado" description="O identificador do evento não foi informado." />
-      </AppShell>
-    );
-  }
+  const galleryPath = dashboard.event ? buildEventGalleryPath(dashboard.event.id) : '';
+  const messagesPath = dashboard.event ? buildEventMessagesPath(dashboard.event.id) : '';
 
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeading
-          eyebrow="Detalhe do evento"
-          title={event?.title ?? 'Carregando evento'}
-          description="Aqui você enxerga a página pública, o QR code e a galeria privada dos convidados."
-          action={
-            <Link
-              to="/app"
-              className="inline-flex items-center justify-center rounded-2xl bg-white/8 px-4 py-2.5 text-sm font-semibold text-sand-50 transition hover:bg-white/12"
-            >
-              Voltar ao dashboard
-            </Link>
-          }
-        />
+    <EventPageLayout
+      eventId={eventId}
+      dashboard={dashboard}
+      emptyTitle="Evento não encontrado"
+      emptyDescription="Não foi possível encontrar o evento solicitado."
+    >
+      {dashboard.event ? (
+        <>
+          <EventHeader
+            event={dashboard.event}
+            photos={dashboard.photos}
+            mockMode={dashboard.mockMode}
+            onShareEvent={dashboard.shareEvent}
+          />
 
-        {error ? (
-          <Card className="border-rose-300/20 bg-rose-400/10 text-rose-100">{error}</Card>
-        ) : loading || !event ? (
-          <Card className="h-32 animate-pulse bg-white/8" />
-        ) : (
-          <>
-            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-              <Card className="space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.24em] text-sand-100/45">{event.type}</p>
-                    <h3 className="font-display text-2xl text-sand-50">{event.title}</h3>
-                  </div>
-                  <Badge tone={event.status === 'ACTIVE' ? 'success' : 'warning'}>{event.status}</Badge>
-                </div>
+          <EventStatsSection
+            photosCount={dashboard.photos.length}
+            guestCount={dashboard.guestCount}
+            favoritesCount={dashboard.favoritePhotos.length}
+          />
 
-                <div className="space-y-2 text-sm text-sand-100/72">
-                  <p>
-                    <span className="text-sand-100/45">Slug:</span> {event.slug}
-                  </p>
-                  <p>
-                    <span className="text-sand-100/45">Data:</span> {event.eventDate ?? 'Sem data'}
-                  </p>
-                  <p>
-                    <span className="text-sand-100/45">Local:</span> {event.location ?? 'Sem local'}
-                  </p>
-                </div>
+          <section className="grid gap-6 xl:grid-cols-[0.9fr_1.15fr_0.95fr]">
+            <EventQrCard
+              qrPreviewUrl={dashboard.qrPreviewUrl}
+              copied={dashboard.uploadLinkCopied}
+              onCopyUploadLink={dashboard.copyUploadLink}
+            />
 
-                <div className="rounded-2xl border border-white/10 bg-black/15 p-4 text-sm text-sand-100/72">
-                  <p className="text-xs uppercase tracking-[0.24em] text-sand-100/45">Página pública</p>
-                  <p className="mt-2 break-all font-mono text-xs text-sand-50">{publicUrl}</p>
-                </div>
-              </Card>
+            <EventGalleryPreview
+              photos={dashboard.galleryPreview}
+              favorites={dashboard.favorites}
+              galleryPath={galleryPath}
+              onToggleFavorite={dashboard.toggleFavorite}
+            />
 
-              <EventQrPanel eventId={event.id} publicUrl={publicUrl} />
-            </div>
+            <EventMessagesCard
+              messages={dashboard.messagePhotos}
+              messagesPath={messagesPath}
+            />
+          </section>
 
-            <Card className="space-y-5">
-              <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-sand-100/55">Galeria privada</p>
-                <h3 className="font-display text-2xl text-sand-50">Fotos dos convidados</h3>
-              </div>
+          <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+            <EventPublicPageCard event={dashboard.event} />
 
-              <PhotoGrid
-                photos={photos}
-                loading={loading}
-                emptyTitle="Nenhuma foto por enquanto"
-                emptyDescription="Quando os convidados enviarem imagens pela página pública, elas vão aparecer aqui para o host."
-              />
-            </Card>
-          </>
-        )}
-      </div>
-    </AppShell>
+            <EventDownloadsCard
+              eventId={dashboard.event.id}
+              photosCount={dashboard.photos.length}
+              favoritesCount={dashboard.favoritePhotos.length}
+              galleryPath={galleryPath}
+            />
+          </section>
+
+          <EventFavoritesSection
+            photos={dashboard.favoritePhotos}
+            onToggleFavorite={dashboard.toggleFavorite}
+          />
+        </>
+      ) : null}
+    </EventPageLayout>
   );
 }

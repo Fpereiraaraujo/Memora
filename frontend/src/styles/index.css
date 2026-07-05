@@ -1,13 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: "Manrope", sans-serif;
-  background: #0b1020;
+  background: #ffffff;
+  color: #4a2f22;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -16,16 +21,48 @@
 
 html {
   scroll-behavior: smooth;
+  background: #ffffff;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
-    radial-gradient(circle at top, rgba(212, 163, 115, 0.15), transparent 28%),
-    linear-gradient(180deg, #111a33 0%, #0b1020 100%);
-  color: #f6efe6;
+          radial-gradient(circle at 14% 12%, rgba(245, 205, 215, 0.16), transparent 20%),
+          radial-gradient(circle at 88% 10%, rgba(243, 224, 208, 0.18), transparent 20%),
+          radial-gradient(circle at 82% 84%, rgba(251, 228, 234, 0.14), transparent 18%),
+          linear-gradient(180deg, #ffffff 0%, #fffefe 100%);
+  color: #4a2f22;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+          linear-gradient(110deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 26%),
+          radial-gradient(circle at top right, rgba(248, 222, 227, 0.22), transparent 18%),
+          radial-gradient(circle at bottom left, rgba(243, 224, 208, 0.18), transparent 18%);
+  opacity: 0.7;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: none;
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
 }
 
 a {
@@ -40,6 +77,74 @@ select {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
 ::selection {
-  background: rgba(212, 163, 115, 0.35);
+  background: rgba(239, 120, 133, 0.24);
+  color: #4a2f22;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #e7c8b8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d8a999;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass-panel {
+    border: 1px solid rgba(240, 216, 202, 0.82);
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 24px 80px rgba(96, 60, 36, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .premium-border {
+    border-color: rgba(240, 216, 202, 0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
 }

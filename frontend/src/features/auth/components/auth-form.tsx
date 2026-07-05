@@ -26,16 +26,16 @@ export function AuthForm({
   return (
     <Card className="w-full max-w-md p-8">
       <div className="space-y-3">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-sand-100/55">Memora</p>
-        <h2 className="font-display text-3xl text-sand-50">{title}</h2>
-        <p className="text-sm leading-6 text-sand-100/70">{description}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#b88763]">Memora</p>
+        <h2 className="font-display text-4xl text-ink-900">{title}</h2>
+        <p className="text-sm leading-6 text-ink-800/72">{description}</p>
       </div>
 
       <form className="mt-8 space-y-4" onSubmit={onSubmit}>
         {children}
 
         {alert ? (
-          <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+          <div className="rounded-[24px] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm text-rose-500">
             {alert}
           </div>
         ) : null}
@@ -45,7 +45,7 @@ export function AuthForm({
         </Button>
       </form>
 
-      <div className="mt-6 text-sm text-sand-100/70">{footer}</div>
+      <div className="mt-6 text-sm text-ink-800/72">{footer}</div>
     </Card>
   );
 }

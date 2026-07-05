@@ -46,6 +46,9 @@ public class PhotoJpaEntity {
 	@Column(nullable = false)
 	private PhotoStatus status;
 
+	@Column(name = "is_favorite", nullable = false)
+	private boolean favorite;
+
 	@Column(name = "guest_name")
 	private String guestName;
 

@@ -1,16 +1,23 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/features/auth/auth-context';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
+
 import { ProtectedRoute } from '@/components/layout/protected-route';
+import { PublicShell } from '@/components/layout/public-shell';
+import { Card } from '@/components/ui/card';
+import { AuthProvider, useAuth } from '@/features/auth/auth-context';
 import { LoginPage } from '@/features/auth/pages/login-page';
 import { RegisterPage } from '@/features/auth/pages/register-page';
 import { DashboardPage } from '@/features/dashboard/pages/dashboard-page';
 import { EventDetailPage } from '@/features/events/pages/event-detail-page';
+import { EventDownloadsPage } from '@/features/events/pages/event-downloads-page';
+import { EventFavoritesPage } from '@/features/events/pages/event-favorites-page';
+import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
+import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
+import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
+import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
-import { PublicShell } from '@/components/layout/public-shell';
-import { Card } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
+import { PublicUploadPage } from '@/features/public/pages/public-upload-page';
 
-function RootRoute() {
+function RootRedirect() {
   const { token, ready } = useAuth();
 
   if (!ready) {
@@ -24,24 +31,30 @@ function NotFoundPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
-        <Card className="space-y-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-sand-100/55">404</p>
-          <h1 className="font-display text-4xl text-sand-50">Página não encontrada</h1>
-          <p className="text-sm leading-6 text-sand-100/70">
-            O caminho acessado não existe. Volte para o início e siga o fluxo do evento.
+        <Card className="space-y-5 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.34em] text-[#b9852f]">404</p>
+
+          <h1 className="font-display text-5xl font-semibold tracking-[-0.04em] text-ink-900">
+            Página não encontrada
+          </h1>
+
+          <p className="mx-auto max-w-xl text-sm leading-7 text-ink-800/72">
+            O caminho acessado não existe. Volte para a página inicial ou entre na sua conta para gerenciar seus eventos.
           </p>
-          <div className="flex justify-center gap-3">
+
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              className="inline-flex items-center justify-center rounded-2xl bg-sand-100 px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-sand-200"
+              className="inline-flex items-center justify-center rounded-2xl bg-[#ef7885] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.25)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+              to="/"
+            >
+              Voltar para início
+            </Link>
+
+            <Link
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
               to="/login"
             >
               Entrar
-            </Link>
-            <Link
-              className="inline-flex items-center justify-center rounded-2xl bg-white/8 px-4 py-2.5 text-sm font-semibold text-sand-50 transition hover:bg-white/12"
-              to="/register"
-            >
-              Criar conta
             </Link>
           </div>
         </Card>
@@ -54,9 +67,11 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<RootRoute />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/start" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
         <Route
           path="/app"
           element={
@@ -65,6 +80,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/app/events/:eventId"
           element={
@@ -73,7 +89,54 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/app/events/:eventId/gallery"
+          element={
+            <ProtectedRoute>
+              <EventGalleryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/qrcode"
+          element={
+            <ProtectedRoute>
+              <EventQrCodePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/favorites"
+          element={
+            <ProtectedRoute>
+              <EventFavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/downloads"
+          element={
+            <ProtectedRoute>
+              <EventDownloadsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/events/:eventId/messages"
+          element={
+            <ProtectedRoute>
+              <EventMessagesPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/e/:slug" element={<PublicEventPage />} />
+        <Route path="/e/:slug/upload" element={<PublicUploadPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>

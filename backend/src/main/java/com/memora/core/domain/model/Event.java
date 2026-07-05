@@ -17,8 +17,10 @@ public class Event {
 	LocalDate eventDate;
 	String location;
 	EventStatus status;
+	EventPlanCode planCode;
+	Integer photoLimit;
 	LocalDateTime storageExpiresAt;
+	LocalDateTime paidAt;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 }
-

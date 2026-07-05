@@ -1,33 +1,35 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+
+import { MemoraLogo } from '@/components/brand/memora-logo';
+import { FloralStage } from '@/components/theme/floral-stage';
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-hero-radial text-sand-50">
-      <div className="mx-auto grid min-h-screen max-w-7xl gap-8 px-4 py-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
-        <section className="flex flex-col justify-between rounded-[32px] border border-white/10 bg-white/6 p-8 shadow-soft backdrop-blur">
-          <div className="space-y-6">
-            <Link to="/" className="inline-flex font-display text-2xl font-bold tracking-tight">
-              Memora
-            </Link>
-            <div className="max-w-xl space-y-4">
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-sand-100/55">Memórias vivas para eventos</p>
-              <h1 className="font-display text-5xl leading-[0.95] text-sand-50 md:text-7xl">
-                O evento vira uma galeria compartilhada.
-              </h1>
-              <p className="max-w-lg text-sm leading-7 text-sand-100/75 md:text-base">
-                Crie um evento, gere o QR code, compartilhe a página pública e receba fotos dos convidados em tempo real.
-              </p>
+      <FloralStage className="min-h-screen text-ink-900">
+        <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+          <header className="flex items-center justify-between">
+            <MemoraLogo />
+
+            <div className="hidden items-center gap-2 rounded-2xl border border-[#ead1c4] bg-white/70 px-4 py-2.5 text-xs font-bold text-ink-800/68 shadow-[0_12px_32px_rgba(96,60,36,0.07)] sm:flex">
+            <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
+              ♥
+            </span>
+              Galerias para eventos especiais
             </div>
-          </div>
-          <div className="grid gap-3 text-sm text-sand-100/70 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Registro e login enxutos</div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">QR code com download</div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Fotos públicas e privadas</div>
-          </div>
-        </section>
-        <section className="flex items-center justify-center">{children}</section>
-      </div>
-    </div>
+          </header>
+
+          <main className="flex flex-1 items-center justify-center py-10">
+            {children}
+          </main>
+
+          <footer className="flex flex-col gap-2 border-t border-[#f0d8ca]/70 pt-5 text-xs text-ink-800/52 sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} Memora. Memórias reunidas em um só lugar.</p>
+
+            <p>
+              QR Code, upload de fotos e galeria privada para eventos.
+            </p>
+          </footer>
+        </div>
+      </FloralStage>
   );
 }

@@ -1,6 +1,7 @@
 package com.memora.dataprovider.database.entity;
 
 import com.memora.core.domain.model.EventStatus;
+import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.EventType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,8 +52,18 @@ public class EventJpaEntity {
 	@Column(nullable = false)
 	private EventStatus status;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "plan_code")
+	private EventPlanCode planCode;
+
+	@Column(name = "photo_limit")
+	private Integer photoLimit;
+
 	@Column(name = "storage_expires_at")
 	private LocalDateTime storageExpiresAt;
+
+	@Column(name = "paid_at")
+	private LocalDateTime paidAt;
 
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
@@ -60,4 +71,3 @@ public class EventJpaEntity {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 }
-

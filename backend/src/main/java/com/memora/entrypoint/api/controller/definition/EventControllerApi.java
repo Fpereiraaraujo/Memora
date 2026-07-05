@@ -2,9 +2,15 @@ package com.memora.entrypoint.api.controller.definition;
 
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
+import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
+import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
+import com.memora.entrypoint.api.dto.PageResponseDto;
+import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
+import com.memora.entrypoint.api.dto.PhotoStatusUpdateRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "events", description = "Private event operations")
@@ -38,6 +45,24 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventCreateResponseDto> create(@Valid @RequestBody EventCreateRequestDto request, Authentication authentication);
+
+	@PostMapping("/api/events/{eventId}/checkout")
+	@Operation(
+		summary = "Create event checkout",
+		description = "Creates an InfinitePay checkout link for the selected event plan.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Checkout created"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventCheckoutResponseDto> createCheckout(
+		@PathVariable UUID eventId,
+		@Valid @RequestBody EventCheckoutRequestDto request,
+		Authentication authentication
+	);
 
 	@GetMapping("/api/events")
 	@Operation(
@@ -90,6 +115,50 @@ public interface EventControllerApi {
 	)
 	ResponseEntity<List<PhotoResponseDto>> photos(@PathVariable UUID eventId, Authentication authentication);
 
+	@GetMapping("/api/events/{eventId}/photos/page")
+	@Operation(
+		summary = "List event photos paged",
+		description = "Lists uploaded photos for the authenticated host event with pagination.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Photos listed"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<PageResponseDto<PhotoResponseDto>> pagedPhotos(
+		@PathVariable UUID eventId,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "30") int size,
+		Authentication authentication
+	);
+
+	@PatchMapping("/api/events/{eventId}/photos/{photoId}/favorite")
+	@Operation(
+		summary = "Update photo favorite",
+		description = "Marks or unmarks a photo as favorite for the authenticated host.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<PhotoResponseDto> updatePhotoFavorite(
+		@PathVariable UUID eventId,
+		@PathVariable UUID photoId,
+		@Valid @RequestBody PhotoFavoriteUpdateRequestDto request,
+		Authentication authentication
+	);
+
+	@PatchMapping("/api/events/{eventId}/photos/{photoId}/status")
+	@Operation(
+		summary = "Update photo status",
+		description = "Updates a photo moderation status for the authenticated host.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<PhotoResponseDto> updatePhotoStatus(
+		@PathVariable UUID eventId,
+		@PathVariable UUID photoId,
+		@Valid @RequestBody PhotoStatusUpdateRequestDto request,
+		Authentication authentication
+	);
+
 	@PatchMapping("/api/events/{eventId}")
 	@Operation(
 		summary = "Update event",
@@ -103,4 +172,18 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventResponseDto> update(@PathVariable UUID eventId, @Valid @RequestBody EventUpdateRequestDto request, Authentication authentication);
+
+	@PatchMapping("/api/events/{eventId}/status")
+	@Operation(
+		summary = "Update event status",
+		description = "Activates or pauses an event for the authenticated host.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Event status updated"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventResponseDto> updateStatus(@PathVariable UUID eventId, @Valid @RequestBody EventStatusUpdateRequestDto request, Authentication authentication);
 }

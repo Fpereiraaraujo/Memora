@@ -1,12 +1,10 @@
 package com.memora.entrypoint.api.dto;
 
-import com.memora.core.domain.model.PhotoStatus;
-import java.util.UUID;
+import java.util.List;
 
 public record PublicGuestUploadResponseDto(
-	UUID photoId,
-	String objectKey,
-	PhotoStatus status,
+	int uploadedCount,
+	List<PublicGuestUploadItemResponseDto> photos,
 	String message
 ) {
 }

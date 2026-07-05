@@ -1,53 +1,97 @@
+import axios from 'axios';
 import { API_BASE_URL } from '@/lib/env';
+import type { PageResponse } from '@/types/api';
 import type { EventCreateRequest, EventSummary, EventUpdateRequest } from '@/types/event';
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
-import type { Photo } from '@/types/photo';
+import type {
+  GuestUploadResponse,
+  Photo,
+  PhotoFavoriteUpdateRequest,
+  PhotoStatusUpdateRequest,
+} from '@/types/photo';
 
-type RequestOptions = Omit<RequestInit, 'body'> & {
-  body?: BodyInit | Record<string, unknown> | null;
+const http = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    Accept: 'application/json',
+  },
+});
+
+function extractErrorMessage(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return error instanceof Error ? error.message : 'Ocorreu um erro inesperado';
+  }
+
+  const responseData = error.response?.data;
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData;
+  }
+
+  if (responseData && typeof responseData === 'object' && 'error' in responseData) {
+    const message = (responseData as { error?: unknown }).error;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return error.message || 'Ocorreu um erro inesperado';
+}
+
+async function extractBlobError(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    throw error;
+  }
+
+  const responseData = error.response?.data;
+
+  if (responseData instanceof Blob) {
+    const text = await responseData.text().catch(() => '');
+
+    try {
+      const parsed = JSON.parse(text) as { error?: unknown };
+      if (typeof parsed.error === 'string' && parsed.error.trim()) {
+        throw new Error(parsed.error);
+      }
+    } catch {
+      if (text.trim()) {
+        throw new Error(text);
+      }
+    }
+  }
+
+  throw new Error(extractErrorMessage(error));
+}
+
+function authHeaders(token?: string | null) {
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+}
+
+async function request<T>(path: string, options: {
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   token?: string | null;
-};
+  data?: unknown;
+}): Promise<T> {
+  try {
+    const response = await http.request<T>({
+      url: path,
+      method: options.method,
+      data: options.data,
+      headers: authHeaders(options.token),
+    });
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers = new Headers(options.headers);
-
-  if (!(options.body instanceof FormData) && options.body !== null && options.body !== undefined) {
-    headers.set('Content-Type', 'application/json');
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
   }
-
-  if (options.token) {
-    headers.set('Authorization', `Bearer ${options.token}`);
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-    body:
-      options.body === undefined || options.body === null
-        ? undefined
-        : options.body instanceof FormData
-          ? options.body
-          : JSON.stringify(options.body),
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error ?? 'Ocorreu um erro inesperado');
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return (await response.json()) as T;
 }
 
 export const api = {
   register(requestBody: RegisterRequest) {
-    return request<User>('/api/auth/register', { method: 'POST', body: requestBody });
+    return request<User>('/api/auth/register', { method: 'POST', data: requestBody });
   },
   login(requestBody: LoginRequest) {
-    return request<LoginResponse>('/api/auth/login', { method: 'POST', body: requestBody });
+    return request<LoginResponse>('/api/auth/login', { method: 'POST', data: requestBody });
   },
   me(token: string) {
     return request<User>('/api/me', { method: 'GET', token });
@@ -56,28 +100,49 @@ export const api = {
     return request<EventSummary[]>('/api/events', { method: 'GET', token });
   },
   createEvent(token: string, requestBody: EventCreateRequest) {
-    return request<EventSummary>('/api/events', { method: 'POST', token, body: requestBody });
+    return request<EventSummary>('/api/events', { method: 'POST', token, data: requestBody });
   },
   updateEvent(token: string, eventId: string, requestBody: EventUpdateRequest) {
-    return request<EventSummary>(`/api/events/${eventId}`, { method: 'PATCH', token, body: requestBody });
+    return request<EventSummary>(`/api/events/${eventId}`, { method: 'PATCH', token, data: requestBody });
   },
   getEvent(token: string, eventId: string) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'GET', token });
   },
   async fetchEventQrCode(token: string, eventId: string) {
-    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/qrcode`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await http.get<Blob>(`/api/events/${eventId}/qrcode`, {
+        headers: authHeaders(token),
+        responseType: 'blob',
+      });
 
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error ?? 'Não foi possível gerar o QR code');
+      return response.data;
+    } catch (error) {
+      await extractBlobError(error);
+      throw error;
     }
-
-    return response.blob();
   },
   listEventPhotos(token: string, eventId: string) {
     return request<Photo[]>(`/api/events/${eventId}/photos`, { method: 'GET', token });
+  },
+  listEventPhotosPage(token: string, eventId: string, page: number, size: number) {
+    return request<PageResponse<Photo>>(`/api/events/${eventId}/photos/page?page=${page}&size=${size}`, {
+      method: 'GET',
+      token,
+    });
+  },
+  updatePhotoFavorite(token: string, eventId: string, photoId: string, requestBody: PhotoFavoriteUpdateRequest) {
+    return request<Photo>(`/api/events/${eventId}/photos/${photoId}/favorite`, {
+      method: 'PATCH',
+      token,
+      data: requestBody,
+    });
+  },
+  updatePhotoStatus(token: string, eventId: string, photoId: string, requestBody: PhotoStatusUpdateRequest) {
+    return request<Photo>(`/api/events/${eventId}/photos/${photoId}/status`, {
+      method: 'PATCH',
+      token,
+      data: requestBody,
+    });
   },
   getPublicEvent(slug: string) {
     return request<EventSummary>(`/api/public/events/${slug}`, { method: 'GET' });
@@ -85,8 +150,13 @@ export const api = {
   listPublicEventPhotos(slug: string) {
     return request<Photo[]>(`/api/public/events/${slug}/photos`, { method: 'GET' });
   },
+  listPublicEventPhotosPage(slug: string, page: number, size: number) {
+    return request<PageResponse<Photo>>(`/api/public/events/${slug}/photos/page?page=${page}&size=${size}`, {
+      method: 'GET',
+    });
+  },
   uploadGuestPhoto(slug: string, formData: FormData) {
-    return request<Photo>(`/api/public/events/${slug}/uploads`, { method: 'POST', body: formData });
+    return request<GuestUploadResponse>(`/api/public/events/${slug}/uploads`, { method: 'POST', data: formData });
   },
 };
 

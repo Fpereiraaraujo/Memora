@@ -18,7 +18,10 @@ public final class EventDatabaseMapper {
 			.eventDate(event.getEventDate())
 			.location(event.getLocation())
 			.status(event.getStatus())
+			.planCode(event.getPlanCode())
+			.photoLimit(event.getPhotoLimit())
 			.storageExpiresAt(event.getStorageExpiresAt())
+			.paidAt(event.getPaidAt())
 			.createdAt(event.getCreatedAt())
 			.updatedAt(event.getUpdatedAt())
 			.build();
@@ -34,7 +37,10 @@ public final class EventDatabaseMapper {
 			.eventDate(entity.getEventDate())
 			.location(entity.getLocation())
 			.status(entity.getStatus())
+			.planCode(entity.getPlanCode())
+			.photoLimit(entity.getPhotoLimit())
 			.storageExpiresAt(entity.getStorageExpiresAt())
+			.paidAt(entity.getPaidAt())
 			.createdAt(entity.getCreatedAt())
 			.updatedAt(entity.getUpdatedAt())
 			.build();
