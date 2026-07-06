@@ -10,9 +10,10 @@ interface EventHeaderProps {
   photos: Photo[];
   mockMode: boolean;
   onShareEvent: () => void;
+  publicLinksEnabled: boolean;
 }
 
-export function EventHeader({ event, photos, mockMode, onShareEvent }: EventHeaderProps) {
+export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinksEnabled }: EventHeaderProps) {
   const firstPhotoDate = photos[0]?.createdAt
     ? new Date(photos[0].createdAt).toLocaleDateString('pt-BR')
     : formatEventDate(event.eventDate);
@@ -31,7 +32,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent }: EventHead
             </h1>
 
             <span className="inline-flex h-9 items-center rounded-full bg-[#fff3e6] px-5 text-sm font-bold text-[#c5922e]">
-              Evento ativo
+              {event.status === 'ACTIVE' ? 'Evento ativo' : 'Teste liberado'}
             </span>
           </div>
 
@@ -55,21 +56,24 @@ export function EventHeader({ event, photos, mockMode, onShareEvent }: EventHead
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            to={`/e/${event.slug}`}
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] border border-[#d6a45a] bg-white px-6 text-sm font-bold text-[#b57b26] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
-          >
-            Ver página pública
-            <ExternalIcon className="size-4" />
-          </Link>
+          {publicLinksEnabled ? (
+            <Link
+              to={`/e/${event.slug}`}
+              className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] border border-[#d6a45a] bg-white px-6 text-sm font-bold text-[#b57b26] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
+            >
+              Ver página pública
+              <ExternalIcon className="size-4" />
+            </Link>
+          ) : null}
 
           <button
             type="button"
             onClick={onShareEvent}
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.26)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+            disabled={!publicLinksEnabled}
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.26)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] disabled:cursor-not-allowed disabled:bg-[#d8c6bd] disabled:shadow-none disabled:hover:translate-y-0"
           >
             <ShareIcon className="size-4" />
-            Compartilhar evento
+            {publicLinksEnabled ? 'Compartilhar evento' : 'Link indisponível'}
           </button>
         </div>
       </div>

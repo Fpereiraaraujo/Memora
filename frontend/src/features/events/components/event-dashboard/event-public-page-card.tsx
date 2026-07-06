@@ -6,9 +6,10 @@ import type { EventSummary } from '@/types/event';
 
 interface EventPublicPageCardProps {
   event: EventSummary;
+  publicLinksEnabled: boolean;
 }
 
-export function EventPublicPageCard({ event }: EventPublicPageCardProps) {
+export function EventPublicPageCard({ event, publicLinksEnabled }: EventPublicPageCardProps) {
   return (
     <section className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#ffe9e2_0%,#fff8f3_52%,#ffffff_100%)] p-0 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
       <div className="grid gap-6 p-6 md:grid-cols-[250px_1fr] md:items-center">
@@ -26,13 +27,19 @@ export function EventPublicPageCard({ event }: EventPublicPageCardProps) {
             Compartilhe sua página com os convidados e permita que qualquer pessoa com o link veja as fotos e envie mensagens.
           </p>
 
-          <Link
-            to={`/e/${event.slug}`}
-            className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-          >
-            Abrir página pública
-            <ExternalIcon className="size-4" />
-          </Link>
+          {publicLinksEnabled ? (
+            <Link
+              to={`/e/${event.slug}`}
+              className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+            >
+              Abrir página pública
+              <ExternalIcon className="size-4" />
+            </Link>
+          ) : (
+            <p className="mt-5 rounded-[14px] border border-[#f7dec7] bg-[#fff7ef] px-5 py-3 text-sm font-bold text-[#8f6228]">
+              A página pública será aberta assim que o evento tiver um slug.
+            </p>
+          )}
         </div>
       </div>
     </section>

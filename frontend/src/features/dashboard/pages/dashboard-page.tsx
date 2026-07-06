@@ -84,22 +84,18 @@ export function DashboardPage() {
 
       try {
         const data = await api.listEvents(token);
-        const activatedEvents = await Promise.all(
+        const testUnlockedEvents = await Promise.all(
           data.map(async (event) => {
             if (event.status !== 'DRAFT') {
               return event;
             }
 
-            try {
-              return await api.updateEventStatus(token, event.id, 'ACTIVE');
-            } catch {
-              return event;
-            }
+            return api.updateEventStatus(token, event.id, 'ACTIVE').catch(() => event);
           }),
         );
 
         if (active) {
-          setEvents(activatedEvents);
+          setEvents(testUnlockedEvents);
           setMockMode(false);
         }
       } catch {
@@ -133,15 +129,15 @@ export function DashboardPage() {
 
     try {
       const created = await api.createEvent(token, form);
-      const activeEvent =
+      const testUnlockedEvent =
         created.status === 'DRAFT'
           ? await api.updateEventStatus(token, created.id, 'ACTIVE').catch(() => created)
           : created;
-      setEvents((current) => [activeEvent, ...current]);
+      setEvents((current) => [testUnlockedEvent, ...current]);
       setForm(defaultForm);
       setMockMode(false);
       setCurrentPage(1);
-      navigate(buildEventCheckoutPath(activeEvent.id));
+      navigate(buildEventCheckoutPath(testUnlockedEvent.id));
     } catch (exception) {
       setError(
         exception instanceof Error
@@ -200,7 +196,7 @@ export function DashboardPage() {
 
               {mockMode ? (
                 <p className="mt-4 text-sm font-semibold text-[#c5922e]">
-                  Exibindo dados demonstrativos até as rotas do backend estarem prontas.
+              Exibindo dados demonstrativos. Links públicos e upload ficam liberados para teste pelo frontend.
                 </p>
               ) : null}
             </div>
@@ -324,7 +320,7 @@ export function DashboardPage() {
               <>
                 <div className="grid gap-4">
                   {visibleEvents.map((event) => (
-                    <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} publicLinksEnabled />
                   ))}
                 </div>
 

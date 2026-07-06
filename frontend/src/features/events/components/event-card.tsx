@@ -6,6 +6,7 @@ import type { EventPlanCode, EventStatus, EventSummary, EventType } from '@/type
 
 interface EventCardProps {
   event: EventSummary;
+  publicLinksEnabled?: boolean;
 }
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
@@ -65,8 +66,9 @@ function formatDate(date: string | null) {
   });
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) {
   const isDraft = event.status === 'DRAFT';
+  const canOpenPublicPage = Boolean(event.slug && publicLinksEnabled);
 
   return (
     <article className="rounded-[2rem] border border-[#f0d8ca] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,248,243,0.82))] p-5 shadow-[0_18px_46px_rgba(96,60,36,0.06)]">
@@ -102,7 +104,7 @@ export function EventCard({ event }: EventCardProps) {
 
           {isDraft ? (
             <div className="rounded-[1.4rem] border border-[#f7dec7] bg-[#fff7ef] px-4 py-3 text-sm text-[#8f6228]">
-              Este evento ainda esta em rascunho. Escolha um plano e conclua o pagamento para liberar a pagina publica e o QR Code.
+              Evento em rascunho. Para teste, o link publico e o upload ficam liberados pelo frontend.
             </div>
           ) : null}
         </div>
@@ -124,19 +126,19 @@ export function EventCard({ event }: EventCardProps) {
             </Link>
           )}
 
-          {isDraft ? (
-            <Link
-              to={buildEventOverviewPath(event.id)}
-              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
-            >
-              Revisar evento
-            </Link>
-          ) : (
+          {canOpenPublicPage ? (
             <Link
               to={`/e/${event.slug}`}
               className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
             >
               Ver pagina publica
+            </Link>
+          ) : (
+            <Link
+              to={buildEventOverviewPath(event.id)}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-5 py-3 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
+            >
+              {isDraft ? 'Revisar evento' : 'Ver painel'}
             </Link>
           )}
         </div>

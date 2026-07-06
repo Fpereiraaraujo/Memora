@@ -33,6 +33,7 @@ export interface UseEventDashboardResult {
   copyPublicLink: () => Promise<void>;
   copyUploadLink: () => Promise<void>;
   shareEvent: () => Promise<void>;
+  publicLinksEnabled: boolean;
 }
 
 export function useEventDashboard(eventId?: string): UseEventDashboardResult {
@@ -77,7 +78,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
 
         const photoData = photoResult.status === 'fulfilled' ? photoResult.value : [];
 
-        if (qrResult.status === 'fulfilled') {
+        if (qrResult.status === 'fulfilled' && qrResult.value) {
           objectUrl = URL.createObjectURL(qrResult.value);
         }
 
@@ -130,6 +131,8 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
 
     return buildPublicUploadUrl(event.slug);
   }, [event]);
+
+  const publicLinksEnabled = Boolean(event?.slug);
 
   const guestCount = useMemo(() => {
     const uniqueGuests = new Set(
@@ -195,7 +198,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   }
 
   async function copyPublicLink() {
-    if (!publicPageUrl) {
+    if (!publicPageUrl || !publicLinksEnabled) {
       return;
     }
 
@@ -208,7 +211,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   }
 
   async function copyUploadLink() {
-    if (!publicUploadUrl) {
+    if (!publicUploadUrl || !publicLinksEnabled) {
       return;
     }
 
@@ -221,7 +224,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   }
 
   async function shareEvent() {
-    if (!publicPageUrl) {
+    if (!publicPageUrl || !publicLinksEnabled) {
       return;
     }
 
@@ -257,5 +260,6 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     copyPublicLink,
     copyUploadLink,
     shareEvent,
+    publicLinksEnabled,
   };
 }
