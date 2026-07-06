@@ -101,6 +101,15 @@ export default function App() {
         />
 
         <Route
+          path="/app/event/:eventId"
+          element={
+            <ProtectedRoute>
+              <EventDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/app/events/:eventId/gallery"
           element={
             <ProtectedRoute>
@@ -145,8 +154,8 @@ export default function App() {
           }
         />
 
-        <Route path="/e/:slug" element={<PublicEventPage />} />
         <Route path="/e/:slug/upload" element={<PublicUploadPage />} />
+        <Route path="/e/:slug" element={<PublicEventPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>

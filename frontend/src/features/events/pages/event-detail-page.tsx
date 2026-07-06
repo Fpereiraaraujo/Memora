@@ -49,6 +49,7 @@ export function EventDetailPage() {
             <EventQrCard
               qrPreviewUrl={dashboard.qrPreviewUrl}
               copied={dashboard.uploadLinkCopied}
+              eventStatus={dashboard.event.status}
               onCopyUploadLink={dashboard.copyUploadLink}
             />
 

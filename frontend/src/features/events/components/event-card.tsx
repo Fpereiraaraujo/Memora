@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
-import { buildEventCheckoutPath, buildEventOverviewPath } from '@/features/events/utils/event-routes';
+import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
 import type { EventPlanCode, EventStatus, EventSummary, EventType } from '@/types/event';
 
 interface EventCardProps {
@@ -104,27 +104,18 @@ export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) 
 
           {isDraft ? (
             <div className="rounded-[1.4rem] border border-[#f7dec7] bg-[#fff7ef] px-4 py-3 text-sm text-[#8f6228]">
-              Evento em rascunho. Para teste, o link publico e o upload ficam liberados pelo frontend.
+              Evento em rascunho. Abra o hub para revisar links, preview do QR Code, galeria e recados antes de ativar o plano.
             </div>
           ) : null}
         </div>
 
         <div className="flex flex-col gap-3 md:min-w-[180px]">
-          {isDraft ? (
-            <Link
-              to={buildEventCheckoutPath(event.id)}
-              className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
-            >
-              Escolher plano
-            </Link>
-          ) : (
-            <Link
-              to={buildEventOverviewPath(event.id)}
-              className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
-            >
-              Abrir painel
-            </Link>
-          )}
+          <Link
+            to={buildEventOverviewPath(event.id)}
+            className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
+          >
+            Abrir hub
+          </Link>
 
           {canOpenPublicPage ? (
             <Link

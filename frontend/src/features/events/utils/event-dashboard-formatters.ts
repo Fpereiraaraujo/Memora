@@ -1,5 +1,12 @@
 import { mediaUrl } from '@/lib/api';
-import { publicAppUrl } from '@/lib/env';
+
+function currentFrontendBaseUrl() {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.location.origin;
+}
 
 export function formatEventDate(date: string | null) {
   if (!date) {
@@ -73,9 +80,9 @@ export function getInitials(name: string | null) {
 }
 
 export function buildPublicEventUrl(slug: string) {
-  return publicAppUrl(`/e/${slug}`);
+  return `${currentFrontendBaseUrl()}/e/${slug}`;
 }
 
 export function buildPublicUploadUrl(slug: string) {
-  return publicAppUrl(`/e/${slug}/upload`);
+  return `${currentFrontendBaseUrl()}/e/${slug}/upload`;
 }

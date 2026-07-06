@@ -37,6 +37,28 @@ function PublicUploadLoadingState() {
   );
 }
 
+function buildFallbackEvent(slug: string): EventSummary {
+  const title = slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+  return {
+    id: slug,
+    type: 'WEDDING',
+    title: title || 'Evento Memora',
+    slug,
+    eventDate: null,
+    location: null,
+    status: 'ACTIVE',
+    planCode: null,
+    photoLimit: null,
+    storageExpiresAt: null,
+    paidAt: null,
+  };
+}
+
 export function PublicUploadPage() {
   const { slug } = useParams();
 
@@ -86,7 +108,7 @@ export function PublicUploadPage() {
         }
       } catch {
         if (active) {
-          setEvent(null);
+          setEvent(buildFallbackEvent(slug));
           setPreviewPhotos([]);
         }
       } finally {

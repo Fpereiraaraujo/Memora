@@ -54,8 +54,10 @@ export function EventPageLayout({
       sidebar={
         <EventSidebar
           event={dashboard.event}
-          copied={dashboard.copied}
+          publicCopied={dashboard.copied}
+          uploadCopied={dashboard.uploadLinkCopied}
           onCopyPublicLink={dashboard.copyPublicLink}
+          onCopyUploadLink={dashboard.copyUploadLink}
         />
       }
     >

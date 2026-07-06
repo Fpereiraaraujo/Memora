@@ -8,7 +8,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { useAuth } from '@/features/auth/auth-context';
 import { EventCard } from '@/features/events/components/event-card';
 import { EventForm } from '@/features/events/components/event-form';
-import { buildEventCheckoutPath } from '@/features/events/utils/event-routes';
+import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
 import { buildMockEvents } from '@/features/events/utils/event-dashboard-mock';
 import { api } from '@/lib/api';
 import type { EventCreateRequest, EventSummary } from '@/types/event';
@@ -84,18 +84,9 @@ export function DashboardPage() {
 
       try {
         const data = await api.listEvents(token);
-        const testUnlockedEvents = await Promise.all(
-          data.map(async (event) => {
-            if (event.status !== 'DRAFT') {
-              return event;
-            }
-
-            return api.updateEventStatus(token, event.id, 'ACTIVE').catch(() => event);
-          }),
-        );
 
         if (active) {
-          setEvents(testUnlockedEvents);
+          setEvents(data);
           setMockMode(false);
         }
       } catch {
@@ -129,15 +120,11 @@ export function DashboardPage() {
 
     try {
       const created = await api.createEvent(token, form);
-      const testUnlockedEvent =
-        created.status === 'DRAFT'
-          ? await api.updateEventStatus(token, created.id, 'ACTIVE').catch(() => created)
-          : created;
-      setEvents((current) => [testUnlockedEvent, ...current]);
+      setEvents((current) => [created, ...current]);
       setForm(defaultForm);
       setMockMode(false);
       setCurrentPage(1);
-      navigate(buildEventCheckoutPath(testUnlockedEvent.id));
+      navigate(buildEventOverviewPath(created.id));
     } catch (exception) {
       setError(
         exception instanceof Error
@@ -174,7 +161,7 @@ export function DashboardPage() {
               </h1>
 
               <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                Crie eventos, escolha um plano, conclua o checkout e libere QR Code, uploads em tempo real, galerias, favoritas, downloads e recados dos convidados.
+                Crie seu evento e abra o hub principal para acompanhar QR Code, uploads, galeria, favoritas, downloads e recados em um só lugar.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -263,7 +250,7 @@ export function DashboardPage() {
               </h2>
 
               <p className="mt-3 text-sm leading-7 text-ink-800/70">
-                Comece com nome, data e local. Depois disso, você escolhe um plano e ativa o evento para liberar QR Code, link público, galeria, favoritas, downloads e recados.
+                Comece com nome, data e local. Depois disso, você abre o hub do evento para revisar o QR Code, link público, galeria, favoritas, downloads e recados.
               </p>
             </div>
 
