@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/lib/env';
 import type { PageResponse } from '@/types/api';
-import type { EventCreateRequest, EventSummary, EventUpdateRequest } from '@/types/event';
+import type { EventCreateRequest, EventStatus, EventSummary, EventUpdateRequest } from '@/types/event';
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
 import type { EventCheckoutRequest, EventCheckoutResponse } from '@/types/payment';
 import type {
@@ -112,6 +112,13 @@ export const api = {
   },
   updateEvent(token: string, eventId: string, requestBody: EventUpdateRequest) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'PATCH', token, data: requestBody });
+  },
+  updateEventStatus(token: string, eventId: string, status: EventStatus) {
+    return request<EventSummary>(`/api/events/${eventId}/status`, {
+      method: 'PATCH',
+      token,
+      data: { status },
+    });
   },
   getEvent(token: string, eventId: string) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'GET', token });

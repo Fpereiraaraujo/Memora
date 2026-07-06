@@ -65,7 +65,11 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
           throw new Error('Sessao indisponivel');
         }
 
-        const eventData = await api.getEvent(token, eventId);
+        const eventResponse = await api.getEvent(token, eventId);
+        const eventData =
+          eventResponse.status === 'DRAFT'
+            ? await api.updateEventStatus(token, eventId, 'ACTIVE').catch(() => eventResponse)
+            : eventResponse;
         const [photoResult, qrResult] = await Promise.allSettled([
           api.listEventPhotos(token, eventId),
           api.fetchEventQrCode(token, eventId),
