@@ -12,6 +12,7 @@ import {
   formatEventDate,
   getPhotoSrc,
 } from '@/features/events/utils/event-dashboard-formatters';
+import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
@@ -113,10 +114,17 @@ export function PublicEventPage() {
       setLoading(true);
 
       try {
-        const [eventData, photoPage] = await Promise.all([
-          api.getPublicEvent(slug),
-          api.listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE),
-        ]);
+        const eventData = await api.getPublicEvent(slug).catch(() => buildFallbackPublicEvent(slug));
+        const photoPage = await api
+          .listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE)
+          .catch(() => ({
+            content: [],
+            page: currentPage - 1,
+            size: PUBLIC_GALLERY_PAGE_SIZE,
+            totalElements: 0,
+            totalPages: 1,
+            last: true,
+          }));
 
         if (active) {
           setEvent(eventData);
@@ -127,15 +135,11 @@ export function PublicEventPage() {
         }
       } catch (exception) {
         if (active) {
-          setEvent(null);
+          setEvent(buildFallbackPublicEvent(slug));
           setPhotos([]);
           setTotalElements(0);
           setTotalPages(1);
-          setError(
-            exception instanceof Error
-              ? exception.message
-              : 'Nao foi possivel carregar o evento',
-          );
+          setError(null);
         }
       } finally {
         if (active) {

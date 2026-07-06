@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
 import { Card } from '@/components/ui/card';
@@ -173,12 +173,12 @@ export function DashboardPage() {
                   <span aria-hidden="true">→</span>
                 </a>
 
-                <Link
-                  to="/"
+                <a
+                  href="#eventos-criados"
                   className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
                 >
-                  Ver site público
-                </Link>
+                  Ver meus eventos
+                </a>
               </div>
 
               {mockMode ? (
@@ -268,7 +268,7 @@ export function DashboardPage() {
             ) : null}
           </Card>
 
-          <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
+          <Card id="eventos-criados" className="space-y-5 border-[#f0d8ca] bg-white/72">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">

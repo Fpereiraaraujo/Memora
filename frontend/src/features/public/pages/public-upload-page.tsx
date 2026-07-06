@@ -5,6 +5,7 @@ import { MemoraLogo } from '@/components/brand/memora-logo';
 import { EmptyState } from '@/components/ui/empty-state';
 import { EventUploadHeader } from '@/features/public/components/upload/event-upload-header';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
+import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
@@ -35,28 +36,6 @@ function PublicUploadLoadingState() {
       </div>
     </div>
   );
-}
-
-function buildFallbackEvent(slug: string): EventSummary {
-  const title = slug
-    .split('-')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-
-  return {
-    id: slug,
-    type: 'WEDDING',
-    title: title || 'Evento Memora',
-    slug,
-    eventDate: null,
-    location: null,
-    status: 'ACTIVE',
-    planCode: null,
-    photoLimit: null,
-    storageExpiresAt: null,
-    paidAt: null,
-  };
 }
 
 export function PublicUploadPage() {
@@ -108,7 +87,7 @@ export function PublicUploadPage() {
         }
       } catch {
         if (active) {
-          setEvent(buildFallbackEvent(slug));
+          setEvent(buildFallbackPublicEvent(slug));
           setPreviewPhotos([]);
         }
       } finally {
