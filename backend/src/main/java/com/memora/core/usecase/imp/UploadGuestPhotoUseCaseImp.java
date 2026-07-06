@@ -7,10 +7,10 @@ import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
+import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.PhotoRepository;
 import com.memora.dataprovider.database.repository.EventRepository;
-import com.memora.dataprovider.storage.LocalFileStorageService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Locale;
@@ -23,18 +23,18 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
-	private final LocalFileStorageService localFileStorageService;
+	private final FileStorageService fileStorageService;
 	private final UploadProperties uploadProperties;
 
 	public UploadGuestPhotoUseCaseImp(
 		EventRepository eventRepository,
 		PhotoRepository photoRepository,
-		LocalFileStorageService localFileStorageService,
+		FileStorageService fileStorageService,
 		UploadProperties uploadProperties
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
-		this.localFileStorageService = localFileStorageService;
+		this.fileStorageService = fileStorageService;
 		this.uploadProperties = uploadProperties;
 	}
 
@@ -65,7 +65,7 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		String contentType = normalizeContentType(param.contentType());
 		String extension = extractExtension(originalFilename);
 		String objectKey = "events/" + event.getSlug() + "/photos/" + UUID.randomUUID() + extension;
-		localFileStorageService.store(objectKey, param.content(), contentType);
+		fileStorageService.store(objectKey, param.content(), contentType);
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 		Photo photo = Photo.builder()

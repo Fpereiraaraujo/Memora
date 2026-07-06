@@ -67,6 +67,7 @@ public class EventController implements EventControllerApi {
 	private final UpdatePhotoStatusUseCase updatePhotoStatusUseCase;
 	private final EventQrCodeService eventQrCodeService;
 	private final AppProperties appProperties;
+	private final PhotoApiMapper photoApiMapper;
 
 	public EventController(
 		GetCurrentUserUseCase getCurrentUserUseCase,
@@ -81,7 +82,8 @@ public class EventController implements EventControllerApi {
 		UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase,
 		UpdatePhotoStatusUseCase updatePhotoStatusUseCase,
 		EventQrCodeService eventQrCodeService,
-		AppProperties appProperties
+		AppProperties appProperties,
+		PhotoApiMapper photoApiMapper
 	) {
 		this.getCurrentUserUseCase = getCurrentUserUseCase;
 		this.createEventUseCase = createEventUseCase;
@@ -96,6 +98,7 @@ public class EventController implements EventControllerApi {
 		this.updatePhotoStatusUseCase = updatePhotoStatusUseCase;
 		this.eventQrCodeService = eventQrCodeService;
 		this.appProperties = appProperties;
+		this.photoApiMapper = photoApiMapper;
 	}
 
 	@Override
@@ -199,7 +202,7 @@ public class EventController implements EventControllerApi {
 		User user = resolveUser(authentication);
 		List<PhotoResponseDto> photos = listEventPhotosUseCase.execute(new ListEventPhotosParam(user.getId(), eventId))
 			.stream()
-			.map(PhotoApiMapper::toResponse)
+			.map(photoApiMapper::toResponse)
 			.toList();
 
 		return ResponseEntity.ok(photos);
@@ -241,7 +244,7 @@ public class EventController implements EventControllerApi {
 			request.favorite()
 		));
 
-		return ResponseEntity.ok(PhotoApiMapper.toResponse(photo));
+		return ResponseEntity.ok(photoApiMapper.toResponse(photo));
 	}
 
 	@Override
@@ -258,7 +261,7 @@ public class EventController implements EventControllerApi {
 			request.status()
 		));
 
-		return ResponseEntity.ok(PhotoApiMapper.toResponse(photo));
+		return ResponseEntity.ok(photoApiMapper.toResponse(photo));
 	}
 
 	private User resolveUser(Authentication authentication) {
@@ -279,7 +282,7 @@ public class EventController implements EventControllerApi {
 
 	private PageResult<PhotoResponseDto> mapPhotoPage(PageResult<com.memora.core.domain.model.Photo> result) {
 		return new PageResult<>(
-			result.content().stream().map(PhotoApiMapper::toResponse).toList(),
+			result.content().stream().map(photoApiMapper::toResponse).toList(),
 			result.page(),
 			result.size(),
 			result.totalElements(),

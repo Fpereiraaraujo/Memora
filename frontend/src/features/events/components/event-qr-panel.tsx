@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/features/auth/auth-context';
 import { api } from '@/lib/api';
+import { publicAppUrl } from '@/lib/env';
 
 interface EventQrPanelProps {
   eventId: string;
@@ -17,7 +18,7 @@ export function EventQrPanel({ eventId, publicUrl }: EventQrPanelProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const publicLink = new URL(publicUrl, window.location.origin).toString();
+  const publicLink = publicAppUrl(publicUrl);
 
   useEffect(() => {
     let active = true;

@@ -60,5 +60,19 @@ memora:
       secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=
       expiration-minutes: 120
       issuer: memora
+    cors:
+      allowed-origin-patterns:
+        - http://localhost:*
+        - http://127.0.0.1:*
+        - https://localhost:*
+        - https://127.0.0.1:*
+        - https://*.vercel.app
+        - https://*.sslip.io
+        - https://*.ngrok-free.dev
+        - https://memora.api.br
   storage:
+    provider: local
     local-path: ./data/uploads
+    bucket-name: ""
+    region: us-east-1
+    public-base-url: ""
