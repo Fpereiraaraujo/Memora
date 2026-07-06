@@ -62,16 +62,20 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
 
       try {
         if (!token) {
-          throw new Error('Sessão indisponível');
+          throw new Error('Sessao indisponivel');
         }
 
-        const [eventData, photoData, qrBlob] = await Promise.all([
-          api.getEvent(token, eventId),
+        const eventData = await api.getEvent(token, eventId);
+        const [photoResult, qrResult] = await Promise.allSettled([
           api.listEventPhotos(token, eventId),
           api.fetchEventQrCode(token, eventId),
         ]);
 
-        objectUrl = URL.createObjectURL(qrBlob);
+        const photoData = photoResult.status === 'fulfilled' ? photoResult.value : [];
+
+        if (qrResult.status === 'fulfilled') {
+          objectUrl = URL.createObjectURL(qrResult.value);
+        }
 
         if (active) {
           setEvent(eventData);
