@@ -36,6 +36,7 @@ export function EventDetailPage() {
             photos={dashboard.photos}
             mockMode={dashboard.mockMode}
             onShareEvent={dashboard.shareEvent}
+            publicLinksEnabled={dashboard.publicLinksEnabled}
           />
 
           <EventStatsSection
@@ -65,7 +66,7 @@ export function EventDetailPage() {
           </section>
 
           <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-            <EventPublicPageCard event={dashboard.event} />
+            <EventPublicPageCard event={dashboard.event} publicLinksEnabled={dashboard.publicLinksEnabled} />
 
             <EventDownloadsCard
               eventId={dashboard.event.id}
