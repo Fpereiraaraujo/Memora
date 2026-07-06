@@ -39,6 +39,7 @@ public class PublicEventController implements PublicEventControllerApi {
 	private final UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
 	private final PublicUploadRateLimiter publicUploadRateLimiter;
 	private final UploadProperties uploadProperties;
+	private final PhotoApiMapper photoApiMapper;
 
 	public PublicEventController(
 		GetPublicEventUseCase getPublicEventUseCase,
@@ -46,7 +47,8 @@ public class PublicEventController implements PublicEventControllerApi {
 		ListPublicEventPhotosPageUseCase listPublicEventPhotosPageUseCase,
 		UploadGuestPhotoUseCase uploadGuestPhotoUseCase,
 		PublicUploadRateLimiter publicUploadRateLimiter,
-		UploadProperties uploadProperties
+		UploadProperties uploadProperties,
+		PhotoApiMapper photoApiMapper
 	) {
 		this.getPublicEventUseCase = getPublicEventUseCase;
 		this.listPublicEventPhotosUseCase = listPublicEventPhotosUseCase;
@@ -54,6 +56,7 @@ public class PublicEventController implements PublicEventControllerApi {
 		this.uploadGuestPhotoUseCase = uploadGuestPhotoUseCase;
 		this.publicUploadRateLimiter = publicUploadRateLimiter;
 		this.uploadProperties = uploadProperties;
+		this.photoApiMapper = photoApiMapper;
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class PublicEventController implements PublicEventControllerApi {
 	public ResponseEntity<List<PhotoResponseDto>> listPhotos(String slug) {
 		List<PhotoResponseDto> photos = listPublicEventPhotosUseCase.execute(new ListPublicEventPhotosParam(slug))
 			.stream()
-			.map(PhotoApiMapper::toResponse)
+			.map(photoApiMapper::toResponse)
 			.toList();
 
 		return ResponseEntity.ok(photos);
@@ -146,7 +149,7 @@ public class PublicEventController implements PublicEventControllerApi {
 
 	private PageResult<PhotoResponseDto> mapPhotoPage(PageResult<Photo> result) {
 		return new PageResult<>(
-			result.content().stream().map(PhotoApiMapper::toResponse).toList(),
+			result.content().stream().map(photoApiMapper::toResponse).toList(),
 			result.page(),
 			result.size(),
 			result.totalElements(),

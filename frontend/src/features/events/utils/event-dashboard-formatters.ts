@@ -1,4 +1,5 @@
 import { mediaUrl } from '@/lib/api';
+import { publicAppUrl } from '@/lib/env';
 
 export function formatEventDate(date: string | null) {
   if (!date) {
@@ -72,9 +73,9 @@ export function getInitials(name: string | null) {
 }
 
 export function buildPublicEventUrl(slug: string) {
-  return new URL(`/e/${slug}`, window.location.origin).toString();
+  return publicAppUrl(`/e/${slug}`);
 }
 
 export function buildPublicUploadUrl(slug: string) {
-  return new URL(`/e/${slug}/upload`, window.location.origin).toString();
+  return publicAppUrl(`/e/${slug}/upload`);
 }

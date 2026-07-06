@@ -1,14 +1,20 @@
 package com.memora.entrypoint.api.mapper;
 
 import com.memora.core.domain.model.Photo;
+import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
+import org.springframework.stereotype.Component;
 
-public final class PhotoApiMapper {
+@Component
+public class PhotoApiMapper {
 
-	private PhotoApiMapper() {
+	private final FileStorageService fileStorageService;
+
+	public PhotoApiMapper(FileStorageService fileStorageService) {
+		this.fileStorageService = fileStorageService;
 	}
 
-	public static PhotoResponseDto toResponse(Photo photo) {
+	public PhotoResponseDto toResponse(Photo photo) {
 		return new PhotoResponseDto(
 			photo.getId(),
 			photo.getOriginalFilename(),
@@ -20,7 +26,7 @@ public final class PhotoApiMapper {
 			photo.getGuestName(),
 			photo.getGuestMessage(),
 			photo.getCreatedAt(),
-			"/uploads/" + photo.getObjectKey()
+			fileStorageService.resolvePublicUrl(photo.getObjectKey())
 		);
 	}
 }
