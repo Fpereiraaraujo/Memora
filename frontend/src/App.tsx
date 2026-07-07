@@ -14,6 +14,7 @@ import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
 import { EventCheckoutPage } from '@/features/events/pages/event-checkout-page';
 import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
 import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
+import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
 import { PublicUploadPage } from '@/features/public/pages/public-upload-page';
@@ -105,6 +106,25 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EventDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path="/app/events/:eventId/public-page"
+          element={
+            <ProtectedRoute>
+              <EventPublicPageSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/app/event/:eventId/public-page"
+          element={
+            <ProtectedRoute>
+              <EventPublicPageSettingsPage />
             </ProtectedRoute>
           }
         />

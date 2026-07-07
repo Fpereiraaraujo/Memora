@@ -13,6 +13,7 @@ import {
   getPhotoSrc,
 } from '@/features/events/utils/event-dashboard-formatters';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
+import { resolvePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
@@ -22,31 +23,15 @@ const PUBLIC_GALLERY_PAGE_SIZE = 12;
 function formatEventType(type: string) {
   const map: Record<string, string> = {
     WEDDING: 'Casamento',
-    BIRTHDAY: 'Aniversario',
+    BIRTHDAY: 'Aniversário',
     GRADUATION: 'Formatura',
-    BABY_SHOWER: 'Cha de bebe',
+    BABY_SHOWER: 'Chá de bebê',
     BAPTISM: 'Batizado',
     CORPORATE: 'Corporativo',
     OTHER: 'Evento especial',
   };
 
   return map[type] ?? 'Evento especial';
-}
-
-function getEventSubtitle(event: EventSummary) {
-  if (event.type === 'WEDDING') {
-    return 'Ajude os noivos a guardar cada detalhe desse dia especial.';
-  }
-
-  if (event.type === 'BIRTHDAY') {
-    return 'Compartilhe os melhores momentos dessa celebracao.';
-  }
-
-  if (event.type === 'GRADUATION') {
-    return 'Registre os momentos mais marcantes dessa conquista.';
-  }
-
-  return 'Compartilhe suas fotos e ajude a montar uma lembranca coletiva.';
 }
 
 function PublicEventLoadingState() {
@@ -67,11 +52,22 @@ function PublicEventNotFoundState() {
     <PublicShell>
       <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
         <EmptyState
-          title="Evento nao encontrado"
-          description="Nao foi possivel encontrar a pagina publica deste evento."
+          title="Evento não encontrado"
+          description="Não foi possível encontrar a página pública deste evento."
         />
       </div>
     </PublicShell>
+  );
+}
+
+function PlaceholderMosaic() {
+  return (
+    <>
+      <div className="aspect-square rounded-[18px] bg-[#f9d7dc]" />
+      <div className="aspect-square rounded-[18px] bg-[#f5c0a7]" />
+      <div className="aspect-square rounded-[18px] bg-[#ecd5ad]" />
+      <div className="aspect-square rounded-[18px] bg-[#fff1f2]" />
+    </>
   );
 }
 
@@ -86,7 +82,7 @@ export function PublicEventPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const subtitle = useMemo(() => (event ? getEventSubtitle(event) : ''), [event]);
+  const customization = useMemo(() => (event ? resolvePublicPageCustomization(event) : null), [event]);
 
   const guestCount = useMemo(() => {
     const guests = new Set(
@@ -97,6 +93,25 @@ export function PublicEventPage() {
 
     return guests.size;
   }, [photos]);
+
+  const highlightedImages = useMemo(() => {
+    if (!customization) {
+      return [] as string[];
+    }
+
+    return [
+      customization.coverImageUrl,
+      ...customization.highlightImageUrls,
+    ].filter((image): image is string => Boolean(image));
+  }, [customization]);
+
+  const heroImages = useMemo(() => {
+    if (highlightedImages.length > 0) {
+      return highlightedImages.slice(0, 4);
+    }
+
+    return photos.slice(0, 4).map((photo) => getPhotoSrc(photo.downloadUrl));
+  }, [highlightedImages, photos]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -133,7 +148,7 @@ export function PublicEventPage() {
           setTotalPages(Math.max(1, photoPage.totalPages));
           setError(null);
         }
-      } catch (exception) {
+      } catch {
         if (active) {
           setEvent(buildFallbackPublicEvent(slug));
           setPhotos([]);
@@ -157,7 +172,7 @@ export function PublicEventPage() {
 
   if (!slug) return <PublicEventNotFoundState />;
   if (loading) return <PublicEventLoadingState />;
-  if (!event) return <PublicEventNotFoundState />;
+  if (!event || !customization) return <PublicEventNotFoundState />;
 
   return (
     <PublicShell>
@@ -178,22 +193,22 @@ export function PublicEventPage() {
                 <div className="mb-6 flex flex-wrap items-center gap-3">
                   <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
                     <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
-                      *
+                      ♥
                     </span>
                     {formatEventType(event.type)}
                   </span>
 
                   <span className="inline-flex h-10 items-center rounded-full border border-[#ead1c4] bg-white/70 px-4 text-xs font-bold text-[#2c2927]/70">
-                    {formatEventDate(event.eventDate)}
+                    {formatEventDate(customization.eventDate)}
                   </span>
                 </div>
 
                 <h1 className="max-w-4xl font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-[#161314] sm:text-6xl lg:text-7xl">
-                  {event.title}
+                  {customization.title}
                 </h1>
 
                 <p className="mt-6 max-w-2xl text-base leading-8 text-[#2c2927]/75 sm:text-lg">
-                  {subtitle}
+                  {customization.welcomeMessage}
                 </p>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -215,30 +230,18 @@ export function PublicEventPage() {
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                      Fotos
-                    </p>
-                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                      {totalElements}
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Fotos</p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{totalElements}</p>
                   </div>
 
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                      Paginas
-                    </p>
-                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                      {totalPages}
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Galeria</p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{totalPages}</p>
                   </div>
 
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                      Convidados
-                    </p>
-                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                      {guestCount}
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Convidados</p>
+                    <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{guestCount}</p>
                   </div>
                 </div>
               </div>
@@ -246,27 +249,15 @@ export function PublicEventPage() {
               <div className="relative">
                 <div className="mx-auto max-w-[420px] rounded-[26px] border border-[#f1ddd1] bg-white p-4 shadow-[0_24px_70px_rgba(96,60,36,0.12)]">
                   <div className="grid grid-cols-2 gap-3">
-                    {(photos.length > 0 ? photos.slice(0, 4) : []).map((photo) => (
-                      <div
-                        key={photo.id}
-                        className="aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]"
-                      >
-                        <img
-                          src={getPhotoSrc(photo.downloadUrl)}
-                          alt={photo.originalFilename}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ))}
-
-                    {photos.length === 0 ? (
-                      <>
-                        <div className="aspect-square rounded-[18px] bg-[#f9d7dc]" />
-                        <div className="aspect-square rounded-[18px] bg-[#f5c0a7]" />
-                        <div className="aspect-square rounded-[18px] bg-[#ecd5ad]" />
-                        <div className="aspect-square rounded-[18px] bg-[#fff1f2]" />
-                      </>
-                    ) : null}
+                    {heroImages.length > 0 ? (
+                      heroImages.map((image, index) => (
+                        <div key={`${image}-${index}`} className="aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
+                          <img src={image} alt="Foto em destaque" className="h-full w-full object-cover" />
+                        </div>
+                      ))
+                    ) : (
+                      <PlaceholderMosaic />
+                    )}
                   </div>
 
                   <Link
@@ -281,13 +272,30 @@ export function PublicEventPage() {
             </div>
           </section>
 
-          <section
-            id="galeria"
-            className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
-          >
+          {highlightedImages.length > 0 ? (
+            <section className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
+              <p className="text-sm font-bold text-[#ef7885]">Escolhidas pelos anfitriões</p>
+              <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
+                Fotos em destaque
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[#2c2927]/65">
+                Essas são as fotos selecionadas para abrir a experiência pública do evento.
+              </p>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {highlightedImages.slice(0, 8).map((image, index) => (
+                  <div key={`${image}-${index}`} className="aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
+                    <img src={image} alt="Foto em destaque" className="h-full w-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section id="galeria" className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-bold text-[#ef7885]">Galeria publica</p>
+                <p className="text-sm font-bold text-[#ef7885]">Galeria pública</p>
                 <h2 className="mt-2 font-display text-[42px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
                   Fotos do evento
                 </h2>
@@ -296,48 +304,29 @@ export function PublicEventPage() {
                 </p>
               </div>
 
-              <Link
-                to={`/e/${event.slug}/upload`}
-                className="inline-flex h-11 w-fit items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b]"
-              >
+              <Link to={`/e/${event.slug}/upload`} className="inline-flex h-11 w-fit items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b]">
                 Enviar foto
               </Link>
             </div>
 
             {photos.length === 0 ? (
               <div className="mt-6 rounded-[18px] bg-[#fff7f2] p-6 text-sm leading-7 text-[#2c2927]/62">
-                Ainda nao existem fotos neste evento. Seja a primeira pessoa a compartilhar uma lembranca.
+                Ainda não existem fotos neste evento. Seja a primeira pessoa a compartilhar uma lembrança.
               </div>
             ) : (
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {photos.map((photo) => (
-                  <a
-                    key={photo.id}
-                    href={getPhotoSrc(photo.downloadUrl)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]"
-                  >
+                  <a key={photo.id} href={getPhotoSrc(photo.downloadUrl)} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
                     <div className="relative aspect-square overflow-hidden bg-[#f5ded2]">
-                      <img
-                        src={getPhotoSrc(photo.downloadUrl)}
-                        alt={photo.originalFilename}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
+                      <img src={getPhotoSrc(photo.downloadUrl)} alt={photo.originalFilename} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                       <span className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/92 text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
                         <HeartIcon className="size-4" />
                       </span>
                     </div>
 
                     <div className="p-4">
-                      <p className="truncate text-sm font-bold text-[#161314]">
-                        {photo.guestName || 'Convidado anonimo'}
-                      </p>
-                      {photo.guestMessage ? (
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#2c2927]/62">
-                          {photo.guestMessage}
-                        </p>
-                      ) : null}
+                      <p className="truncate text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
+                      {photo.guestMessage ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#2c2927]/62">{photo.guestMessage}</p> : null}
                     </div>
                   </a>
                 ))}
@@ -345,11 +334,7 @@ export function PublicEventPage() {
             )}
 
             <div className="mt-8">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             </div>
           </section>
         </div>

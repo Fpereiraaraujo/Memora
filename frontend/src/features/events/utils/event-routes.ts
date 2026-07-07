@@ -25,3 +25,7 @@ export function buildEventDownloadsPath(eventId: string) {
 export function buildEventMessagesPath(eventId: string) {
   return `/app/events/${eventId}/messages`;
 }
+
+export function buildEventPublicPageSettingsPath(eventId: string) {
+  return `/app/events/${eventId}/public-page`;
+}

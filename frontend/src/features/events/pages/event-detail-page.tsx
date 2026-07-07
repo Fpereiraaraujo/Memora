@@ -39,6 +39,11 @@ export function EventDetailPage() {
             publicLinksEnabled={dashboard.publicLinksEnabled}
           />
 
+          <EventPublicPageCard
+            event={dashboard.event}
+            publicLinksEnabled={dashboard.publicLinksEnabled}
+          />
+
           <EventStatsSection
             photosCount={dashboard.photos.length}
             guestCount={dashboard.guestCount}
@@ -66,9 +71,7 @@ export function EventDetailPage() {
             />
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-            <EventPublicPageCard event={dashboard.event} publicLinksEnabled={dashboard.publicLinksEnabled} />
-
+          <section className="grid gap-6 xl:grid-cols-[1fr]">
             <EventDownloadsCard
               eventId={dashboard.event.id}
               photosCount={dashboard.photos.length}

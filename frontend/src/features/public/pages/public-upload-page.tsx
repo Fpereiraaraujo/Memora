@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { EventUploadHeader } from '@/features/public/components/upload/event-upload-header';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
+import { resolvePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
@@ -59,6 +60,8 @@ export function PublicUploadPage() {
     () => files.map((file) => URL.createObjectURL(file)),
     [files],
   );
+
+  const customization = useMemo(() => (event ? resolvePublicPageCustomization(event) : null), [event]);
 
   useEffect(() => {
     return () => {
@@ -182,7 +185,7 @@ export function PublicUploadPage() {
           </Link>
         </header>
 
-        <EventUploadHeader event={event} previewPhotos={previewPhotos} />
+        <EventUploadHeader event={event} previewPhotos={previewPhotos} customization={customization} />
 
         <GuestUploadCard
           guestName={guestName}

@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   DashboardIcon,
   DownloadIcon,
+  ExternalIcon,
   HeartIcon,
   ImagesIcon,
   LinkIcon,
@@ -18,6 +19,7 @@ import {
   buildEventGalleryPath,
   buildEventMessagesPath,
   buildEventOverviewPath,
+  buildEventPublicPageSettingsPath,
   buildEventQrPath,
 } from '@/features/events/utils/event-routes';
 import type { EventSummary } from '@/types/event';
@@ -33,7 +35,7 @@ interface EventSidebarProps {
 interface SidebarItemProps {
   to: string;
   label: string;
-  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message';
+  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message' | 'public';
   end?: boolean;
 }
 
@@ -46,6 +48,7 @@ function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
   if (icon === 'gallery') return <ImagesIcon className={className} />;
   if (icon === 'heart') return <HeartIcon className={className} />;
   if (icon === 'message') return <MessageIcon className={className} />;
+  if (icon === 'public') return <ExternalIcon className={className} />;
   return <DownloadIcon className={className} />;
 }
 
@@ -79,6 +82,7 @@ export function EventSidebar({
   onCopyUploadLink,
 }: EventSidebarProps) {
   const overviewPath = buildEventOverviewPath(event.id);
+  const publicSettingsPath = buildEventPublicPageSettingsPath(event.id);
   const qrPath = buildEventQrPath(event.id);
   const galleryPath = buildEventGalleryPath(event.id);
   const favoritesPath = buildEventFavoritesPath(event.id);
@@ -96,6 +100,7 @@ export function EventSidebar({
       <nav className="mt-4 space-y-1.5">
         <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
         <SidebarItem to="/app" label="Meus eventos" icon="events" end />
+        <SidebarItem to={publicSettingsPath} label="Página pública" icon="public" />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem to={favoritesPath} label="Favoritas" icon="heart" />
