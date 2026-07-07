@@ -5,9 +5,11 @@ import { MemoraLogo } from '@/components/brand/memora-logo';
 import { EmptyState } from '@/components/ui/empty-state';
 import { EventUploadHeader } from '@/features/public/components/upload/event-upload-header';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
+import { validateGuestUploadInput } from '@/features/shared/utils/upload-validation';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
-import { resolvePublicPageCustomization } from '@/features/public/utils/public-page-customization';
+import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import { api } from '@/lib/api';
+import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
@@ -16,8 +18,8 @@ function PublicUploadNotFoundState() {
     <div className="min-h-screen bg-[#fff8f3] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <EmptyState
-          title="Evento nao encontrado"
-          description="Nao foi possivel encontrar a pagina de upload deste evento."
+          title="Evento não encontrado"
+          description="Não foi possível encontrar a página de upload deste evento."
         />
       </div>
     </div>
@@ -43,6 +45,7 @@ export function PublicUploadPage() {
   const { slug } = useParams();
 
   const [event, setEvent] = useState<EventSummary | null>(null);
+  const [backendCustomization, setBackendCustomization] = useState<PublicPageCustomization | null>(null);
   const [previewPhotos, setPreviewPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,7 +64,10 @@ export function PublicUploadPage() {
     [files],
   );
 
-  const customization = useMemo(() => (event ? resolvePublicPageCustomization(event) : null), [event]);
+  const customization = useMemo(
+    () => (event ? mergePublicPageCustomization(event, backendCustomization) : null),
+    [backendCustomization, event],
+  );
 
   useEffect(() => {
     return () => {
@@ -79,18 +85,29 @@ export function PublicUploadPage() {
       }
 
       try {
-        const [eventData, photoPage] = await Promise.all([
-          api.getPublicEvent(slug),
-          api.listPublicEventPhotosPage(slug, 0, 3),
+        const eventData = await api.getPublicEvent(slug).catch(() => buildFallbackPublicEvent(slug));
+
+        const [customizationData, photoPage] = await Promise.all([
+          api.getPublicEventCustomization(slug).catch(() => null),
+          api.listPublicEventPhotosPage(slug, 0, 3).catch(() => ({
+            content: [],
+            page: 0,
+            size: 3,
+            totalElements: 0,
+            totalPages: 1,
+            last: true,
+          })),
         ]);
 
         if (active) {
           setEvent(eventData);
+          setBackendCustomization(customizationData);
           setPreviewPhotos(photoPage.content);
         }
       } catch {
         if (active) {
           setEvent(buildFallbackPublicEvent(slug));
+          setBackendCustomization(null);
           setPreviewPhotos([]);
         }
       } finally {
@@ -125,12 +142,14 @@ export function PublicUploadPage() {
     eventSubmit.preventDefault();
 
     if (!slug) {
-      setError('Evento nao encontrado.');
+      setError('Evento não encontrado.');
       return;
     }
 
-    if (files.length === 0) {
-      setError('Selecione pelo menos uma foto antes de enviar.');
+    const validationErrors = validateGuestUploadInput({ files, guestName, guestMessage });
+
+    if (validationErrors.length > 0) {
+      setError(validationErrors[0]);
       return;
     }
 
@@ -161,7 +180,7 @@ export function PublicUploadPage() {
       );
       await refreshPreviewPhotos(slug);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar as fotos.');
+      setError(exception instanceof Error ? exception.message : 'Não foi possível enviar as fotos.');
     } finally {
       setBusy(false);
     }

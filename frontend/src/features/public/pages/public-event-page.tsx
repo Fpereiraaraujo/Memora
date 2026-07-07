@@ -4,17 +4,15 @@ import { Link, useParams } from 'react-router-dom';
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Pagination } from '@/components/ui/pagination';
-import {
-  ExternalIcon,
-  HeartIcon,
-} from '@/features/events/components/event-dashboard/event-icons';
+import { HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
 import {
   formatEventDate,
   getPhotoSrc,
 } from '@/features/events/utils/event-dashboard-formatters';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
-import { resolvePublicPageCustomization } from '@/features/public/utils/public-page-customization';
+import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import { api } from '@/lib/api';
+import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
@@ -75,14 +73,17 @@ export function PublicEventPage() {
   const { slug } = useParams();
 
   const [event, setEvent] = useState<EventSummary | null>(null);
+  const [backendCustomization, setBackendCustomization] = useState<PublicPageCustomization | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const customization = useMemo(() => (event ? resolvePublicPageCustomization(event) : null), [event]);
+  const customization = useMemo(
+    () => (event ? mergePublicPageCustomization(event, backendCustomization) : null),
+    [backendCustomization, event],
+  );
 
   const guestCount = useMemo(() => {
     const guests = new Set(
@@ -130,31 +131,35 @@ export function PublicEventPage() {
 
       try {
         const eventData = await api.getPublicEvent(slug).catch(() => buildFallbackPublicEvent(slug));
-        const photoPage = await api
-          .listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE)
-          .catch(() => ({
-            content: [],
-            page: currentPage - 1,
-            size: PUBLIC_GALLERY_PAGE_SIZE,
-            totalElements: 0,
-            totalPages: 1,
-            last: true,
-          }));
+
+        const [customizationData, photoPage] = await Promise.all([
+          api.getPublicEventCustomization(slug).catch(() => null),
+          api
+            .listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE)
+            .catch(() => ({
+              content: [],
+              page: currentPage - 1,
+              size: PUBLIC_GALLERY_PAGE_SIZE,
+              totalElements: 0,
+              totalPages: 1,
+              last: true,
+            })),
+        ]);
 
         if (active) {
           setEvent(eventData);
+          setBackendCustomization(customizationData);
           setPhotos(photoPage.content);
           setTotalElements(photoPage.totalElements);
           setTotalPages(Math.max(1, photoPage.totalPages));
-          setError(null);
         }
       } catch {
         if (active) {
           setEvent(buildFallbackPublicEvent(slug));
+          setBackendCustomization(null);
           setPhotos([]);
           setTotalElements(0);
           setTotalPages(1);
-          setError(null);
         }
       } finally {
         if (active) {
@@ -177,12 +182,6 @@ export function PublicEventPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
-        {error ? (
-          <div className="mb-6 rounded-[18px] border border-rose-200 bg-rose-100/80 px-5 py-4 text-sm font-semibold text-rose-600">
-            {error}
-          </div>
-        ) : null}
-
         <div className="space-y-8">
           <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/88 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
             <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/22 blur-3xl" />
@@ -217,7 +216,7 @@ export function PublicEventPage() {
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] bg-[#ef7885] px-7 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.32)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
                   >
                     Enviar uma foto
-                    <span aria-hidden="true">-&gt;</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
 
                   <a
@@ -235,7 +234,7 @@ export function PublicEventPage() {
                   </div>
 
                   <div className="rounded-[20px] border border-[#f0d8ca] bg-white/72 p-4 shadow-[0_14px_38px_rgba(96,60,36,0.06)]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Galeria</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b9852f]">Páginas</p>
                     <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{totalPages}</p>
                   </div>
 
@@ -259,14 +258,6 @@ export function PublicEventPage() {
                       <PlaceholderMosaic />
                     )}
                   </div>
-
-                  <Link
-                    to={`/e/${event.slug}/upload`}
-                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b]"
-                  >
-                    Enviar foto
-                    <ExternalIcon className="size-4" />
-                  </Link>
                 </div>
               </div>
             </div>

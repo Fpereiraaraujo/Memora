@@ -7,15 +7,11 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (!ready) {
-    return <div className="min-h-screen bg-ink-950" />;
-  }
-
-  if (!token && location.pathname.startsWith('/app')) {
-    return children;
+    return <div className="min-h-screen bg-[#fff8f3]" />;
   }
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return children;

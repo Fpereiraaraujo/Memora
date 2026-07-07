@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ExternalIcon } from '@/features/events/components/event-dashboard/event-icons';
 import { formatEventDate, getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
 import { eventDashboardMockImages } from '@/features/events/utils/event-dashboard-mock';
-import type { PublicPageCustomization } from '@/features/public/utils/public-page-customization';
+import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 

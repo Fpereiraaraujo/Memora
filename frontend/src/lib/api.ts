@@ -5,6 +5,11 @@ import type { EventCreateRequest, EventStatus, EventSummary, EventUpdateRequest 
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
 import type { EventCheckoutRequest, EventCheckoutResponse } from '@/types/payment';
 import type {
+  PublicPageCustomization,
+  PublicPageCustomizationUpdateRequest,
+  PublicPageImageUploadResponse,
+} from '@/types/customization';
+import type {
   GuestUploadResponse,
   Photo,
   PhotoFavoriteUpdateRequest,
@@ -123,6 +128,34 @@ export const api = {
   getEvent(token: string, eventId: string) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'GET', token });
   },
+  getEventPublicPageCustomization(token: string, eventId: string) {
+    return request<PublicPageCustomization>(`/api/events/${eventId}/public-page`, { method: 'GET', token });
+  },
+  updateEventPublicPageCustomization(
+    token: string,
+    eventId: string,
+    requestBody: PublicPageCustomizationUpdateRequest,
+  ) {
+    return request<PublicPageCustomization>(`/api/events/${eventId}/public-page`, {
+      method: 'PUT',
+      token,
+      data: requestBody,
+    });
+  },
+  uploadEventPublicPageCoverImage(token: string, eventId: string, formData: FormData) {
+    return request<PublicPageImageUploadResponse>(`/api/events/${eventId}/public-page/cover-image`, {
+      method: 'POST',
+      token,
+      data: formData,
+    });
+  },
+  uploadEventPublicPageHighlightImages(token: string, eventId: string, formData: FormData) {
+    return request<PublicPageImageUploadResponse>(`/api/events/${eventId}/public-page/highlight-images`, {
+      method: 'POST',
+      token,
+      data: formData,
+    });
+  },
   async fetchEventQrCode(token: string, eventId: string) {
     try {
       const response = await http.get<Blob>(`/api/events/${eventId}/qrcode`, {
@@ -161,6 +194,9 @@ export const api = {
   },
   getPublicEvent(slug: string) {
     return request<EventSummary>(`/api/public/events/${slug}`, { method: 'GET' });
+  },
+  getPublicEventCustomization(slug: string) {
+    return request<PublicPageCustomization>(`/api/public/events/${slug}/public-page`, { method: 'GET' });
   },
   listPublicEventPhotos(slug: string) {
     return request<Photo[]>(`/api/public/events/${slug}/photos`, { method: 'GET' });

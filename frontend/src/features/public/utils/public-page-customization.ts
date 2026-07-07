@@ -1,25 +1,11 @@
+import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
-
-export interface PublicPageCustomization {
-  title: string;
-  eventDate: string | null;
-  welcomeMessage: string;
-  coverImageUrl: string | null;
-  highlightImageUrls: string[];
-  updatedAt: string;
-}
-
-const STORAGE_PREFIX = 'memora.public-page-customization.';
-
-function storageKey(slug: string) {
-  return `${STORAGE_PREFIX}${slug}`;
-}
 
 function safeString(value: unknown) {
   return typeof value === 'string' ? value : '';
 }
 
-function normalizeCustomization(value: unknown): PublicPageCustomization | null {
+export function normalizePublicPageCustomization(value: unknown): PublicPageCustomization | null {
   if (!value || typeof value !== 'object') {
     return null;
   }
@@ -34,30 +20,8 @@ function normalizeCustomization(value: unknown): PublicPageCustomization | null 
     highlightImageUrls: Array.isArray(data.highlightImageUrls)
       ? data.highlightImageUrls.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
       : [],
-    updatedAt: safeString(data.updatedAt) || new Date().toISOString(),
+    updatedAt: typeof data.updatedAt === 'string' && data.updatedAt.trim() ? data.updatedAt : null,
   };
-}
-
-export function getStoredPublicPageCustomization(slug: string): PublicPageCustomization | null {
-  try {
-    const value = window.localStorage.getItem(storageKey(slug));
-
-    if (!value) {
-      return null;
-    }
-
-    return normalizeCustomization(JSON.parse(value));
-  } catch {
-    return null;
-  }
-}
-
-export function savePublicPageCustomization(slug: string, customization: PublicPageCustomization) {
-  window.localStorage.setItem(storageKey(slug), JSON.stringify(customization));
-}
-
-export function removePublicPageCustomization(slug: string) {
-  window.localStorage.removeItem(storageKey(slug));
 }
 
 export function buildDefaultPublicPageCustomization(event: EventSummary): PublicPageCustomization {
@@ -67,26 +31,28 @@ export function buildDefaultPublicPageCustomization(event: EventSummary): Public
     welcomeMessage: getDefaultWelcomeMessage(event),
     coverImageUrl: null,
     highlightImageUrls: [],
-    updatedAt: new Date().toISOString(),
+    updatedAt: null,
   };
 }
 
-export function resolvePublicPageCustomization(event: EventSummary): PublicPageCustomization {
-  const stored = getStoredPublicPageCustomization(event.slug);
+export function mergePublicPageCustomization(
+  event: EventSummary,
+  customization?: PublicPageCustomization | null,
+): PublicPageCustomization {
   const fallback = buildDefaultPublicPageCustomization(event);
 
-  if (!stored) {
+  if (!customization) {
     return fallback;
   }
 
   return {
     ...fallback,
-    ...stored,
-    title: stored.title.trim() || fallback.title,
-    welcomeMessage: stored.welcomeMessage.trim() || fallback.welcomeMessage,
-    eventDate: stored.eventDate ?? fallback.eventDate,
-    coverImageUrl: stored.coverImageUrl ?? fallback.coverImageUrl,
-    highlightImageUrls: stored.highlightImageUrls,
+    ...customization,
+    title: customization.title.trim() || fallback.title,
+    welcomeMessage: customization.welcomeMessage.trim() || fallback.welcomeMessage,
+    eventDate: customization.eventDate ?? fallback.eventDate,
+    coverImageUrl: customization.coverImageUrl ?? fallback.coverImageUrl,
+    highlightImageUrls: customization.highlightImageUrls ?? [],
   };
 }
 

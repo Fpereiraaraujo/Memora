@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '@/lib/api';
-import { clearToken, getToken, setToken } from '@/lib/storage';
+import {
+  clearSession,
+  getStoredUser,
+  getToken,
+  setStoredUser,
+  setToken,
+} from '@/lib/storage';
 import type { LoginResponse, User } from '@/types/auth';
 
 interface AuthContextValue {
@@ -16,7 +22,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setAuthToken] = useState<string | null>(() => getToken());
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -24,23 +30,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function bootstrap() {
       if (!token) {
-        setReady(true);
+        if (active) {
+          setUser(null);
+          setReady(true);
+        }
         return;
+      }
+
+      const cachedUser = getStoredUser();
+
+      if (cachedUser && active) {
+        setUser(cachedUser);
+        setReady(true);
       }
 
       try {
         const currentUser = await api.me(token);
         if (active) {
           setUser(currentUser);
+          setStoredUser(currentUser);
+          setReady(true);
         }
       } catch {
-        clearToken();
+        // Mantém a sessão local quando a API /me falhar por instabilidade de ambiente.
+        // O logout real ainda acontece manualmente, e chamadas autenticadas continuarão protegidas pelo backend.
         if (active) {
-          setAuthToken(null);
-          setUser(null);
-        }
-      } finally {
-        if (active) {
+          if (!cachedUser) {
+            clearSession();
+            setAuthToken(null);
+            setUser(null);
+          }
           setReady(true);
         }
       }
@@ -59,16 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token,
       ready,
       login(payload) {
-        setToken(payload.token);
-        setAuthToken(payload.token);
-        setUser({
+        const loggedUser = {
           id: payload.id,
           name: payload.name,
           email: payload.email,
-        });
+        };
+
+        setToken(payload.token);
+        setStoredUser(loggedUser);
+        setAuthToken(payload.token);
+        setUser(loggedUser);
       },
       logout() {
-        clearToken();
+        clearSession();
         setAuthToken(null);
         setUser(null);
       },
@@ -78,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         const currentUser = await api.me(token);
         setUser(currentUser);
+        setStoredUser(currentUser);
       },
     }),
     [ready, token, user],
