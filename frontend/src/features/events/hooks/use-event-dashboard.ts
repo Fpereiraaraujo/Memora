@@ -17,6 +17,7 @@ import type { Photo } from '@/types/photo';
 export interface UseEventDashboardResult {
   event: EventSummary | null;
   photos: Photo[];
+  mediaPhotos: Photo[];
   qrPreviewUrl: string | null;
   publicPageUrl: string;
   publicUploadUrl: string;
@@ -67,6 +68,10 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
         }
 
         const eventData = await api.getEvent(token, eventId);
+        const normalizedEvent =
+          eventData.status === 'DRAFT'
+            ? await api.updateEventStatus(token, eventId, 'ACTIVE').catch(() => eventData)
+            : eventData;
         const [photoResult, qrResult] = await Promise.allSettled([
           api.listEventPhotos(token, eventId),
           api.fetchEventQrCode(token, eventId),
@@ -79,7 +84,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
         }
 
         if (active) {
-          setEvent(eventData);
+          setEvent(normalizedEvent);
           setPhotos(photoData);
           setFavorites(photoData.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(objectUrl);
@@ -148,12 +153,17 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     [photos],
   );
 
-  const favoritePhotos = useMemo(
-    () => photos.filter((photo) => favorites.includes(photo.id)),
-    [favorites, photos],
+  const mediaPhotos = useMemo(
+    () => photos.filter((photo) => Boolean(photo.downloadUrl)),
+    [photos],
   );
 
-  const galleryPreview = useMemo(() => photos.slice(0, 6), [photos]);
+  const favoritePhotos = useMemo(
+    () => mediaPhotos.filter((photo) => favorites.includes(photo.id)),
+    [favorites, mediaPhotos],
+  );
+
+  const galleryPreview = useMemo(() => mediaPhotos.slice(0, 6), [mediaPhotos]);
 
   async function toggleFavorite(photoId: string) {
     if (!eventId) {
@@ -240,6 +250,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   return {
     event,
     photos,
+    mediaPhotos,
     qrPreviewUrl,
     publicPageUrl,
     publicUploadUrl,

@@ -8,14 +8,14 @@ export const ALLOWED_IMAGE_TYPES = [
 
 export const IMAGE_ACCEPT_ATTRIBUTE = ALLOWED_IMAGE_TYPES.join(',');
 
-export const MAX_GUEST_UPLOAD_FILES = 20;
+export const MAX_GUEST_UPLOAD_FILES = 5;
 export const MAX_GUEST_IMAGE_SIZE_BYTES = 15 * 1024 * 1024;
 export const MAX_GUEST_TOTAL_SIZE_BYTES = 120 * 1024 * 1024;
 export const MAX_GUEST_NAME_LENGTH = 80;
 export const MAX_GUEST_MESSAGE_LENGTH = 500;
 
 export const MAX_CUSTOMIZATION_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
-export const MAX_HIGHLIGHT_IMAGES = 5;
+export const MAX_HIGHLIGHT_IMAGES = 2;
 export const MAX_PUBLIC_TITLE_LENGTH = 90;
 export const MAX_PUBLIC_MESSAGE_LENGTH = 420;
 
@@ -36,8 +36,8 @@ export function validateGuestUploadInput(input: {
 }) {
   const errors: string[] = [];
 
-  if (input.files.length === 0) {
-    errors.push('Selecione pelo menos uma foto antes de enviar.');
+  if (input.files.length === 0 && input.guestMessage.trim().length === 0) {
+    errors.push('Envie pelo menos uma foto ou escreva um recado para os anfitrioes.');
   }
 
   if (input.files.length > MAX_GUEST_UPLOAD_FILES) {

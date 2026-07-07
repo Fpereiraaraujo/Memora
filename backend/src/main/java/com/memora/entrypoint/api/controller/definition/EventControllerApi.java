@@ -4,6 +4,9 @@ import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
@@ -28,6 +31,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "events", description = "Private event operations")
 @Validated
@@ -186,4 +192,51 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventResponseDto> updateStatus(@PathVariable UUID eventId, @Valid @RequestBody EventStatusUpdateRequestDto request, Authentication authentication);
+
+	@GetMapping("/api/events/{eventId}/public-page")
+	@Operation(
+		summary = "Get event public page customization",
+		description = "Returns the public page configuration for the authenticated host event.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageCustomizationResponseDto> getPublicPageCustomization(
+		@PathVariable UUID eventId,
+		Authentication authentication
+	);
+
+	@PutMapping("/api/events/{eventId}/public-page")
+	@Operation(
+		summary = "Update event public page customization",
+		description = "Updates public page text configuration for the authenticated host event.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageCustomizationResponseDto> updatePublicPageCustomization(
+		@PathVariable UUID eventId,
+		@Valid @RequestBody EventPublicPageCustomizationUpdateRequestDto request,
+		Authentication authentication
+	);
+
+	@PostMapping(value = "/api/events/{eventId}/public-page/cover-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(
+		summary = "Upload event public page cover image",
+		description = "Uploads the cover image used on the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageCoverImage(
+		@PathVariable UUID eventId,
+		@RequestPart("file") MultipartFile file,
+		Authentication authentication
+	);
+
+	@PostMapping(value = "/api/events/{eventId}/public-page/highlight-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(
+		summary = "Upload event public page highlight images",
+		description = "Uploads up to 2 highlight images used on the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(
+		@PathVariable UUID eventId,
+		@RequestPart("files") List<MultipartFile> files,
+		Authentication authentication
+	);
 }

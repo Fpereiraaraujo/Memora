@@ -30,14 +30,14 @@ export function EventFavoritesSection({ photos, onToggleFavorite }: EventFavorit
       {photos.length > 0 ? (
         <div className="mt-6 grid gap-4 md:grid-cols-3 xl:grid-cols-5">
           {photos.map((photo) => {
-            const photoSrc = getPhotoSrc(photo.downloadUrl);
+            const photoSrc = getPhotoSrc(photo.downloadUrl || '');
 
             return (
               <div key={photo.id} className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
                 <a href={photoSrc} target="_blank" rel="noreferrer" className="relative block aspect-square overflow-hidden bg-[#f5ded2]">
                   <img
                     src={photoSrc}
-                    alt={photo.originalFilename}
+                    alt={photo.originalFilename || 'Foto favorita'}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
 
@@ -49,7 +49,7 @@ export function EventFavoritesSection({ photos, onToggleFavorite }: EventFavorit
                 <div className="p-4">
                   <p className="truncate text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
 
-                  <p className="mt-1 truncate text-xs text-[#2c2927]/52">{photo.originalFilename}</p>
+                  <p className="mt-1 truncate text-xs text-[#2c2927]/52">{photo.originalFilename || 'Foto enviada pelo convidado'}</p>
 
                   <button
                     type="button"

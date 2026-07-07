@@ -20,10 +20,14 @@ public final class PublicPhotoApiMapper {
 	}
 
 	public static PublicGuestUploadResponseDto toBatchResponse(List<Photo> photos) {
+		boolean hasOnlyMessages = photos.stream().allMatch(photo -> photo.getObjectKey() == null || photo.getObjectKey().isBlank());
+
 		return new PublicGuestUploadResponseDto(
 			photos.size(),
 			photos.stream().map(PublicPhotoApiMapper::toItemResponse).toList(),
-			photos.size() == 1 ? "Foto enviada com sucesso" : "Fotos enviadas com sucesso"
+			hasOnlyMessages
+				? (photos.size() == 1 ? "Recado enviado com sucesso" : "Recados enviados com sucesso")
+				: (photos.size() == 1 ? "Foto enviada com sucesso" : "Fotos enviadas com sucesso")
 		);
 	}
 }

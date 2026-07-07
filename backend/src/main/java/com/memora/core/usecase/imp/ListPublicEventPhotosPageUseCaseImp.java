@@ -36,7 +36,7 @@ public class ListPublicEventPhotosPageUseCaseImp implements ListPublicEventPhoto
 			throw new NoSuchElementException("Event not found");
 		}
 
-		var pageResult = photoRepository.findAllByEventIdAndStatusOrderByCreatedAtDesc(
+		var pageResult = photoRepository.findAllByEventIdAndStatusAndObjectKeyIsNotNullOrderByCreatedAtDesc(
 			event.getId(),
 			PhotoStatus.AVAILABLE,
 			PageRequest.of(param.page(), param.size())

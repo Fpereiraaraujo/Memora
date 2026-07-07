@@ -35,7 +35,7 @@ public class ListPublicEventPhotosUseCaseImp implements ListPublicEventPhotosUse
 			throw new NoSuchElementException("Event not found");
 		}
 
-		return photoRepository.findAllByEventIdAndStatusOrderByCreatedAtDesc(event.getId(), PhotoStatus.AVAILABLE)
+		return photoRepository.findAllByEventIdAndStatusAndObjectKeyIsNotNullOrderByCreatedAtDesc(event.getId(), PhotoStatus.AVAILABLE)
 			.stream()
 			.map(PhotoDatabaseMapper::toDomain)
 			.toList();

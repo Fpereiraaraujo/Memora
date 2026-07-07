@@ -7,6 +7,7 @@ import {
   IMAGE_ACCEPT_ATTRIBUTE,
   MAX_GUEST_MESSAGE_LENGTH,
   MAX_GUEST_NAME_LENGTH,
+  MAX_GUEST_UPLOAD_FILES,
   formatBytes,
 } from '@/features/shared/utils/upload-validation';
 
@@ -100,14 +101,14 @@ export function GuestUploadCard({
         </h2>
 
         <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
-          Escolha uma ou várias fotos, deixe seu nome e um recado opcional. Tudo será enviado para o backend e armazenado no storage do evento.
+          Escolha ate {MAX_GUEST_UPLOAD_FILES} fotos, deixe seu nome e um recado opcional. Se preferir, voce tambem pode enviar apenas uma mensagem carinhosa para os anfitrioes.
         </p>
 
         <div className="mt-6 space-y-3">
           {[
-            ['Escolha imagens reais', 'JPG, PNG, WEBP, HEIC ou HEIF. O frontend valida antes de enviar.'],
-            ['Deixe um recado', 'A mensagem é opcional, mas ajuda a deixar a memória mais especial.'],
-            ['Envie para a galeria', 'As fotos seguem para o backend e aparecem no painel dos anfitriões.'],
+            ['Escolha imagens reais', 'JPG, PNG, WEBP, HEIC ou HEIF. Voce pode enviar ate 5 fotos por vez.'],
+            ['Deixe um recado', 'A mensagem pode acompanhar as fotos ou ser enviada sozinha, sem anexos.'],
+            ['Envie para os anfitrioes', 'As fotos vao para a galeria e os recados aparecem no portal privado do evento.'],
           ].map(([title, description], index) => (
             <div key={title} className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
               <div className="flex gap-4">
@@ -127,7 +128,7 @@ export function GuestUploadCard({
         <div className="mt-6 rounded-[18px] bg-[#161314] p-5 text-white">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-white/45">Privacidade</p>
           <p className="mt-3 text-sm leading-7 text-white/72">
-            Ao enviar, você permite que os responsáveis pelo evento vejam essas imagens e que elas apareçam na galeria pública do evento.
+            Ao enviar, os anfitrioes poderao ver suas fotos e seus recados. A galeria publica mostra apenas imagens.
           </p>
         </div>
       </div>
@@ -136,8 +137,8 @@ export function GuestUploadCard({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-bold text-[#ef7885]">Upload dos convidados</p>
-            <h2 className="mt-2 text-xl font-black text-[#161314]">Carregar fotos</h2>
-            <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">Escolha imagens do seu celular ou computador.</p>
+            <h2 className="mt-2 text-xl font-black text-[#161314]">Carregar fotos ou recado</h2>
+            <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">Escolha imagens do seu celular ou computador, ou envie apenas uma mensagem.</p>
           </div>
 
           <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff8e9] text-[#c5922e]">
@@ -160,7 +161,7 @@ export function GuestUploadCard({
             <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
               {previewUrls.slice(0, 6).map((url, index) => (
                 <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                  <img src={url} alt={`Pré-visualização ${index + 1}`} className="h-full w-full object-cover" />
+                  <img src={url} alt={`Pre-visualizacao ${index + 1}`} className="h-full w-full object-cover" />
                 </div>
               ))}
 
@@ -179,7 +180,7 @@ export function GuestUploadCard({
               <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher fotos</p>
 
               <p className="mt-2 max-w-sm text-sm leading-6 text-[#2c2927]/58">
-                JPG, PNG, WEBP, HEIC ou HEIF. As imagens são enviadas para o backend, não ficam salvas no navegador.
+                JPG, PNG, WEBP, HEIC ou HEIF. Voce pode seguir sem anexos e enviar somente uma mensagem.
               </p>
             </div>
           )}
@@ -242,23 +243,23 @@ export function GuestUploadCard({
           <label className="space-y-2">
             <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
               <span className="text-[#c5922e]"><SmallIcon type="check" /></span>
-              Identificação
+              Identificacao
             </span>
 
-            <Input value={guestName ? `Enviado por ${guestName}` : 'Convidado anônimo'} readOnly className="bg-[#fffaf7] text-[#2c2927]/58" />
+            <Input value={guestName ? `Enviado por ${guestName}` : 'Convidado anonimo'} readOnly className="bg-[#fffaf7] text-[#2c2927]/58" />
           </label>
         </div>
 
         <label className="mt-5 block space-y-2">
           <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
             <span className="text-[#ef7885]"><SmallIcon type="message" /></span>
-            Recado para os anfitriões
+            Recado para os anfitrioes
           </span>
 
           <Textarea
             value={guestMessage}
             onChange={(event) => onGuestMessageChange(event.target.value)}
-            placeholder="Ex: Que dia lindo! Felicidades para vocês."
+            placeholder="Ex: Que dia lindo! Felicidades para voces. Se quiser, pode enviar so este recado."
             maxLength={MAX_GUEST_MESSAGE_LENGTH}
           />
           <span className="block text-right text-xs font-semibold text-[#2c2927]/45">
@@ -279,11 +280,11 @@ export function GuestUploadCard({
         ) : null}
 
         <Button type="submit" disabled={busy} className="mt-6 w-full rounded-[14px] py-4">
-          {busy ? 'Enviando fotos...' : 'Enviar fotos'}
+          {busy ? 'Enviando...' : 'Enviar para os anfitrioes'}
         </Button>
 
         <p className="mt-4 text-center text-xs leading-5 text-[#2c2927]/48">
-          O envio pode levar alguns segundos dependendo da sua conexão.
+          O envio pode levar alguns segundos dependendo da sua conexao.
         </p>
       </form>
     </section>

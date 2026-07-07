@@ -81,7 +81,7 @@ export function PhotoGrid({
   return (
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {photos.map((photo) => {
-          const imageUrl = mediaUrl(photo.downloadUrl);
+          const imageUrl = mediaUrl(photo.downloadUrl || '');
 
           return (
               <Card
@@ -96,7 +96,7 @@ export function PhotoGrid({
                 >
                   <img
                       src={imageUrl}
-                      alt={photo.originalFilename}
+                      alt={photo.originalFilename || 'Foto do evento'}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                   />
 
@@ -114,7 +114,7 @@ export function PhotoGrid({
                     </p>
 
                     <p className="mt-1 truncate text-xs text-white/72">
-                      {photo.originalFilename}
+                      {photo.originalFilename || 'Foto enviada pelo convidado'}
                     </p>
                   </div>
                 </a>
@@ -145,7 +145,7 @@ export function PhotoGrid({
                       </p>
 
                       <p className="mt-1 font-semibold text-ink-900">
-                        {formatBytes(photo.sizeBytes)}
+                        {formatBytes(photo.sizeBytes ?? 0)}
                       </p>
                     </div>
 

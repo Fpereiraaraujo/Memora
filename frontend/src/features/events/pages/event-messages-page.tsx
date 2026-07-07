@@ -50,7 +50,7 @@ export function EventMessagesPage() {
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
-                          <p className="mt-1 text-xs text-[#2c2927]/45">{photo.originalFilename}</p>
+                          <p className="mt-1 text-xs text-[#2c2927]/45">{photo.originalFilename || 'Recado sem foto anexada'}</p>
                         </div>
 
                         <span className="shrink-0 text-xs font-medium text-[#2c2927]/45">

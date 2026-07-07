@@ -18,12 +18,12 @@ export function EventDownloadsPage() {
   const dashboard = useEventDashboard(eventId);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.max(1, Math.ceil(dashboard.photos.length / DOWNLOADS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(dashboard.mediaPhotos.length / DOWNLOADS_PER_PAGE));
 
   const visiblePhotos = useMemo(() => {
     const start = (currentPage - 1) * DOWNLOADS_PER_PAGE;
-    return dashboard.photos.slice(start, start + DOWNLOADS_PER_PAGE);
-  }, [currentPage, dashboard.photos]);
+    return dashboard.mediaPhotos.slice(start, start + DOWNLOADS_PER_PAGE);
+  }, [currentPage, dashboard.mediaPhotos]);
 
   return (
     <EventPageLayout
@@ -38,7 +38,7 @@ export function EventDownloadsPage() {
             eyebrow="Downloads"
             title="Baixe e organize suas memórias"
             description="Acesse todas as fotos recebidas e use as favoritas como um atalho para separar os arquivos mais importantes."
-            badge={`${dashboard.photos.length} arquivos`}
+            badge={`${dashboard.mediaPhotos.length} arquivos`}
             actions={
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -65,7 +65,7 @@ export function EventDownloadsPage() {
               <div className="mt-6 grid gap-3">
                 <div className="rounded-[18px] bg-[#fff7f2] p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e]">Fotos totais</p>
-                  <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#161314]">{dashboard.photos.length}</p>
+                  <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#161314]">{dashboard.mediaPhotos.length}</p>
                   <p className="mt-1 text-sm text-[#2c2927]/58">Arquivos prontos para abrir ou baixar manualmente.</p>
                 </div>
 
@@ -89,19 +89,19 @@ export function EventDownloadsPage() {
                 {visiblePhotos.map((photo) => (
                   <a
                     key={photo.id}
-                    href={getPhotoSrc(photo.downloadUrl)}
+                    href={getPhotoSrc(photo.downloadUrl || '')}
                     target="_blank"
                     rel="noreferrer"
                     className="flex flex-col gap-4 rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7] p-4 transition hover:-translate-y-0.5 hover:bg-white sm:flex-row sm:items-center"
                   >
                     <img
-                      src={getPhotoSrc(photo.downloadUrl)}
-                      alt={photo.originalFilename}
+                      src={getPhotoSrc(photo.downloadUrl || '')}
+                      alt={photo.originalFilename || 'Foto do evento'}
                       className="h-24 w-full rounded-[16px] object-cover sm:w-28"
                     />
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[#161314]">{photo.originalFilename}</p>
+                      <p className="truncate text-sm font-bold text-[#161314]">{photo.originalFilename || 'Foto enviada pelo convidado'}</p>
                       <p className="mt-1 text-sm text-[#2c2927]/58">{photo.guestName || 'Convidado anônimo'}</p>
                       <p className="mt-2 text-xs text-[#2c2927]/46">{formatRelativeTime(photo.createdAt)}</p>
                     </div>

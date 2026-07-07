@@ -26,7 +26,15 @@ public class PhotoApiMapper {
 			photo.getGuestName(),
 			photo.getGuestMessage(),
 			photo.getCreatedAt(),
-			fileStorageService.resolvePublicUrl(photo.getObjectKey())
+			resolvePublicUrl(photo.getObjectKey())
 		);
+	}
+
+	private String resolvePublicUrl(String objectKey) {
+		if (objectKey == null || objectKey.isBlank()) {
+			return null;
+		}
+
+		return fileStorageService.resolvePublicUrl(objectKey);
 	}
 }

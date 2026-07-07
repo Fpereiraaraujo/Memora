@@ -53,7 +53,7 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		}
 
 		if (event.getPhotoLimit() != null) {
-			long currentPhotos = photoRepository.countByEventId(event.getId());
+			long currentPhotos = photoRepository.countByEventIdAndObjectKeyIsNotNull(event.getId());
 			if (currentPhotos >= event.getPhotoLimit()) {
 				throw new IllegalArgumentException("Event photo limit has been reached");
 			}
@@ -61,11 +61,16 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 
 		validateUpload(param);
 
-		String originalFilename = param.originalFilename() == null ? "photo" : param.originalFilename();
-		String contentType = normalizeContentType(param.contentType());
-		String extension = extractExtension(originalFilename);
-		String objectKey = "events/" + event.getSlug() + "/photos/" + UUID.randomUUID() + extension;
-		fileStorageService.store(objectKey, param.content(), contentType);
+		boolean hasFile = param.content() != null && param.content().length > 0;
+		String originalFilename = hasFile ? (param.originalFilename() == null ? "photo" : param.originalFilename()) : null;
+		String contentType = hasFile ? normalizeContentType(param.contentType()) : null;
+		String objectKey = null;
+
+		if (hasFile) {
+			String extension = extractExtension(originalFilename);
+			objectKey = "events/" + event.getSlug() + "/photos/" + UUID.randomUUID() + extension;
+			fileStorageService.store(objectKey, param.content(), contentType);
+		}
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 		Photo photo = Photo.builder()
@@ -94,21 +99,26 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 	}
 
 	private void validateUpload(UploadGuestPhotoParam param) {
-		if (param.content() == null || param.content().length == 0) {
-			throw new IllegalArgumentException("Photo file is required");
+		boolean hasFile = param.content() != null && param.content().length > 0;
+		boolean hasMessage = param.guestMessage() != null && !param.guestMessage().isBlank();
+
+		if (!hasFile && !hasMessage) {
+			throw new IllegalArgumentException("Send at least one photo or a guest message");
 		}
 
-		if (param.sizeBytes() <= 0) {
-			throw new IllegalArgumentException("Photo file is required");
-		}
+		if (hasFile) {
+			if (param.sizeBytes() <= 0) {
+				throw new IllegalArgumentException("Photo file is required");
+			}
 
-		if (param.sizeBytes() > uploadProperties.maxFileSizeBytes()) {
-			throw new IllegalArgumentException("Photo file exceeds maximum allowed size");
-		}
+			if (param.sizeBytes() > uploadProperties.maxFileSizeBytes()) {
+				throw new IllegalArgumentException("Photo file exceeds maximum allowed size");
+			}
 
-		String contentType = normalizeContentType(param.contentType());
-		if (!uploadProperties.allowedContentTypes().contains(contentType)) {
-			throw new IllegalArgumentException("Unsupported photo content type");
+			String contentType = normalizeContentType(param.contentType());
+			if (!uploadProperties.allowedContentTypes().contains(contentType)) {
+				throw new IllegalArgumentException("Unsupported photo content type");
+			}
 		}
 
 		String guestName = param.guestName();

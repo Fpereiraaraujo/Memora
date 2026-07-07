@@ -36,12 +36,12 @@ export function EventGalleryPage() {
 
       if (dashboard.mockMode || !token) {
         const start = (currentPage - 1) * GALLERY_PAGE_SIZE;
-        const fallbackPhotos = dashboard.photos.slice(start, start + GALLERY_PAGE_SIZE);
+        const fallbackPhotos = dashboard.mediaPhotos.slice(start, start + GALLERY_PAGE_SIZE);
 
         if (active) {
           setVisiblePhotos(fallbackPhotos);
-          setTotalElements(dashboard.photos.length);
-          setTotalPages(Math.max(1, Math.ceil(dashboard.photos.length / GALLERY_PAGE_SIZE)));
+          setTotalElements(dashboard.mediaPhotos.length);
+          setTotalPages(Math.max(1, Math.ceil(dashboard.mediaPhotos.length / GALLERY_PAGE_SIZE)));
           setPageError(null);
         }
 
@@ -59,12 +59,12 @@ export function EventGalleryPage() {
         }
       } catch (exception) {
         const start = (currentPage - 1) * GALLERY_PAGE_SIZE;
-        const fallbackPhotos = dashboard.photos.slice(start, start + GALLERY_PAGE_SIZE);
+        const fallbackPhotos = dashboard.mediaPhotos.slice(start, start + GALLERY_PAGE_SIZE);
 
         if (active) {
           setVisiblePhotos(fallbackPhotos);
-          setTotalElements(dashboard.photos.length);
-          setTotalPages(Math.max(1, Math.ceil(dashboard.photos.length / GALLERY_PAGE_SIZE)));
+          setTotalElements(dashboard.mediaPhotos.length);
+          setTotalPages(Math.max(1, Math.ceil(dashboard.mediaPhotos.length / GALLERY_PAGE_SIZE)));
           setPageError(exception instanceof Error ? exception.message : 'Não foi possível carregar a galeria paginada.');
         }
       }
@@ -75,20 +75,20 @@ export function EventGalleryPage() {
     return () => {
       active = false;
     };
-  }, [currentPage, dashboard.mockMode, dashboard.photos, eventId, token]);
+  }, [currentPage, dashboard.mediaPhotos, dashboard.mockMode, eventId, token]);
 
   const hydratedVisiblePhotos = useMemo(() => {
     if (visiblePhotos.length === 0) {
       return visiblePhotos;
     }
 
-    const favoritesById = new Map(dashboard.photos.map((photo) => [photo.id, photo.favorite]));
+    const favoritesById = new Map(dashboard.mediaPhotos.map((photo) => [photo.id, photo.favorite]));
 
     return visiblePhotos.map((photo) => ({
       ...photo,
       favorite: favoritesById.get(photo.id) ?? photo.favorite,
     }));
-  }, [dashboard.photos, visiblePhotos]);
+  }, [dashboard.mediaPhotos, visiblePhotos]);
 
   return (
     <EventPageLayout
@@ -103,7 +103,7 @@ export function EventGalleryPage() {
             eyebrow="Galeria completa"
             title="Todas as fotos do evento"
             description="Explore todos os envios dos convidados em uma visualização paginada, pronta para curtir, revisar e compartilhar."
-            badge={`${totalElements || dashboard.photos.length} fotos`}
+            badge={`${totalElements || dashboard.mediaPhotos.length} fotos`}
           />
 
           {pageError ? (

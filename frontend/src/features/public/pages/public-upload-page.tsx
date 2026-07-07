@@ -174,9 +174,11 @@ export function PublicUploadPage() {
       setInputKey((current) => current + 1);
       setSuccess(true);
       setSuccessMessage(
-        response.uploadedCount > 1
-          ? `${response.uploadedCount} fotos enviadas com sucesso. Obrigado por compartilhar esse momento!`
-          : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
+        files.length === 0
+          ? 'Recado enviado com sucesso. Obrigado por deixar sua mensagem para os anfitrioes!'
+          : response.uploadedCount > 1
+            ? `${response.uploadedCount} fotos enviadas com sucesso. Obrigado por compartilhar esse momento!`
+            : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
       );
       await refreshPreviewPhotos(slug);
     } catch (exception) {
@@ -200,7 +202,7 @@ export function PublicUploadPage() {
             to={`/e/${event.slug}`}
             className="inline-flex h-11 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-5 text-sm font-bold text-[#201914] shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:bg-[#fff7f2]"
           >
-            Ver galeria
+            Ver pagina do evento
           </Link>
         </header>
 

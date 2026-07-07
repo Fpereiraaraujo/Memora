@@ -34,12 +34,13 @@ export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFa
           <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {photos.map((photo) => {
               const isFavorite = favorites.includes(photo.id);
+              const photoSrc = getPhotoSrc(photo.downloadUrl || '');
 
               return (
                 <div key={photo.id} className="group relative aspect-[1.08/1] overflow-hidden rounded-[16px] bg-[#f5ded2]">
                   <img
-                    src={getPhotoSrc(photo.downloadUrl)}
-                    alt={photo.originalFilename}
+                    src={photoSrc}
+                    alt={photo.originalFilename || 'Foto do evento'}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
 

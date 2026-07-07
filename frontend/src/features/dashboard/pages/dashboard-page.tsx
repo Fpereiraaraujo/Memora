@@ -84,9 +84,22 @@ export function DashboardPage() {
 
       try {
         const data = await api.listEvents(token);
+        const normalizedEvents = await Promise.all(
+          data.map(async (event) => {
+            if (event.status !== 'DRAFT') {
+              return event;
+            }
+
+            try {
+              return await api.updateEventStatus(token, event.id, 'ACTIVE');
+            } catch {
+              return event;
+            }
+          }),
+        );
 
         if (active) {
-          setEvents(data);
+          setEvents(normalizedEvents);
           setMockMode(false);
         }
       } catch {
@@ -120,11 +133,16 @@ export function DashboardPage() {
 
     try {
       const created = await api.createEvent(token, form);
-      setEvents((current) => [created, ...current]);
+      const activeEvent =
+        created.status === 'DRAFT'
+          ? await api.updateEventStatus(token, created.id, 'ACTIVE').catch(() => created)
+          : created;
+
+      setEvents((current) => [activeEvent, ...current]);
       setForm(defaultForm);
       setMockMode(false);
       setCurrentPage(1);
-      navigate(buildEventOverviewPath(created.id));
+      navigate(buildEventOverviewPath(activeEvent.id));
     } catch (exception) {
       setError(
         exception instanceof Error

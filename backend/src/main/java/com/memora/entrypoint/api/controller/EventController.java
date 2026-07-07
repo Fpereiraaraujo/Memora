@@ -8,30 +8,41 @@ import com.memora.core.domain.param.CreateEventParam;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.domain.param.GetEventParam;
+import com.memora.core.domain.param.GetEventPublicPageCustomizationParam;
 import com.memora.core.domain.param.ListEventsParam;
 import com.memora.core.domain.param.ListEventPhotosParam;
 import com.memora.core.domain.param.ListEventPhotosPageParam;
+import com.memora.core.domain.param.UpdateEventPublicPageCustomizationParam;
 import com.memora.core.domain.param.UpdatePhotoFavoriteParam;
 import com.memora.core.domain.param.UpdatePhotoStatusParam;
 import com.memora.core.domain.param.UpdateEventStatusParam;
 import com.memora.core.domain.param.UpdateEventParam;
+import com.memora.core.domain.param.UploadEventPublicPageCoverImageParam;
+import com.memora.core.domain.param.UploadEventPublicPageHighlightImagesParam;
 import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.GetEventUseCase;
+import com.memora.core.usecase.GetEventPublicPageCustomizationUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.core.usecase.ListEventPhotosPageUseCase;
+import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
 import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
 import com.memora.core.usecase.UpdatePhotoStatusUseCase;
 import com.memora.core.usecase.UpdateEventStatusUseCase;
 import com.memora.core.usecase.UpdateEventUseCase;
+import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
+import com.memora.core.usecase.UploadEventPublicPageHighlightImagesUseCase;
 import com.memora.config.AppProperties;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
@@ -40,15 +51,18 @@ import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
 import com.memora.entrypoint.api.dto.PhotoStatusUpdateRequestDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
+import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.shared.EventQrCodeService;
 import java.util.List;
 import java.util.UUID;
+import java.io.IOException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -61,6 +75,10 @@ public class EventController implements EventControllerApi {
 	private final GetEventUseCase getEventUseCase;
 	private final UpdateEventUseCase updateEventUseCase;
 	private final UpdateEventStatusUseCase updateEventStatusUseCase;
+	private final GetEventPublicPageCustomizationUseCase getEventPublicPageCustomizationUseCase;
+	private final UpdateEventPublicPageCustomizationUseCase updateEventPublicPageCustomizationUseCase;
+	private final UploadEventPublicPageCoverImageUseCase uploadEventPublicPageCoverImageUseCase;
+	private final UploadEventPublicPageHighlightImagesUseCase uploadEventPublicPageHighlightImagesUseCase;
 	private final ListEventPhotosUseCase listEventPhotosUseCase;
 	private final ListEventPhotosPageUseCase listEventPhotosPageUseCase;
 	private final UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase;
@@ -68,6 +86,7 @@ public class EventController implements EventControllerApi {
 	private final EventQrCodeService eventQrCodeService;
 	private final AppProperties appProperties;
 	private final PhotoApiMapper photoApiMapper;
+	private final EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
 
 	public EventController(
 		GetCurrentUserUseCase getCurrentUserUseCase,
@@ -77,13 +96,18 @@ public class EventController implements EventControllerApi {
 		GetEventUseCase getEventUseCase,
 		UpdateEventUseCase updateEventUseCase,
 		UpdateEventStatusUseCase updateEventStatusUseCase,
+		GetEventPublicPageCustomizationUseCase getEventPublicPageCustomizationUseCase,
+		UpdateEventPublicPageCustomizationUseCase updateEventPublicPageCustomizationUseCase,
+		UploadEventPublicPageCoverImageUseCase uploadEventPublicPageCoverImageUseCase,
+		UploadEventPublicPageHighlightImagesUseCase uploadEventPublicPageHighlightImagesUseCase,
 		ListEventPhotosUseCase listEventPhotosUseCase,
 		ListEventPhotosPageUseCase listEventPhotosPageUseCase,
 		UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase,
 		UpdatePhotoStatusUseCase updatePhotoStatusUseCase,
 		EventQrCodeService eventQrCodeService,
 		AppProperties appProperties,
-		PhotoApiMapper photoApiMapper
+		PhotoApiMapper photoApiMapper,
+		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper
 	) {
 		this.getCurrentUserUseCase = getCurrentUserUseCase;
 		this.createEventUseCase = createEventUseCase;
@@ -92,6 +116,10 @@ public class EventController implements EventControllerApi {
 		this.getEventUseCase = getEventUseCase;
 		this.updateEventUseCase = updateEventUseCase;
 		this.updateEventStatusUseCase = updateEventStatusUseCase;
+		this.getEventPublicPageCustomizationUseCase = getEventPublicPageCustomizationUseCase;
+		this.updateEventPublicPageCustomizationUseCase = updateEventPublicPageCustomizationUseCase;
+		this.uploadEventPublicPageCoverImageUseCase = uploadEventPublicPageCoverImageUseCase;
+		this.uploadEventPublicPageHighlightImagesUseCase = uploadEventPublicPageHighlightImagesUseCase;
 		this.listEventPhotosUseCase = listEventPhotosUseCase;
 		this.listEventPhotosPageUseCase = listEventPhotosPageUseCase;
 		this.updatePhotoFavoriteUseCase = updatePhotoFavoriteUseCase;
@@ -99,6 +127,7 @@ public class EventController implements EventControllerApi {
 		this.eventQrCodeService = eventQrCodeService;
 		this.appProperties = appProperties;
 		this.photoApiMapper = photoApiMapper;
+		this.eventPublicPageCustomizationApiMapper = eventPublicPageCustomizationApiMapper;
 	}
 
 	@Override
@@ -195,6 +224,77 @@ public class EventController implements EventControllerApi {
 			request.status()
 		));
 		return ResponseEntity.ok(EventApiMapper.toResponse(event));
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageCustomizationResponseDto> getPublicPageCustomization(UUID eventId, Authentication authentication) {
+		User user = resolveUser(authentication);
+		var customization = getEventPublicPageCustomizationUseCase.execute(new GetEventPublicPageCustomizationParam(
+			user.getId(),
+			eventId
+		));
+
+		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toResponse(customization));
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageCustomizationResponseDto> updatePublicPageCustomization(UUID eventId, EventPublicPageCustomizationUpdateRequestDto request, Authentication authentication) {
+		User user = resolveUser(authentication);
+		var customization = updateEventPublicPageCustomizationUseCase.execute(new UpdateEventPublicPageCustomizationParam(
+			user.getId(),
+			eventId,
+			request.title(),
+			request.eventDate(),
+			request.welcomeMessage()
+		));
+
+		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toResponse(customization));
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageCoverImage(UUID eventId, MultipartFile file, Authentication authentication) {
+		User user = resolveUser(authentication);
+
+		try {
+			var customization = uploadEventPublicPageCoverImageUseCase.execute(new UploadEventPublicPageCoverImageParam(
+				user.getId(),
+				eventId,
+				file == null ? null : file.getOriginalFilename(),
+				file == null ? null : file.getContentType(),
+				file == null ? null : file.getBytes()
+			));
+
+			return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toCoverUploadResponse(customization));
+		} catch (IOException exception) {
+			throw new IllegalStateException("Unable to read uploaded cover image", exception);
+		}
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(UUID eventId, List<MultipartFile> files, Authentication authentication) {
+		User user = resolveUser(authentication);
+
+		try {
+			var customization = uploadEventPublicPageHighlightImagesUseCase.execute(new UploadEventPublicPageHighlightImagesParam(
+				user.getId(),
+				eventId,
+				files == null ? List.of() : files.stream().map(file -> {
+					try {
+						return new UploadEventPublicPageHighlightImagesParam.UploadImageItemParam(
+							file.getOriginalFilename(),
+							file.getContentType(),
+							file.getBytes()
+						);
+					} catch (IOException exception) {
+						throw new IllegalStateException("Unable to read uploaded highlight image", exception);
+					}
+				}).toList()
+			));
+
+			return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toHighlightUploadResponse(customization));
+		} catch (IllegalStateException exception) {
+			throw exception;
+		}
 	}
 
 	@Override

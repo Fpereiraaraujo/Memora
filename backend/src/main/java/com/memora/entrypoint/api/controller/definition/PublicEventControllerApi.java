@@ -1,6 +1,7 @@
 package com.memora.entrypoint.api.controller.definition;
 
 import com.memora.entrypoint.api.dto.PublicEventResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadRequestDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadResponseDto;
 import com.memora.entrypoint.api.dto.PageResponseDto;
@@ -34,6 +35,17 @@ public interface PublicEventControllerApi {
 		}
 	)
 	ResponseEntity<PublicEventResponseDto> getPublicEvent(@PathVariable String slug);
+
+	@GetMapping("/api/public/events/{slug}/public-page")
+	@Operation(
+		summary = "Get public event page customization",
+		description = "Returns the public page customization used by guests.",
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Customization returned"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventPublicPageCustomizationResponseDto> getPublicPageCustomization(@PathVariable String slug);
 
 	@GetMapping("/api/public/events/{slug}/photos")
 	@Operation(

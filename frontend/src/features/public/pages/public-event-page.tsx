@@ -111,7 +111,7 @@ export function PublicEventPage() {
       return highlightedImages.slice(0, 4);
     }
 
-    return photos.slice(0, 4).map((photo) => getPhotoSrc(photo.downloadUrl));
+    return photos.slice(0, 4).map((photo) => getPhotoSrc(photo.downloadUrl || ''));
   }, [highlightedImages, photos]);
 
   useEffect(() => {
@@ -307,9 +307,9 @@ export function PublicEventPage() {
             ) : (
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {photos.map((photo) => (
-                  <a key={photo.id} href={getPhotoSrc(photo.downloadUrl)} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
+                  <a key={photo.id} href={getPhotoSrc(photo.downloadUrl || '')} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
                     <div className="relative aspect-square overflow-hidden bg-[#f5ded2]">
-                      <img src={getPhotoSrc(photo.downloadUrl)} alt={photo.originalFilename} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <img src={getPhotoSrc(photo.downloadUrl || '')} alt={photo.originalFilename || 'Foto do evento'} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                       <span className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/92 text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
                         <HeartIcon className="size-4" />
                       </span>
@@ -317,7 +317,6 @@ export function PublicEventPage() {
 
                     <div className="p-4">
                       <p className="truncate text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
-                      {photo.guestMessage ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#2c2927]/62">{photo.guestMessage}</p> : null}
                     </div>
                   </a>
                 ))}

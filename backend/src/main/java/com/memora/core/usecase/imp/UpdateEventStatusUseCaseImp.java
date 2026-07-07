@@ -45,12 +45,8 @@ public class UpdateEventStatusUseCaseImp implements UpdateEventStatusUseCase {
 			return;
 		}
 
-		if (currentStatus == EventStatus.DRAFT && nextStatus == EventStatus.ACTIVE) {
-			throw new IllegalArgumentException("Draft events can only be activated after approved payment");
-		}
-
 		boolean validTransition = switch (currentStatus) {
-			case DRAFT -> false;
+			case DRAFT -> nextStatus == EventStatus.ACTIVE;
 			case ACTIVE -> nextStatus == EventStatus.PAUSED;
 			case PAUSED -> nextStatus == EventStatus.ACTIVE;
 			case EXPIRED -> false;

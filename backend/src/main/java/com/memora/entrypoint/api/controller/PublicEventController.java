@@ -4,20 +4,24 @@ import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.param.GetPublicEventParam;
+import com.memora.core.domain.param.GetPublicEventCustomizationParam;
 import com.memora.core.domain.param.ListPublicEventPhotosParam;
 import com.memora.core.domain.param.ListPublicEventPhotosPageParam;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
 import com.memora.core.usecase.GetPublicEventUseCase;
+import com.memora.core.usecase.GetPublicEventCustomizationUseCase;
 import com.memora.core.usecase.ListPublicEventPhotosUseCase;
 import com.memora.core.usecase.ListPublicEventPhotosPageUseCase;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
 import com.memora.entrypoint.api.controller.definition.PublicEventControllerApi;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PublicEventResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadRequestDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadResponseDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
+import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.entrypoint.api.mapper.PublicPhotoApiMapper;
 import java.io.IOException;
@@ -34,35 +38,47 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublicEventController implements PublicEventControllerApi {
 
 	private final GetPublicEventUseCase getPublicEventUseCase;
+	private final GetPublicEventCustomizationUseCase getPublicEventCustomizationUseCase;
 	private final ListPublicEventPhotosUseCase listPublicEventPhotosUseCase;
 	private final ListPublicEventPhotosPageUseCase listPublicEventPhotosPageUseCase;
 	private final UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
 	private final PublicUploadRateLimiter publicUploadRateLimiter;
 	private final UploadProperties uploadProperties;
 	private final PhotoApiMapper photoApiMapper;
+	private final EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
 
 	public PublicEventController(
 		GetPublicEventUseCase getPublicEventUseCase,
+		GetPublicEventCustomizationUseCase getPublicEventCustomizationUseCase,
 		ListPublicEventPhotosUseCase listPublicEventPhotosUseCase,
 		ListPublicEventPhotosPageUseCase listPublicEventPhotosPageUseCase,
 		UploadGuestPhotoUseCase uploadGuestPhotoUseCase,
 		PublicUploadRateLimiter publicUploadRateLimiter,
 		UploadProperties uploadProperties,
-		PhotoApiMapper photoApiMapper
+		PhotoApiMapper photoApiMapper,
+		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper
 	) {
 		this.getPublicEventUseCase = getPublicEventUseCase;
+		this.getPublicEventCustomizationUseCase = getPublicEventCustomizationUseCase;
 		this.listPublicEventPhotosUseCase = listPublicEventPhotosUseCase;
 		this.listPublicEventPhotosPageUseCase = listPublicEventPhotosPageUseCase;
 		this.uploadGuestPhotoUseCase = uploadGuestPhotoUseCase;
 		this.publicUploadRateLimiter = publicUploadRateLimiter;
 		this.uploadProperties = uploadProperties;
 		this.photoApiMapper = photoApiMapper;
+		this.eventPublicPageCustomizationApiMapper = eventPublicPageCustomizationApiMapper;
 	}
 
 	@Override
 	public ResponseEntity<PublicEventResponseDto> getPublicEvent(String slug) {
 		Event event = getPublicEventUseCase.execute(new GetPublicEventParam(slug));
 		return ResponseEntity.ok(EventApiMapper.toPublicResponse(event));
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageCustomizationResponseDto> getPublicPageCustomization(String slug) {
+		var customization = getPublicEventCustomizationUseCase.execute(new GetPublicEventCustomizationParam(slug));
+		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toResponse(customization));
 	}
 
 	@Override
@@ -98,8 +114,10 @@ public class PublicEventController implements PublicEventControllerApi {
 	@Override
 	public ResponseEntity<PublicGuestUploadResponseDto> uploadGuestPhoto(String slug, PublicGuestUploadRequestDto request, HttpServletRequest httpServletRequest) {
 		List<MultipartFile> files = request.resolveFiles();
-		if (files.isEmpty()) {
-			throw new IllegalArgumentException("At least one photo file is required");
+		boolean hasMessageOnly = request.getGuestMessage() != null && !request.getGuestMessage().isBlank();
+
+		if (files.isEmpty() && !hasMessageOnly) {
+			throw new IllegalArgumentException("Send at least one photo or a guest message");
 		}
 
 		if (files.size() > uploadProperties.maxFilesPerRequest()) {
@@ -108,10 +126,22 @@ public class PublicEventController implements PublicEventControllerApi {
 
 		publicUploadRateLimiter.checkLimit(slug, resolveClientIp(httpServletRequest));
 
-		List<Photo> uploadedPhotos = files.stream()
-			.map(file -> uploadPhoto(slug, request, file))
-			.toList();
+		List<Photo> uploadedPhotos = files.isEmpty()
+			? List.of(uploadMessageOnly(slug, request))
+			: files.stream().map(file -> uploadPhoto(slug, request, file)).toList();
 		return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toBatchResponse(uploadedPhotos));
+	}
+
+	private Photo uploadMessageOnly(String slug, PublicGuestUploadRequestDto request) {
+		return uploadGuestPhotoUseCase.execute(new UploadGuestPhotoParam(
+			slug,
+			request.getGuestName(),
+			request.getGuestMessage(),
+			null,
+			null,
+			0,
+			null
+		));
 	}
 
 	private Photo uploadPhoto(String slug, PublicGuestUploadRequestDto request, MultipartFile file) {

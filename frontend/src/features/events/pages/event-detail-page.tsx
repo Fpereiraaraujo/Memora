@@ -45,7 +45,7 @@ export function EventDetailPage() {
           />
 
           <EventStatsSection
-            photosCount={dashboard.photos.length}
+            photosCount={dashboard.mediaPhotos.length}
             guestCount={dashboard.guestCount}
             favoritesCount={dashboard.favoritePhotos.length}
           />
@@ -74,7 +74,7 @@ export function EventDetailPage() {
           <section className="grid gap-6 xl:grid-cols-[1fr]">
             <EventDownloadsCard
               eventId={dashboard.event.id}
-              photosCount={dashboard.photos.length}
+              photosCount={dashboard.mediaPhotos.length}
               favoritesCount={dashboard.favoritePhotos.length}
               galleryPath={galleryPath}
             />

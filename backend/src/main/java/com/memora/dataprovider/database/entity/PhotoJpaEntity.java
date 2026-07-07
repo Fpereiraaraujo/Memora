@@ -30,16 +30,16 @@ public class PhotoJpaEntity {
 	@Column(name = "event_id", nullable = false)
 	private UUID eventId;
 
-	@Column(name = "original_filename", nullable = false)
+	@Column(name = "original_filename")
 	private String originalFilename;
 
-	@Column(name = "object_key", nullable = false, unique = true)
+	@Column(name = "object_key", unique = true)
 	private String objectKey;
 
-	@Column(name = "content_type", nullable = false)
+	@Column(name = "content_type")
 	private String contentType;
 
-	@Column(name = "size_bytes", nullable = false)
+	@Column(name = "size_bytes")
 	private Long sizeBytes;
 
 	@Enumerated(EnumType.STRING)
