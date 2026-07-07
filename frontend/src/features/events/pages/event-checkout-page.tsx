@@ -117,45 +117,27 @@ export function EventCheckoutPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <section className="relative overflow-hidden rounded-[2.8rem] border border-[#f0d8ca] bg-white/72 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute -right-20 top-0 size-72 rounded-full bg-[#f4a1aa]/18 blur-3xl" />
-          <div className="pointer-events-none absolute -left-20 bottom-0 size-72 rounded-full bg-[#f6d8b8]/30 blur-3xl" />
-
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <section className="rounded-[2.3rem] border border-[#f0d8ca] bg-white/78 p-6 shadow-[0_22px_70px_rgba(96,60,36,0.08)] sm:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-3xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/88 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/88 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)]">
                 <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
                   ♥
                 </span>
-                Ativacao do evento
+                Plano do casamento
               </div>
 
-              <h1 className="font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-ink-900 md:text-6xl">
-                Escolha o plano ideal para liberar o seu evento
+              <h1 className="font-display text-[2.5rem] font-semibold leading-[0.95] tracking-[-0.055em] text-ink-900 sm:text-5xl">
+                Escolha um plano e siga para o checkout
               </h1>
-
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                Assim que o pagamento for aprovado, o evento fica ativo automaticamente e passa a liberar QR Code, pagina publica, uploads dos convidados, favoritas, downloads e recados.
-              </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                to={event ? buildEventOverviewPath(event.id) : '/app'}
-                className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5"
-              >
-                Voltar ao evento
-              </Link>
-
-              {event?.status === 'ACTIVE' ? (
-                <Link
-                  to={buildEventQrPath(event.id)}
-                  className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.28)] transition hover:-translate-y-0.5"
-                >
-                  Abrir QR Code
-                </Link>
-              ) : null}
-            </div>
+            <Link
+              to={event ? buildEventOverviewPath(event.id) : '/app'}
+              className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5"
+            >
+              Voltar
+            </Link>
           </div>
         </section>
 
@@ -184,11 +166,11 @@ export function EventCheckoutPage() {
             )}
           />
         ) : (
-          <div className="grid gap-6 xl:grid-cols-[0.86fr_1.14fr]">
+          <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
             <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">
-                  Evento selecionado
+                  Resumo
                 </p>
 
                 <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
@@ -211,33 +193,18 @@ export function EventCheckoutPage() {
                 </p>
               </div>
 
-              {event.planCode ? (
-                <div className="rounded-[1.7rem] border border-[#d9f0dc] bg-[#f5fff6] px-5 py-4 text-sm text-[#2f7a3e]">
-                  Este evento ja possui um plano ativo. Se quiser, voce pode seguir para o painel ou abrir o QR Code.
-                </div>
-              ) : (
-                <div className="rounded-[1.7rem] border border-[#f7dec7] bg-[#fff7ef] px-5 py-4 text-sm text-[#8f6228]">
-                  O evento ainda esta em rascunho. Escolha um plano abaixo para liberar a pagina publica e o envio de fotos pelos convidados.
-                </div>
-              )}
+              <div className="rounded-[1.7rem] border border-[#f7dec7] bg-[#fff7ef] px-5 py-4 text-sm text-[#8f6228]">
+                Escolha apenas o plano que melhor combina com o tamanho do seu casamento. O restante do fluxo continua no checkout.
+              </div>
 
               {error ? (
                 <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
                   {error}
                 </div>
               ) : null}
-            </Card>
-
-            <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
-              <div className="rounded-[1.7rem] border border-[#f0d8ca] bg-white px-5 py-4">
-                <p className="text-sm font-bold text-ink-900">O que acontece depois do pagamento</p>
-                <p className="mt-2 text-sm leading-7 text-ink-800/68">
-                  A InfinityPay confirma o pagamento, o Memora ativa o evento automaticamente e o seu painel libera QR Code, link de upload, galeria privada e compartilhamento com convidados.
-                </p>
-              </div>
 
               {event.planCode ? (
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-col gap-3">
                   <Link
                     to={buildEventOverviewPath(event.id)}
                     className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5"
@@ -251,6 +218,14 @@ export function EventCheckoutPage() {
                   >
                     Ver QR Code
                   </Link>
+                </div>
+              ) : null}
+            </Card>
+
+            <Card className="space-y-5 border-[#f0d8ca] bg-white/72">
+              {event.planCode ? (
+                <div className="rounded-[1.7rem] border border-[#d9f0dc] bg-[#f5fff6] px-5 py-4 text-sm text-[#2f7a3e]">
+                  Este casamento ja possui um plano ativo. Voce pode seguir para o painel ou abrir o QR Code.
                 </div>
               ) : (
                 <EventPlanSelector

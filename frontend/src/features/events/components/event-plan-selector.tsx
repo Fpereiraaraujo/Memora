@@ -68,6 +68,7 @@ function PlanCard({
       <Button
         type="button"
         disabled={busy}
+        loading={busy && isSelected}
         onClick={() => onSelectPlan(plan.code)}
         className="mt-6 w-full py-4"
       >

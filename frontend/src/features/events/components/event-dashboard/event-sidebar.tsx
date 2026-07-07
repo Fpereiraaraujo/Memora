@@ -12,7 +12,6 @@ import {
   MessageIcon,
   QrIcon,
 } from '@/features/events/components/event-dashboard/event-icons';
-import { eventDashboardProfileImage } from '@/features/events/utils/event-dashboard-mock';
 import {
   buildEventDownloadsPath,
   buildEventFavoritesPath,
@@ -88,6 +87,7 @@ export function EventSidebar({
   const favoritesPath = buildEventFavoritesPath(event.id);
   const downloadsPath = buildEventDownloadsPath(event.id);
   const messagesPath = buildEventMessagesPath(event.id);
+  const initials = event.title.trim().slice(0, 2).toUpperCase() || 'ME';
 
   return (
     <aside className="rounded-[26px] border border-[#f1ddd1] bg-white/94 p-5 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur">
@@ -100,7 +100,7 @@ export function EventSidebar({
       <nav className="mt-4 space-y-1.5">
         <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
         <SidebarItem to="/app" label="Meus eventos" icon="events" end />
-        <SidebarItem to={publicSettingsPath} label="Página pública" icon="public" />
+        <SidebarItem to={publicSettingsPath} label="Pagina publica" icon="public" />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem to={favoritesPath} label="Favoritas" icon="heart" />
@@ -116,7 +116,7 @@ export function EventSidebar({
         <p className="text-[15px] font-bold text-[#201914]">Links do evento</p>
 
         <p className="mt-3 text-sm leading-6 text-[#2c2927]/64">
-          Compartilhe a página pública ou copie o link direto para upload dos convidados.
+          Compartilhe a pagina publica ou copie o link direto para upload dos convidados.
         </p>
 
         <div className="mt-5 grid gap-2">
@@ -133,18 +133,16 @@ export function EventSidebar({
             onClick={onCopyPublicLink}
             className="inline-flex h-11 w-full items-center justify-center rounded-[14px] border border-[#efb6bb] bg-white px-5 text-sm font-bold text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
           >
-            {publicCopied ? 'Página copiada' : 'Copiar página pública'}
+            {publicCopied ? 'Pagina copiada' : 'Copiar pagina publica'}
           </button>
         </div>
       </div>
 
       <div className="mt-5 rounded-[20px] border border-[#f2dfd4] bg-white p-4 shadow-[0_12px_28px_rgba(96,60,36,0.05)]">
         <div className="flex items-center gap-3">
-          <img
-            src={eventDashboardProfileImage}
-            alt="Perfil do evento"
-            className="size-14 rounded-full object-cover"
-          />
+          <div className="grid size-14 place-items-center rounded-full bg-[linear-gradient(135deg,#f3a1a9,#e88691)] font-display text-lg font-semibold text-white shadow-[0_12px_28px_rgba(239,120,133,0.22)]">
+            {initials}
+          </div>
 
           <div className="min-w-0">
             <p className="truncate text-[15px] font-bold text-[#201914]">{event.title}</p>

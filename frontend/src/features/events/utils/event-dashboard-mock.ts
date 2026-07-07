@@ -1,13 +1,10 @@
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
+import { marketingWeddingAssets } from '@/lib/public-assets';
 
 export const eventDashboardMockImages = [
-  '/wedding/700.jpg',
-  '/wedding/543.jpg',
-  '/wedding/528.jpg',
-  '/wedding/377.jpg',
-  '/wedding/203.jpg',
-  '/wedding/700.jpg',
+  ...marketingWeddingAssets.gallery,
+  marketingWeddingAssets.gallery[0],
 ];
 
 export const eventDashboardProfileImage = eventDashboardMockImages[0];

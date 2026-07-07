@@ -24,7 +24,7 @@ const EVENTS_PER_PAGE = 4;
 
 function formatFirstName(name?: string | null) {
   if (!name) {
-    return 'Anfitrião';
+    return 'Anfitriao';
   }
 
   return name.split(' ')[0] || name;
@@ -43,11 +43,11 @@ export function DashboardPage() {
 
   const stats = useMemo(() => {
     const activeEvents = events.filter((event) => event.status === 'ACTIVE').length;
-    const draftEvents = events.filter((event) => event.status === 'DRAFT').length;
+    const totalPhotos = events.reduce((sum, event) => sum + (event.photoLimit ?? 0), 0);
 
     return [
       {
-        label: 'Eventos',
+        label: 'Casamentos',
         value: events.length,
         description: 'criados na sua conta',
         icon: '♡',
@@ -59,9 +59,9 @@ export function DashboardPage() {
         icon: '✦',
       },
       {
-        label: 'Rascunhos',
-        value: draftEvents,
-        description: 'aguardando publicação',
+        label: 'Capacidade',
+        value: totalPhotos,
+        description: 'limite total contratado',
         icon: '◌',
       },
     ];
@@ -132,7 +132,7 @@ export function DashboardPage() {
     setError(null);
 
     try {
-      const created = await api.createEvent(token, form);
+      const created = await api.createEvent(token, { ...form, type: 'WEDDING' });
       const activeEvent =
         created.status === 'DRAFT'
           ? await api.updateEventStatus(token, created.id, 'ACTIVE').catch(() => created)
@@ -147,7 +147,7 @@ export function DashboardPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Não foi possível criar o evento',
+          : 'Nao foi possivel criar o evento',
       );
     } finally {
       setBusy(false);
@@ -161,25 +161,25 @@ export function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <section className="relative overflow-hidden rounded-[2.8rem] border border-[#f0d8ca] bg-white/62 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
+        <section className="relative overflow-hidden rounded-[2.4rem] border border-[#f0d8ca] bg-white/62 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
           <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-[#d8a84f]/20 blur-3xl" />
 
-          <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
+          <div className="relative grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
                 <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
                   ♥
                 </span>
-                Meus eventos
+                Sua area dos noivos
               </div>
 
-              <h1 className="max-w-3xl font-display text-5xl font-semibold leading-[0.95] tracking-[-0.055em] text-ink-900 md:text-6xl">
-                {formatFirstName(user?.name)}, vamos organizar as memórias do seu evento?
+              <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[0.98] tracking-[-0.055em] text-ink-900 md:text-6xl">
+                {formatFirstName(user?.name)}, vamos organizar as memorias do seu casamento?
               </h1>
 
               <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                Crie seu evento e abra o hub principal para acompanhar QR Code, uploads, galeria, favoritas, downloads e recados em um só lugar.
+                Crie seu espaco, compartilhe o QR Code e acompanhe uploads, galeria, favoritas, downloads e recados em um so lugar.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -201,28 +201,21 @@ export function DashboardPage() {
 
               {mockMode ? (
                 <p className="mt-4 text-sm font-semibold text-[#c5922e]">
-              Exibindo dados demonstrativos. Links públicos e upload ficam liberados para teste pelo frontend.
+                  Exibindo dados demonstrativos. Links publicos e upload ficam liberados para teste pelo frontend.
                 </p>
               ) : null}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              {[
-                'Cada evento recebe um painel próprio com visão geral e página pública.',
-                'O QR Code pode ser baixado e compartilhado com convidados em segundos.',
-                'Galeria, curtidas, downloads e recados ficam separados por área.',
-              ].map((item, index) => (
-                <div
-                  key={item}
-                  className="rounded-[2rem] border border-[#f0d8ca] bg-white/72 p-5 shadow-[0_16px_46px_rgba(96,60,36,0.06)]"
-                >
-                  <div className="mb-4 grid size-10 place-items-center rounded-2xl bg-[#fff1f2] text-sm font-bold text-[#ef7885]">
-                    0{index + 1}
-                  </div>
+            <div className="rounded-[2rem] border border-[#f0d8ca] bg-white/78 p-5 shadow-[0_16px_46px_rgba(96,60,36,0.06)]">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#b9852f]">
+                O essencial
+              </p>
 
-                  <p className="text-sm leading-7 text-ink-800/72">{item}</p>
-                </div>
-              ))}
+              <div className="mt-4 space-y-3 text-sm leading-7 text-ink-800/72">
+                <p>Seu painel concentra QR Code, pagina publica, galeria privada, favoritas, downloads e recados.</p>
+                <p>Os convidados entram sem login e enviam fotos direto do celular.</p>
+                <p>Depois de criar o casamento, voce ja pode abrir o hub e seguir com a configuracao.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -264,11 +257,11 @@ export function DashboardPage() {
               </p>
 
               <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                Crie um novo espaço para memórias
+                Crie seu casamento
               </h2>
 
               <p className="mt-3 text-sm leading-7 text-ink-800/70">
-                Comece com nome, data e local. Depois disso, você abre o hub do evento para revisar o QR Code, link público, galeria, favoritas, downloads e recados.
+                Comece com nome, data e local. Depois disso, voce abre o hub para revisar QR Code, pagina publica, galeria e recados.
               </p>
             </div>
 
@@ -294,16 +287,16 @@ export function DashboardPage() {
                 </p>
 
                 <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                  Seus eventos
+                  Seus casamentos
                 </h2>
 
                 <p className="mt-3 max-w-xl text-sm leading-7 text-ink-800/70">
-                  Abra um evento para visualizar o painel, QR Code, galeria completa, favoritas, downloads e todos os recados enviados.
+                  Abra um espaco para visualizar o painel, QR Code, galeria completa, favoritas, downloads e todos os recados enviados.
                 </p>
               </div>
 
               <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
-                Página {currentPage} de {totalPages}
+                Pagina {currentPage} de {totalPages}
               </span>
             </div>
 
@@ -319,13 +312,13 @@ export function DashboardPage() {
             ) : events.length === 0 ? (
               <EmptyState
                 title="Nenhum evento ainda"
-                description="Assim que você criar o primeiro evento, ele aparece aqui com QR Code, página pública e painel privado."
+                description="Assim que voce criar o primeiro evento, ele aparece aqui com QR Code, pagina publica e painel privado."
               />
             ) : (
               <>
                 <div className="grid gap-4">
                   {visibleEvents.map((event) => (
-              <EventCard key={event.id} event={event} publicLinksEnabled />
+                    <EventCard key={event.id} event={event} publicLinksEnabled />
                   ))}
                 </div>
 

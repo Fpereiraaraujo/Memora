@@ -1,14 +1,10 @@
+import { marketingWeddingAssets } from '@/lib/public-assets';
+
 interface DashboardPreviewProps {
   className?: string;
 }
 
-const galleryPhotos = [
-  '/wedding/700.jpg',
-  '/wedding/528.jpg',
-  '/wedding/203.jpg',
-  '/wedding/377.jpg',
-  '/wedding/543.jpg',
-];
+const galleryPhotos = [...marketingWeddingAssets.gallery];
 
 function StatCard({
   label,
@@ -49,7 +45,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
 
           <div className="mt-4 rounded-[1.2rem] bg-white p-2 shadow-[0_8px_18px_rgba(96,60,36,0.05)]">
             <div className="flex items-center gap-3">
-              <img src="/wedding/543.jpg" alt="Isadora e Fernando" className="size-10 rounded-xl object-cover" />
+              <img src={marketingWeddingAssets.coupleProfile} alt="Isadora e Fernando" className="size-10 rounded-xl object-cover" />
               <div>
                 <p className="text-xs font-bold text-ink-900">Casamento</p>
                 <p className="text-xs text-ink-800/58">Isadora & Fernando</p>
@@ -59,7 +55,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
           </div>
 
           <nav className="mt-4 grid gap-1 text-sm">
-            {['Visao geral', 'Galeria', 'Favoritos', 'Selecionadas', 'Convidados', 'Configuracoes'].map((item, index) => (
+            {['Visao geral', 'Galeria', 'Favoritos', 'Downloads', 'Recados'].map((item, index) => (
               <div
                 key={item}
                 className={[
@@ -85,7 +81,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
                 <span className="font-semibold text-[#eb7d87]">Visao geral</span>
                 <span>Galeria</span>
                 <span>Favoritos</span>
-                <span>Selecionadas</span>
+                <span>Downloads</span>
               </div>
             </div>
 
@@ -101,9 +97,9 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
 
           <div className="mt-4 grid gap-3 md:grid-cols-4">
             <StatCard label="Fotos enviadas" value="1.248" icon="◫" />
-            <StatCard label="Convidados" value="356" icon="◎" />
+            <StatCard label="Convidados" value="356" icon="◮" />
             <StatCard label="Favoritas" value="142" icon="♡" />
-            <StatCard label="Selecionadas" value="87" icon="☆" />
+            <StatCard label="Recados" value="18" icon="✉" />
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-5">

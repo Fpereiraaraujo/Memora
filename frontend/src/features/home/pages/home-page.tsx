@@ -33,29 +33,29 @@ export function HomePage() {
               Um fluxo bonito por fora e simples por dentro
             </h2>
             <p className="mt-4 text-base leading-8 text-ink-800/68">
-              O anfitriao cria o evento, compartilha o QR Code e os convidados enviam fotos sem instalar aplicativo.
+              Os noivos criam o casamento, compartilham o QR Code e os convidados enviam fotos sem precisar instalar aplicativo.
             </p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-4">
             <StepCard
               step="Passo 01"
-              title="Crie o evento"
+              title="Crie o casamento"
               description="Defina nome, data e local. A pagina publica e a galeria privada nascem a partir disso."
             />
             <StepCard
               step="Passo 02"
               title="Compartilhe o QR Code"
-              description="Use o QR em mesas, convites, espelhos ou totens para direcionar convidados para a pagina."
+              description="Use o QR em mesas, convites, espelhos ou totens para levar convidados direto para o upload."
             />
             <StepCard
               step="Passo 03"
               title="Receba as fotos"
-              description="O envio acontece no celular, em poucos toques, durante o evento."
+              description="O envio acontece no celular, em poucos toques, durante toda a celebracao."
             />
             <StepCard
               step="Passo 04"
-              title="Baixe e selecione"
+              title="Baixe e favorite"
               description="Acompanhe tudo no painel privado, favorite imagens e guarde as melhores memorias."
             />
           </div>
@@ -68,17 +68,17 @@ export function HomePage() {
         <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-[linear-gradient(135deg,rgba(255,250,245,0.9),rgba(255,241,242,0.72))] p-6 shadow-[0_16px_44px_rgba(96,60,36,0.05)] sm:p-8 lg:p-9">
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">Expansao futura</p>
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">Foco do MVP</p>
               <h2 className="mt-3 font-display text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-ink-950">
-                A base ja esta pronta para crescer
+                Feito para casamentos do inicio ao fim
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-8 text-ink-800/68">
-                Hoje a Memora nasce com foco total em casamentos, mas o mesmo fluxo serve para aniversarios, formaturas e outras celebracoes.
+                Neste momento, a Memora esta toda pensada para noivos que querem reunir fotos dos convidados com elegancia, rapidez e uma experiencia excelente no celular.
               </p>
             </div>
 
             <div className="inline-flex items-center rounded-[1.4rem] bg-white/92 px-5 py-4 text-sm font-semibold text-ink-800 shadow-[0_12px_28px_rgba(96,60,36,0.05)]">
-              Tema romantico, premium e responsivo
+              Mobile first, romantico e objetivo
             </div>
           </div>
         </div>

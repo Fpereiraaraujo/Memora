@@ -2,22 +2,12 @@ import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
-import type { EventPlanCode, EventStatus, EventSummary, EventType } from '@/types/event';
+import type { EventPlanCode, EventStatus, EventSummary } from '@/types/event';
 
 interface EventCardProps {
   event: EventSummary;
   publicLinksEnabled?: boolean;
 }
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  WEDDING: 'Casamento',
-  BIRTHDAY: 'Aniversario',
-  GRADUATION: 'Formatura',
-  BABY_SHOWER: 'Cha de bebe',
-  BAPTISM: 'Batizado',
-  CORPORATE: 'Corporativo',
-  OTHER: 'Outro evento',
-};
 
 const EVENT_PLAN_LABELS: Record<EventPlanCode, string> = {
   ESSENTIAL: 'Essencial',
@@ -77,7 +67,7 @@ export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) 
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[#b87955]">
               <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">♡</span>
-              {EVENT_TYPE_LABELS[event.type]}
+              Casamento
             </span>
 
             <Badge tone={formatStatusTone(event.status)}>{formatStatusLabel(event.status)}</Badge>
@@ -104,7 +94,7 @@ export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) 
 
           {isDraft ? (
             <div className="rounded-[1.4rem] border border-[#f7dec7] bg-[#fff7ef] px-4 py-3 text-sm text-[#8f6228]">
-              Evento em rascunho. Abra o hub para revisar links, preview do QR Code, galeria e recados antes de ativar o plano.
+              Casamento em rascunho. Abra o hub para revisar links, QR Code, galeria e recados antes de seguir.
             </div>
           ) : null}
         </div>
