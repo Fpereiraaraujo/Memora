@@ -10,12 +10,12 @@ export const IMAGE_ACCEPT_ATTRIBUTE = ALLOWED_IMAGE_TYPES.join(',');
 
 export const MAX_GUEST_UPLOAD_FILES = 5;
 export const MAX_GUEST_IMAGE_SIZE_BYTES = 15 * 1024 * 1024;
-export const MAX_GUEST_TOTAL_SIZE_BYTES = 120 * 1024 * 1024;
+export const MAX_GUEST_TOTAL_SIZE_BYTES = 75 * 1024 * 1024;
 export const MAX_GUEST_NAME_LENGTH = 80;
 export const MAX_GUEST_MESSAGE_LENGTH = 500;
 
 export const MAX_CUSTOMIZATION_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
-export const MAX_HIGHLIGHT_IMAGES = 2;
+export const MAX_HIGHLIGHT_IMAGES = 5;
 export const MAX_PUBLIC_TITLE_LENGTH = 90;
 export const MAX_PUBLIC_MESSAGE_LENGTH = 420;
 
@@ -24,8 +24,14 @@ export function isAllowedImageType(file: File) {
 }
 
 export function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
@@ -36,8 +42,18 @@ export function validateGuestUploadInput(input: {
 }) {
   const errors: string[] = [];
 
-  if (input.files.length === 0 && input.guestMessage.trim().length === 0) {
-    errors.push('Envie pelo menos uma foto ou escreva um recado para os anfitrioes.');
+  const guestName = input.guestName.trim();
+  const guestMessage = input.guestMessage.trim();
+  const hasFiles = input.files.length > 0;
+  const hasName = guestName.length > 0;
+  const hasMessage = guestMessage.length > 0;
+
+  if (!hasFiles && !hasMessage) {
+    errors.push('Envie pelo menos uma foto ou escreva um recado para os anfitriões.');
+  }
+
+  if (hasName && !hasMessage) {
+    errors.push('Se informar seu nome, escreva também um recado. Nome sem recado não é necessário.');
   }
 
   if (input.files.length > MAX_GUEST_UPLOAD_FILES) {
@@ -45,6 +61,7 @@ export function validateGuestUploadInput(input: {
   }
 
   const totalSize = input.files.reduce((sum, file) => sum + file.size, 0);
+
   if (totalSize > MAX_GUEST_TOTAL_SIZE_BYTES) {
     errors.push(`O envio total não pode passar de ${formatBytes(MAX_GUEST_TOTAL_SIZE_BYTES)}.`);
   }
@@ -59,11 +76,11 @@ export function validateGuestUploadInput(input: {
     }
   });
 
-  if (input.guestName.trim().length > MAX_GUEST_NAME_LENGTH) {
+  if (guestName.length > MAX_GUEST_NAME_LENGTH) {
     errors.push(`O nome deve ter no máximo ${MAX_GUEST_NAME_LENGTH} caracteres.`);
   }
 
-  if (input.guestMessage.trim().length > MAX_GUEST_MESSAGE_LENGTH) {
+  if (guestMessage.length > MAX_GUEST_MESSAGE_LENGTH) {
     errors.push(`O recado deve ter no máximo ${MAX_GUEST_MESSAGE_LENGTH} caracteres.`);
   }
 

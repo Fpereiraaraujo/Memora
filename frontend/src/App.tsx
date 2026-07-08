@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/components/layout/protected-route';
 import { PublicShell } from '@/components/layout/public-shell';
@@ -17,7 +17,6 @@ import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
-import { PublicUploadPage } from '@/features/public/pages/public-upload-page';
 
 function RootRedirect() {
   const { token, ready } = useAuth();
@@ -27,6 +26,13 @@ function RootRedirect() {
   }
 
   return <Navigate to={token ? '/app' : '/login'} replace />;
+}
+
+
+function PublicUploadRedirect() {
+  const { slug } = useParams();
+
+  return <Navigate to={{ pathname: `/e/${slug ?? ''}`, hash: '#upload' }} replace />;
 }
 
 function NotFoundPage() {
@@ -174,7 +180,7 @@ export default function App() {
           }
         />
 
-        <Route path="/e/:slug/upload" element={<PublicUploadPage />} />
+        <Route path="/e/:slug/upload" element={<PublicUploadRedirect />} />
         <Route path="/e/:slug" element={<PublicEventPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

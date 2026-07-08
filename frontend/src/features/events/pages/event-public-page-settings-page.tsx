@@ -134,6 +134,35 @@ export function EventPublicPageSettingsPage() {
     setError(null);
   }
 
+  function addHighlightFiles(files: File[]) {
+    if (files.length === 0) {
+      return;
+    }
+
+    setHighlightFiles((current) => {
+      const existingKeys = new Set(current.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+      const next = [...current];
+
+      for (const file of files) {
+        const key = `${file.name}-${file.size}-${file.lastModified}`;
+
+        if (!existingKeys.has(key) && next.length < MAX_HIGHLIGHT_IMAGES) {
+          next.push(file);
+          existingKeys.add(key);
+        }
+      }
+
+      return next;
+    });
+    setSaved(false);
+    setError(null);
+  }
+
+  function removeHighlightFile(index: number) {
+    setHighlightFiles((current) => current.filter((_, currentIndex) => currentIndex !== index));
+    setSaved(false);
+  }
+
   async function handleSubmit(eventSubmit: FormEvent<HTMLFormElement>) {
     eventSubmit.preventDefault();
 
@@ -196,7 +225,7 @@ export function EventPublicPageSettingsPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Não foi possível salvar no backend. Verifique se os endpoints de personalização já existem.',
+          : 'Não foi possível salvar a personalização. Verifique sua conexão e tente novamente.',
       );
     } finally {
       setSaving(false);
@@ -234,7 +263,7 @@ export function EventPublicPageSettingsPage() {
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#2c2927]/66">
-                  Edite as informações e selecione imagens. As fotos escolhidas são enviadas para o backend; o navegador só mantém uma prévia temporária antes do envio.
+                  Edite as informações e escolha as imagens que vão abrir a experiência pública dos convidados.
                 </p>
               </div>
 
@@ -295,7 +324,7 @@ export function EventPublicPageSettingsPage() {
                 <label className="block rounded-[18px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 transition hover:bg-white">
                   <span className="text-sm font-black text-[#161314]">Foto de capa</span>
                   <span className="mt-2 block text-xs leading-5 text-[#2c2927]/56">
-                    Será enviada para o backend e usada no hero da página pública.
+                    Será usada como imagem principal da página pública.
                   </span>
                   <input
                     type="file"
@@ -320,9 +349,8 @@ export function EventPublicPageSettingsPage() {
                     multiple
                     className="mt-4 block w-full text-xs text-[#2c2927]/64"
                     onChange={(inputEvent) => {
-                      setHighlightFiles(Array.from(inputEvent.target.files ?? []).slice(0, MAX_HIGHLIGHT_IMAGES));
-                      setSaved(false);
-                      setError(null);
+                      addHighlightFiles(Array.from(inputEvent.target.files ?? []));
+                      inputEvent.target.value = '';
                     }}
                   />
                 </label>
@@ -331,7 +359,7 @@ export function EventPublicPageSettingsPage() {
               {(coverPreviewUrl || form.coverImageUrl) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-black text-[#161314]">Capa {coverPreviewUrl ? 'selecionada para envio' : 'atual no backend'}</p>
+                    <p className="text-sm font-black text-[#161314]">Capa {coverPreviewUrl ? 'selecionada' : 'atual'}</p>
                     {coverPreviewUrl ? (
                       <button
                         type="button"
@@ -349,12 +377,21 @@ export function EventPublicPageSettingsPage() {
               {(highlightPreviewUrls.length > 0 || form.highlightImageUrls.length > 0) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <p className="text-sm font-black text-[#161314]">
-                    {highlightPreviewUrls.length > 0 ? 'Fotos selecionadas para envio' : 'Fotos atuais no backend'}
+                    {highlightPreviewUrls.length > 0 ? 'Fotos selecionadas' : 'Fotos atuais'}
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
                     {(highlightPreviewUrls.length > 0 ? highlightPreviewUrls : form.highlightImageUrls).map((image, index) => (
-                      <div key={`${image}-${index}`} className="aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]">
+                      <div key={`${image}-${index}`} className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]">
                         <img src={image} alt={`Foto em destaque ${index + 1}`} className="h-full w-full object-cover" />
+                        {highlightPreviewUrls.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => removeHighlightFile(index)}
+                            className="absolute right-2 top-2 rounded-full bg-white/92 px-3 py-1 text-xs font-bold text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
+                          >
+                            Remover
+                          </button>
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -370,10 +407,6 @@ export function EventPublicPageSettingsPage() {
                 </div>
               ) : null}
 
-              <div className="rounded-[18px] border border-[#f7dec7] bg-[#fff7ef] p-4 text-sm leading-7 text-[#8f6228]">
-                Nada fica armazenado no frontend. Antes de salvar, as imagens aparecem apenas como prévia local temporária; após salvar, o backend deve retornar as URLs do S3.
-              </div>
-
               {error ? (
                 <div className="rounded-[16px] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
                   {error}
@@ -382,12 +415,12 @@ export function EventPublicPageSettingsPage() {
 
               {saved ? (
                 <div className="rounded-[16px] border border-[#c8e6c9] bg-[#f1fbf2] px-4 py-3 text-sm font-semibold text-[#3f8b46]">
-                  Personalização enviada ao backend. Abra a prévia pública para visualizar.
+                  Personalização salva. Abra a prévia pública para visualizar.
                 </div>
               ) : null}
 
               <Button type="submit" disabled={saving || loadingCustomization} className="h-12 rounded-[14px]">
-                {saving ? 'Salvando no backend...' : 'Salvar no backend'}
+                {saving ? 'Salvando...' : 'Salvar personalização'}
               </Button>
             </form>
 
@@ -397,7 +430,7 @@ export function EventPublicPageSettingsPage() {
                   <p className="text-sm font-bold text-[#ef7885]">Prévia dos convidados</p>
                   <h2 className="mt-2 text-xl font-black text-[#161314]">Como a página vai aparecer</h2>
                   <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                    Esta área simula a primeira dobra da página pública. As imagens reais serão carregadas pelas URLs retornadas pelo backend/S3.
+                    Esta área simula a primeira dobra da página pública como os convidados irão ver.
                   </p>
                 </div>
                 <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff1f2] text-[#ef7885]">
