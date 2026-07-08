@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 @Component
 public class InfinitePayCheckoutClient {
@@ -23,21 +24,29 @@ public class InfinitePayCheckoutClient {
 	}
 
 	public CreateCheckoutLinkResponse createCheckoutLink(CreateCheckoutLinkRequest request) {
-		return restClient.post()
-			.uri("/links")
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(request)
-			.retrieve()
-			.body(CreateCheckoutLinkResponse.class);
+		try {
+			return restClient.post()
+				.uri("/links")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.retrieve()
+				.body(CreateCheckoutLinkResponse.class);
+		} catch (RestClientResponseException exception) {
+			throw new IllegalArgumentException(buildProviderMessage("InfinitePay checkout", exception));
+		}
 	}
 
 	public PaymentCheckResponse paymentCheck(PaymentCheckRequest request) {
-		return restClient.post()
-			.uri("/payment_check")
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(request)
-			.retrieve()
-			.body(PaymentCheckResponse.class);
+		try {
+			return restClient.post()
+				.uri("/payment_check")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.retrieve()
+				.body(PaymentCheckResponse.class);
+		} catch (RestClientResponseException exception) {
+			throw new IllegalArgumentException(buildProviderMessage("InfinitePay payment check", exception));
+		}
 	}
 
 	public String handle() {
@@ -69,6 +78,15 @@ public class InfinitePayCheckoutClient {
 		return apiBaseUrl.endsWith("/") ? apiBaseUrl.substring(0, apiBaseUrl.length() - 1) : apiBaseUrl;
 	}
 
+	private String buildProviderMessage(String operation, RestClientResponseException exception) {
+		String body = exception.getResponseBodyAsString();
+		if (body == null || body.isBlank()) {
+			return operation + " failed with status " + exception.getStatusCode().value();
+		}
+
+		return operation + " failed: " + body;
+	}
+
 	public record CreateCheckoutLinkRequest(
 		String handle,
 		List<CheckoutItem> items,
@@ -79,14 +97,14 @@ public class InfinitePayCheckoutClient {
 	}
 
 	public record CheckoutItem(
-		String name,
+		String description,
 		int quantity,
 		int price
 	) {
 	}
 
 	public record CreateCheckoutLinkResponse(
-		@JsonProperty("checkout_url") String checkoutUrl,
+		@JsonProperty("url") String checkoutUrl,
 		@JsonProperty("order_nsu") String orderNsu
 	) {
 	}
