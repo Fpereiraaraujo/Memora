@@ -30,62 +30,6 @@ interface GuestUploadFormCardProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-function UploadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-6" fill="none" aria-hidden="true">
-      <path
-        d="M12 16V4M8 8l4-4 4 4M6 14v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-8" fill="none" aria-hidden="true">
-      <path
-        d="M8 8h.01M9 4h6l1.5 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.5L9 4Z"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.9" />
-    </svg>
-  );
-}
-
-function SmallIcon({ type }: { type: 'user' | 'message' }) {
-  if (type === 'message') {
-    return (
-      <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-        <path
-          d="M5 18.5V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H9l-4 3.5Z"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-      <path
-        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 20c.8-3.5 3.3-5.5 7-5.5s6.2 2 7 5.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export function GuestUploadFormCard({
   guestName,
   guestMessage,
@@ -115,15 +59,21 @@ export function GuestUploadFormCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">Envio dos convidados</p>
-          <h2 className="mt-2 text-xl font-black text-[#161314]">Enviar fotos ou recado</h2>
+          <p className="text-sm font-bold text-[#ef7885]">
+            Envio dos convidados
+          </p>
+
+          <h2 className="mt-2 text-xl font-black text-[#161314]">
+            Enviar fotos ou recado
+          </h2>
+
           <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
             Fotos aparecem na galeria. Recados vão diretamente para os anfitriões.
           </p>
         </div>
 
         <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff8e9] text-[#c5922e]">
-          <UploadIcon />
+          ↓
         </div>
       </div>
 
@@ -145,7 +95,11 @@ export function GuestUploadFormCard({
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                <img src={url} alt={`Pré-visualização ${index + 1}`} className="h-full w-full object-cover" />
+                <img
+                  src={url}
+                  alt={`Pré-visualização ${index + 1}`}
+                  className="h-full w-full object-cover"
+                />
               </div>
             ))}
 
@@ -158,10 +112,12 @@ export function GuestUploadFormCard({
         ) : (
           <div className="flex min-h-[280px] flex-col items-center justify-center px-4">
             <div className="grid size-16 place-items-center rounded-[20px] bg-white text-[#ef7885] shadow-[0_14px_34px_rgba(96,60,36,0.08)]">
-              <CameraIcon />
+              ♡
             </div>
 
-            <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher fotos</p>
+            <p className="mt-5 text-base font-black text-[#161314]">
+              Toque para escolher fotos
+            </p>
 
             <p className="mt-2 max-w-sm text-sm leading-6 text-[#2c2927]/58">
               Você também pode seguir sem anexos e enviar somente um recado.
@@ -199,8 +155,13 @@ export function GuestUploadFormCard({
                 className="flex items-center justify-between gap-3 rounded-[14px] border border-[#f3e3d9] bg-white px-3 py-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-[#161314]">{file.name}</p>
-                  <p className="mt-1 text-xs text-[#2c2927]/52">{formatBytes(file.size)}</p>
+                  <p className="truncate text-sm font-bold text-[#161314]">
+                    {file.name}
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#2c2927]/52">
+                    {formatBytes(file.size)}
+                  </p>
                 </div>
 
                 <button
@@ -219,9 +180,6 @@ export function GuestUploadFormCard({
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
           <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
-            <span className="text-[#ef7885]">
-              <SmallIcon type="user" />
-            </span>
             Seu nome
           </span>
 
@@ -247,9 +205,6 @@ export function GuestUploadFormCard({
 
       <label className="mt-5 block space-y-2">
         <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
-          <span className="text-[#ef7885]">
-            <SmallIcon type="message" />
-          </span>
           Recado para os anfitriões
         </span>
 

@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 import { formatEventDate } from '@/features/events/utils/event-dashboard-formatters';
 import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
@@ -77,17 +75,30 @@ export function PublicEventHero({
 
           <div className="mt-7 grid gap-3 sm:grid-cols-3">
             <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Fotos</p>
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{totalPhotos}</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
+                Fotos
+              </p>
+
+              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                {totalPhotos}
+              </p>
             </div>
 
             <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Convidados</p>
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">{guestCount}</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
+                Convidados
+              </p>
+
+              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                {guestCount}
+              </p>
             </div>
 
             <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Galeria</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
+                Galeria
+              </p>
+
               <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
                 {totalPhotos > 0 ? 'Ativa' : 'Nova'}
               </p>
@@ -125,12 +136,12 @@ export function PublicEventHero({
               )}
             </div>
 
-            <Link
-              to="#upload"
+            <a
+              href="#upload"
               className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.2)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] active:scale-[0.98]"
             >
               Enviar fotos
-            </Link>
+            </a>
           </div>
         </div>
       </div>

@@ -1,15 +1,18 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Pagination } from '@/components/ui/pagination';
 import { useAuth } from '@/features/auth/auth-context';
-import { EventCard } from '@/features/events/components/event-card';
 import { EventForm } from '@/features/events/components/event-form';
-import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
-import { buildMockEvents } from '@/features/events/utils/event-dashboard-mock';
+import {
+  buildEventGalleryPath,
+  buildEventOverviewPath,
+  buildEventPublicPageSettingsPath,
+  buildEventQrPath,
+} from '@/features/events/utils/event-routes';
 import { api } from '@/lib/api';
 import type { EventCreateRequest, EventSummary } from '@/types/event';
 
@@ -20,92 +23,202 @@ const defaultForm: EventCreateRequest = {
   location: null,
 };
 
-const EVENTS_PER_PAGE = 4;
-
 function formatFirstName(name?: string | null) {
   if (!name) {
-    return 'Anfitriao';
+    return 'Anfitrião';
   }
 
   return name.split(' ')[0] || name;
 }
 
+function formatDate(date: string | null) {
+  if (!date) {
+    return 'Data a confirmar';
+  }
+
+  const parsedDate = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
+  return parsedDate.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function EventStatusBadge({ event }: { event: EventSummary }) {
+  const labels: Record<string, string> = {
+    DRAFT: 'Rascunho',
+    ACTIVE: 'Ativo',
+    PAUSED: 'Pausado',
+    EXPIRED: 'Expirado',
+  };
+
+  return (
+    <span className="inline-flex h-9 items-center rounded-full bg-[#fff3e6] px-4 text-xs font-bold text-[#c5922e]">
+      {labels[event.status] ?? event.status}
+    </span>
+  );
+}
+
+function ExistingEventHub({ event }: { event: EventSummary }) {
+  const actions = [
+    {
+      title: 'Abrir painel',
+      description: 'Veja o resumo do evento, QR Code, recados e atalhos principais.',
+      href: buildEventOverviewPath(event.id),
+      primary: true,
+    },
+    {
+      title: 'Personalizar página',
+      description: 'Ajuste título, mensagem, capa e destaques que os convidados verão.',
+      href: buildEventPublicPageSettingsPath(event.id),
+    },
+    {
+      title: 'Ver QR Code',
+      description: 'Baixe ou copie o link que será compartilhado no evento.',
+      href: buildEventQrPath(event.id),
+    },
+    {
+      title: 'Gerenciar fotos',
+      description: 'Abra a galeria completa para visualizar, favoritar e organizar.',
+      href: buildEventGalleryPath(event.id),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card className="overflow-hidden rounded-[28px] bg-white/88 p-0">
+        <div className="grid gap-0 lg:grid-cols-[1fr_360px]">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-bold text-[#ef7885]">
+                Seu evento principal
+              </p>
+
+              <EventStatusBadge event={event} />
+            </div>
+
+            <h1 className="mt-4 font-display text-[46px] font-semibold leading-none tracking-[-0.055em] text-[#161314] sm:text-[58px]">
+              {event.title}
+            </h1>
+
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[#2c2927]/62">
+              <span>{formatDate(event.eventDate)}</span>
+
+              {event.location ? (
+                <>
+                  <span>•</span>
+                  <span>{event.location}</span>
+                </>
+              ) : null}
+            </div>
+
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[#2c2927]/68">
+              Como a Memora trabalha com um evento por conta, esta é sua central principal. Use os atalhos abaixo para personalizar a página, compartilhar o QR Code e acompanhar as fotos recebidas.
+            </p>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to={buildEventOverviewPath(event.id)}
+                className="inline-flex h-12 items-center justify-center rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.22)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] active:scale-[0.98]"
+              >
+                Abrir hub do evento
+              </Link>
+
+              <Link
+                to={buildEventPublicPageSettingsPath(event.id)}
+                className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-6 text-sm font-bold text-[#201914] shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
+              >
+                Personalizar página
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-[linear-gradient(135deg,#fff1f2,#fff8ef)] p-6 sm:p-8">
+            <div className="rounded-[24px] border border-[#f1ddd1] bg-white/84 p-5 shadow-[0_18px_44px_rgba(96,60,36,0.08)]">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#c5922e]">
+                Plano
+              </p>
+
+              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
+                {event.planCode ?? 'Não ativado'}
+              </p>
+
+              <p className="mt-3 text-sm leading-7 text-[#2c2927]/62">
+                {event.photoLimit
+                  ? `Limite contratado: ${event.photoLimit} fotos.`
+                  : 'Escolha um plano para liberar o evento completo.'}
+              </p>
+
+              <Link
+                to={`/app/events/${event.id}/checkout`}
+                className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b]"
+              >
+                Escolher plano
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-4">
+        {actions.map((action) => (
+          <Link
+            key={action.title}
+            to={action.href}
+            className={[
+              'rounded-[24px] border border-[#f1ddd1] bg-white/88 p-5 shadow-[0_16px_38px_rgba(96,60,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_54px_rgba(96,60,36,0.12)] active:scale-[0.99]',
+              action.primary ? 'ring-4 ring-[#ef7885]/8' : '',
+            ].join(' ')}
+          >
+            <p className="text-lg font-black text-[#161314]">
+              {action.title}
+            </p>
+
+            <p className="mt-3 text-sm leading-7 text-[#2c2927]/62">
+              {action.description}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const navigate = useNavigate();
   const { token, user } = useAuth();
+
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<EventCreateRequest>(defaultForm);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [mockMode, setMockMode] = useState(false);
 
-  const stats = useMemo(() => {
-    const activeEvents = events.filter((event) => event.status === 'ACTIVE').length;
-    const totalPhotos = events.reduce((sum, event) => sum + (event.photoLimit ?? 0), 0);
-
-    return [
-      {
-        label: 'Casamentos',
-        value: events.length,
-        description: 'criados na sua conta',
-        icon: '♡',
-      },
-      {
-        label: 'Ativos',
-        value: activeEvents,
-        description: 'prontos para receber fotos',
-        icon: '✦',
-      },
-      {
-        label: 'Capacidade',
-        value: totalPhotos,
-        description: 'limite total contratado',
-        icon: '◌',
-      },
-    ];
-  }, [events]);
-
-  const totalPages = Math.max(1, Math.ceil(events.length / EVENTS_PER_PAGE));
-
-  const visibleEvents = useMemo(() => {
-    const start = (currentPage - 1) * EVENTS_PER_PAGE;
-    return events.slice(start, start + EVENTS_PER_PAGE);
-  }, [currentPage, events]);
+  const existingEvent = useMemo(() => events[0] ?? null, [events]);
 
   useEffect(() => {
     let active = true;
 
     async function loadEvents() {
       if (!token) {
+        setLoading(false);
         return;
       }
 
       try {
         const data = await api.listEvents(token);
-        const normalizedEvents = await Promise.all(
-          data.map(async (event) => {
-            if (event.status !== 'DRAFT') {
-              return event;
-            }
-
-            try {
-              return await api.updateEventStatus(token, event.id, 'ACTIVE');
-            } catch {
-              return event;
-            }
-          }),
-        );
 
         if (active) {
-          setEvents(normalizedEvents);
-          setMockMode(false);
+          setEvents(data);
         }
-      } catch {
+      } catch (exception) {
         if (active) {
-          setEvents(buildMockEvents());
-          setMockMode(true);
+          setError(exception instanceof Error ? exception.message : 'Não foi possível carregar seu evento.');
         }
       } finally {
         if (active) {
@@ -121,10 +234,15 @@ export function DashboardPage() {
     };
   }, [token]);
 
-  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+  async function handleCreateEvent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!token) {
+      return;
+    }
+
+    if (existingEvent) {
+      navigate(buildEventOverviewPath(existingEvent.id));
       return;
     }
 
@@ -132,205 +250,98 @@ export function DashboardPage() {
     setError(null);
 
     try {
-      const created = await api.createEvent(token, { ...form, type: 'WEDDING' });
-      const activeEvent =
-        created.status === 'DRAFT'
-          ? await api.updateEventStatus(token, created.id, 'ACTIVE').catch(() => created)
-          : created;
+      const createdEvent = await api.createEvent(token, {
+        ...form,
+        type: 'WEDDING',
+        title: form.title.trim(),
+        location: form.location?.trim() || null,
+      });
 
-      setEvents((current) => [activeEvent, ...current]);
-      setForm(defaultForm);
-      setMockMode(false);
-      setCurrentPage(1);
-      navigate(buildEventOverviewPath(activeEvent.id));
+      setEvents([createdEvent]);
+      navigate(buildEventOverviewPath(createdEvent.id));
     } catch (exception) {
-      setError(
-        exception instanceof Error
-          ? exception.message
-          : 'Nao foi possivel criar o evento',
-      );
+      setError(exception instanceof Error ? exception.message : 'Não foi possível criar o evento.');
     } finally {
       setBusy(false);
     }
   }
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <AppShell>
+        <div className="space-y-6">
+          <Card className="h-48 animate-pulse bg-white/60" />
+          <Card className="h-96 animate-pulse bg-white/60" />
+        </div>
+      </AppShell>
+    );
   }
 
   return (
     <AppShell>
       <div className="space-y-8">
-        <section className="relative overflow-hidden rounded-[2.4rem] border border-[#f0d8ca] bg-white/62 p-6 shadow-[0_26px_86px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-[#d8a84f]/20 blur-3xl" />
+        <section className="rounded-[28px] border border-[#f1ddd1] bg-white/88 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] sm:p-8">
+          <p className="text-sm font-bold text-[#ef7885]">
+            Olá, {formatFirstName(user?.name)}.
+          </p>
 
-          <div className="relative grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 py-2 text-xs font-semibold text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
-                <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
-                  ♥
-                </span>
-                Sua area dos noivos
-              </div>
+          <h1 className="mt-3 font-display text-[46px] font-semibold leading-none tracking-[-0.055em] text-[#161314] sm:text-[58px]">
+            {existingEvent ? 'Gerencie seu evento' : 'Crie seu primeiro evento'}
+          </h1>
 
-              <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[0.98] tracking-[-0.055em] text-ink-900 md:text-6xl">
-                {formatFirstName(user?.name)}, vamos organizar as memorias do seu casamento?
-              </h1>
+          <p className="mt-5 max-w-2xl text-base leading-8 text-[#2c2927]/68">
+            {existingEvent
+              ? 'Acesse o hub principal para personalizar sua página pública, compartilhar o QR Code e acompanhar as fotos dos convidados.'
+              : 'Crie o evento para liberar o hub da Memora. Depois você poderá personalizar a página, escolher o plano e compartilhar o QR Code.'}
+          </p>
+        </section>
 
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-800/72 md:text-base">
-                Crie seu espaco, compartilhe o QR Code e acompanhe uploads, galeria, favoritas, downloads e recados em um so lugar.
-              </p>
-
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#novo-evento"
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#ef7885] px-6 py-3.5 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.28)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-                >
-                  Criar evento
-                  <span aria-hidden="true">→</span>
-                </a>
-
-                <a
-                  href="#eventos-criados"
-                  className="inline-flex items-center justify-center rounded-2xl border border-[#ead1c4] bg-white/75 px-6 py-3.5 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-white"
-                >
-                  Ver meus eventos
-                </a>
-              </div>
-
-              {mockMode ? (
-                <p className="mt-4 text-sm font-semibold text-[#c5922e]">
-                  Exibindo dados demonstrativos. Links publicos e upload ficam liberados para teste pelo frontend.
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-[2rem] border border-[#f0d8ca] bg-white/78 p-5 shadow-[0_16px_46px_rgba(96,60,36,0.06)]">
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                O essencial
-              </p>
-
-              <div className="mt-4 space-y-3 text-sm leading-7 text-ink-800/72">
-                <p>Seu painel concentra QR Code, pagina publica, galeria privada, favoritas, downloads e recados.</p>
-                <p>Os convidados entram sem login e enviam fotos direto do celular.</p>
-                <p>Depois de criar o casamento, voce ja pode abrir o hub e seguir com a configuracao.</p>
-              </div>
-            </div>
+        {error ? (
+          <div className="rounded-[18px] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
+            {error}
           </div>
-        </section>
+        ) : null}
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {stats.map((stat) => (
-            <Card
-              key={stat.label}
-              className="relative overflow-hidden border-[#f0d8ca] bg-white/72"
-            >
-              <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-[#f4a1aa]/16 blur-2xl" />
-
-              <div className="relative flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#b9852f]">
-                    {stat.label}
-                  </p>
-
-                  <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-ink-900">
-                    {stat.value}
-                  </p>
-
-                  <p className="mt-2 text-sm text-ink-800/62">{stat.description}</p>
-                </div>
-
-                <div className="grid size-12 place-items-center rounded-2xl bg-[#fff1f2] text-xl text-[#ef7885]">
-                  {stat.icon}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <Card id="novo-evento" className="space-y-5 border-[#f0d8ca] bg-white/72">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">
+        {existingEvent ? (
+          <ExistingEventHub event={existingEvent} />
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <Card className="rounded-[28px] bg-white/88">
+              <p className="text-sm font-bold text-[#ef7885]">
                 Novo evento
               </p>
 
-              <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                Crie seu casamento
+              <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
+                Dados principais
               </h2>
 
-              <p className="mt-3 text-sm leading-7 text-ink-800/70">
-                Comece com nome, data e local. Depois disso, voce abre o hub para revisar QR Code, pagina publica, galeria e recados.
+              <p className="mt-4 text-sm leading-7 text-[#2c2927]/62">
+                Por enquanto, cada conta Memora gerencia um único evento principal.
               </p>
-            </div>
 
-            <EventForm
-              value={form}
-              onChange={setForm}
-              onSubmit={handleCreate}
-              busy={busy}
-            />
-
-            {error ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
-                {error}
+              <div className="mt-6">
+                <EventForm value={form} onChange={setForm} onSubmit={handleCreateEvent} busy={busy} />
               </div>
-            ) : null}
-          </Card>
+            </Card>
 
-          <Card id="eventos-criados" className="space-y-5 border-[#f0d8ca] bg-white/72">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#b9852f]">
-                  Eventos criados
-                </p>
+            <Card className="rounded-[28px] bg-[linear-gradient(135deg,#fffaf7,#fff1f2_48%,#fff8ef)]">
+              <EmptyState
+                title="Seu hub será criado em seguida"
+                description="Depois de criar o evento, você será levado para a central principal com QR Code, página pública, galeria, recados e planos."
+              />
 
-                <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-                  Seus casamentos
-                </h2>
-
-                <p className="mt-3 max-w-xl text-sm leading-7 text-ink-800/70">
-                  Abra um espaco para visualizar o painel, QR Code, galeria completa, favoritas, downloads e todos os recados enviados.
-                </p>
-              </div>
-
-              <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
-                Pagina {currentPage} de {totalPages}
-              </span>
-            </div>
-
-            {loading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 2 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-44 animate-pulse rounded-[2rem] bg-white/55"
-                  />
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {['Página pública', 'QR Code', 'Upload dos convidados', 'Galeria privada'].map((item) => (
+                  <div key={item} className="rounded-[18px] border border-[#f1ddd1] bg-white/76 p-4">
+                    <p className="text-sm font-black text-[#161314]">
+                      {item}
+                    </p>
+                  </div>
                 ))}
               </div>
-            ) : events.length === 0 ? (
-              <EmptyState
-                title="Nenhum evento ainda"
-                description="Assim que voce criar o primeiro evento, ele aparece aqui com QR Code, pagina publica e painel privado."
-              />
-            ) : (
-              <>
-                <div className="grid gap-4">
-                  {visibleEvents.map((event) => (
-                    <EventCard key={event.id} event={event} publicLinksEnabled />
-                  ))}
-                </div>
-
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </>
-            )}
-          </Card>
-        </section>
+            </Card>
+          </div>
+        )}
       </div>
     </AppShell>
   );

@@ -69,7 +69,9 @@ function FeatureCard({
         {icon}
       </div>
 
-      <h3 className="text-lg font-bold text-ink-900">{title}</h3>
+      <h3 className="text-lg font-bold text-ink-900">
+        {title}
+      </h3>
 
       <p className="mt-2 text-sm leading-7 text-ink-800/68">
         {description}
@@ -108,7 +110,9 @@ function PlanCard({
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-2xl font-bold text-ink-900">{name}</h3>
+          <h3 className="text-2xl font-bold text-ink-900">
+            {name}
+          </h3>
 
           <p className="mt-3 text-sm leading-6 text-ink-800/58">
             {summary}
@@ -120,11 +124,9 @@ function PlanCard({
             {price}
           </p>
 
-          {note ? (
-            <p className="text-xs font-semibold text-ink-800/42">
-              {note}
-            </p>
-          ) : null}
+          <p className="text-xs font-semibold text-ink-800/42">
+            {note}
+          </p>
         </div>
       </div>
 

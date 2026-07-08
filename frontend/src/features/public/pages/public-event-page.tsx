@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -14,7 +15,6 @@ import type { PageResponse } from '@/types/api';
 import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
-import { useParams } from 'react-router-dom';
 
 const PUBLIC_GALLERY_PAGE_SIZE = 12;
 
@@ -130,6 +130,7 @@ export function PublicEventPage() {
 
       try {
         const eventData = await api.getPublicEvent(slug).catch(() => buildFallbackPublicEvent(slug));
+
         const [customizationData, photoPage] = await Promise.all([
           api.getPublicEventCustomization(slug).catch(() => null),
           api.listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE).catch(() =>
