@@ -23,8 +23,10 @@ public class PhotoApiMapper {
 			photo.getSizeBytes(),
 			photo.getStatus(),
 			photo.isFavorite(),
+			photo.getLikesCount(),
 			photo.getGuestName(),
 			photo.getGuestMessage(),
+			photo.getUploadGroupId(),
 			photo.getCreatedAt(),
 			resolvePublicUrl(photo.getObjectKey())
 		);

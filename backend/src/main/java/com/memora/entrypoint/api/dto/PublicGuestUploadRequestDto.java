@@ -12,7 +12,7 @@ public class PublicGuestUploadRequestDto {
 	@Size(max = 120)
 	private String guestName;
 
-	@Size(max = 280)
+	@Size(max = 500)
 	private String guestMessage;
 
 	public MultipartFile getFile() {

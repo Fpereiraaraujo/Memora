@@ -66,7 +66,7 @@ export function EventDetailPage() {
             />
 
             <EventMessagesCard
-              messages={dashboard.messagePhotos}
+              messages={dashboard.messages}
               messagesPath={messagesPath}
             />
           </section>

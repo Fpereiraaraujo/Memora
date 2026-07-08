@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  formatBytes,
   IMAGE_ACCEPT_ATTRIBUTE,
   MAX_GUEST_MESSAGE_LENGTH,
   MAX_GUEST_NAME_LENGTH,
-  formatBytes,
 } from '@/features/shared/utils/upload-validation';
 
 interface GuestUploadFormCardProps {
@@ -59,22 +59,16 @@ export function GuestUploadFormCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">
-            Envio dos convidados
-          </p>
+          <p className="text-sm font-bold text-[#ef7885]">Envio dos convidados</p>
 
-          <h2 className="mt-2 text-xl font-black text-[#161314]">
-            Enviar fotos ou recado
-          </h2>
+          <h2 className="mt-2 text-xl font-black text-[#161314]">Enviar fotos ou recado</h2>
 
           <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-            Fotos aparecem na galeria. Recados vão diretamente para os anfitriões.
+            Se a foto estiver pesada, a Memora tenta ajustar automaticamente antes do envio.
           </p>
         </div>
 
-        <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff8e9] text-[#c5922e]">
-          ↓
-        </div>
+        <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff8e9] text-[#c5922e]">+</div>
       </div>
 
       <label
@@ -95,11 +89,19 @@ export function GuestUploadFormCard({
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                <img
-                  src={url}
-                  alt={`Pré-visualização ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
+                <img src={url} alt={`Pre-visualizacao ${index + 1}`} className="h-full w-full object-cover" />
+
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onRemoveFile(index);
+                  }}
+                  className="absolute right-2 top-2 inline-flex h-8 items-center justify-center rounded-full bg-white/92 px-3 text-xs font-bold text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
+                >
+                  Remover
+                </button>
               </div>
             ))}
 
@@ -115,12 +117,10 @@ export function GuestUploadFormCard({
               ♡
             </div>
 
-            <p className="mt-5 text-base font-black text-[#161314]">
-              Toque para escolher fotos
-            </p>
+            <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher ate 5 fotos</p>
 
             <p className="mt-2 max-w-sm text-sm leading-6 text-[#2c2927]/58">
-              Você também pode seguir sem anexos e enviar somente um recado.
+              Aceitamos JPG, PNG e WEBP. Se quiser, voce tambem pode seguir sem anexos e mandar apenas um recado.
             </p>
           </div>
         )}
@@ -130,13 +130,8 @@ export function GuestUploadFormCard({
         <div className="mt-4 rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-                Arquivos selecionados
-              </p>
-
-              <p className="mt-1 text-xs text-[#2c2927]/52">
-                {files.length} foto(s), {formatBytes(totalBytes)} no total
-              </p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Arquivos selecionados</p>
+              <p className="mt-1 text-xs text-[#2c2927]/52">{files.length} foto(s), {formatBytes(totalBytes)} no total</p>
             </div>
 
             <button
@@ -147,41 +142,12 @@ export function GuestUploadFormCard({
               Limpar tudo
             </button>
           </div>
-
-          <div className="mt-3 max-h-48 space-y-2 overflow-y-auto pr-1">
-            {files.map((file, index) => (
-              <div
-                key={`${file.name}-${index}`}
-                className="flex items-center justify-between gap-3 rounded-[14px] border border-[#f3e3d9] bg-white px-3 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-[#161314]">
-                    {file.name}
-                  </p>
-
-                  <p className="mt-1 text-xs text-[#2c2927]/52">
-                    {formatBytes(file.size)}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onRemoveFile(index)}
-                  className="inline-flex h-9 w-fit items-center justify-center rounded-[10px] border border-[#efb6bb] px-3 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
-                >
-                  Remover
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       ) : null}
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
-            Seu nome
-          </span>
+          <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Seu nome</span>
 
           <Input
             value={guestName}
@@ -193,26 +159,22 @@ export function GuestUploadFormCard({
         </label>
 
         <div className="rounded-[16px] border border-[#f1ddd1] bg-[#fffaf7] px-4 py-3">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-            Regras rápidas
-          </p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Regras rapidas</p>
 
           <p className="mt-2 text-xs leading-5 text-[#2c2927]/62">
-            Fotos podem ser anônimas. Se preencher o nome, escreva também um recado.
+            Fotos podem ser anonimas. Se preencher o nome, escreva tambem um recado.
           </p>
         </div>
       </div>
 
       <label className="mt-5 block space-y-2">
-        <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">
-          Recado para os anfitriões
-        </span>
+        <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Recado para os anfitrioes</span>
 
         <Textarea
           value={guestMessage}
           maxLength={MAX_GUEST_MESSAGE_LENGTH}
           onChange={(event) => onGuestMessageChange(event.target.value)}
-          placeholder="Opcional. Ex: Que dia lindo! Felicidades para vocês."
+          placeholder="Opcional. Ex: Que dia lindo! Felicidades para voces."
         />
 
         <span className="block text-right text-xs text-[#2c2927]/42">
@@ -229,7 +191,7 @@ export function GuestUploadFormCard({
         />
 
         <span className="text-sm leading-6 text-[#2c2927]/68">
-          Confirmo que estou enviando conteúdo relacionado a este evento e entendo que os anfitriões podem remover imagens inadequadas.
+          Confirmo que estou enviando conteudo relacionado a este evento e entendo que os anfitrioes podem remover imagens inadequadas.
         </span>
       </label>
 
@@ -245,13 +207,13 @@ export function GuestUploadFormCard({
         </div>
       ) : null}
 
-      <Button type="submit" disabled={!canSubmit} className="mt-6 h-12 w-full rounded-[14px]">
-        {busy ? 'Enviando...' : 'Enviar para os anfitriões'}
+      <Button type="submit" disabled={!canSubmit} className="mt-6 h-12 w-full rounded-[14px]" loading={busy}>
+        {busy ? 'Preparando envio...' : 'Enviar para os anfitrioes'}
       </Button>
 
       {!confirmed ? (
         <p className="mt-3 text-center text-xs leading-5 text-[#2c2927]/48">
-          Marque a confirmação acima para liberar o envio.
+          Marque a confirmacao acima para liberar o envio.
         </p>
       ) : null}
     </form>

@@ -6,8 +6,11 @@ interface PublicImageViewerProps {
   photos: Photo[];
   currentIndex: number;
   open: boolean;
+  likedPhotoIds: string[];
   onClose: () => void;
   onChangeIndex: (index: number) => void;
+  onToggleLike: (photo: Photo) => void;
+  onPrefetchMore: () => void;
   getPhotoUrl: (photo: Photo) => string;
 }
 
@@ -35,28 +38,38 @@ function ArrowRightIcon() {
   );
 }
 
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" fill={filled ? 'currentColor' : 'none'} aria-hidden="true">
+      <path
+        d="M12 20.4 4.9 13.8a4.8 4.8 0 0 1-.1-6.9 4.9 4.9 0 0 1 7-.1l.2.2.2-.2a4.9 4.9 0 0 1 7 .1 4.8 4.8 0 0 1-.1 6.9L12 20.4Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function PublicImageViewer({
   photos,
   currentIndex,
   open,
+  likedPhotoIds,
   onClose,
   onChangeIndex,
+  onToggleLike,
+  onPrefetchMore,
   getPhotoUrl,
 }: PublicImageViewerProps) {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const currentPhoto = photos[currentIndex];
-
-  const currentPhotoUrl = useMemo(() => {
-    if (!currentPhoto) {
-      return '';
-    }
-
-    return getPhotoUrl(currentPhoto);
-  }, [currentPhoto, getPhotoUrl]);
-
+  const currentPhotoUrl = useMemo(() => (currentPhoto ? getPhotoUrl(currentPhoto) : ''), [currentPhoto, getPhotoUrl]);
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < photos.length - 1;
+  const isLiked = currentPhoto ? likedPhotoIds.includes(currentPhoto.id) : false;
 
   function goPrevious() {
     if (hasPrevious) {
@@ -69,6 +82,12 @@ export function PublicImageViewer({
       onChangeIndex(currentIndex + 1);
     }
   }
+
+  useEffect(() => {
+    if (open && photos.length - currentIndex <= 3) {
+      onPrefetchMore();
+    }
+  }, [currentIndex, onPrefetchMore, open, photos.length]);
 
   useEffect(() => {
     if (!open) {
@@ -98,7 +117,7 @@ export function PublicImageViewer({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentIndex, hasNext, hasPrevious, onClose, open]);
+  }, [currentIndex, onClose, open, photos.length]);
 
   if (!open || !currentPhoto) {
     return null;
@@ -119,18 +138,30 @@ export function PublicImageViewer({
             </p>
 
             <p className="mt-1 truncate text-sm font-bold text-[#161314]">
-              {currentPhoto.guestName || 'Enviada por convidado'}
+              {currentPhoto.guestName || 'Memoria enviada por um convidado'}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid size-11 shrink-0 place-items-center rounded-[14px] border border-[#f1ddd1] bg-white text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
-            aria-label="Fechar visualizador"
-          >
-            <CloseIcon />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onToggleLike(currentPhoto)}
+              className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+              aria-label={isLiked ? 'Remover curtida da foto' : 'Curtir foto'}
+            >
+              <HeartIcon filled={isLiked} />
+              {currentPhoto.likesCount}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid size-11 shrink-0 place-items-center rounded-[14px] border border-[#f1ddd1] bg-white text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
+              aria-label="Fechar visualizador"
+            >
+              <CloseIcon />
+            </button>
+          </div>
         </header>
 
         <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-white shadow-[0_24px_70px_rgba(96,60,36,0.1)]">
@@ -146,9 +177,7 @@ export function PublicImageViewer({
 
           <div
             className="flex h-full w-full items-center justify-center p-3 sm:p-5"
-            onTouchStart={(event) => {
-              setTouchStartX(event.touches[0]?.clientX ?? null);
-            }}
+            onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
             onTouchEnd={(event) => {
               if (touchStartX === null) {
                 return;
@@ -170,7 +199,7 @@ export function PublicImageViewer({
           >
             <img
               src={currentPhotoUrl}
-              alt={currentPhoto.originalFilename ?? 'Foto do evento'}
+              alt={currentPhoto.guestName || 'Foto do evento'}
               className="max-h-full max-w-full rounded-[18px] object-contain shadow-[0_18px_44px_rgba(96,60,36,0.12)]"
             />
           </div>
@@ -180,7 +209,7 @@ export function PublicImageViewer({
             onClick={goNext}
             disabled={!hasNext}
             className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#201914] shadow-[0_14px_34px_rgba(24,24,27,0.14)] transition hover:-translate-y-[55%] hover:bg-[#fff7f2] disabled:pointer-events-none disabled:opacity-35 sm:right-5 sm:size-12"
-            aria-label="Próxima foto"
+            aria-label="Proxima foto"
           >
             <ArrowRightIcon />
           </button>
@@ -189,13 +218,8 @@ export function PublicImageViewer({
         <footer className="mt-3 rounded-[20px] border border-[#f1ddd1] bg-white/92 px-4 py-3 shadow-[0_18px_44px_rgba(96,60,36,0.08)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[#161314]">
-                {currentPhoto.originalFilename ?? 'Foto do evento'}
-              </p>
-
-              <p className="mt-1 text-xs text-[#2c2927]/52">
-                Deslize para os lados no celular ou use as setas do teclado no computador.
-              </p>
+              <p className="text-sm font-bold text-[#161314]">Deslize para os lados ou use as setas para continuar vendo as fotos.</p>
+              <p className="mt-1 text-xs text-[#2c2927]/52">Quando voce chegar perto do fim, a Memora busca mais fotos automaticamente para nao quebrar a experiencia.</p>
             </div>
 
             <div className="flex gap-2">
@@ -214,7 +238,7 @@ export function PublicImageViewer({
                 disabled={!hasNext}
                 className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#ef7885] px-4 text-xs font-bold text-white transition hover:bg-[#e86d7b] disabled:pointer-events-none disabled:opacity-40"
               >
-                Próxima
+                Proxima
               </button>
             </div>
           </div>

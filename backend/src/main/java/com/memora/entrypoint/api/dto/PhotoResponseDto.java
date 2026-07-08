@@ -12,8 +12,10 @@ public record PhotoResponseDto(
 	Long sizeBytes,
 	PhotoStatus status,
 	Boolean favorite,
+	Integer likesCount,
 	String guestName,
 	String guestMessage,
+	UUID uploadGroupId,
 	LocalDateTime createdAt,
 	String downloadUrl
 ) {

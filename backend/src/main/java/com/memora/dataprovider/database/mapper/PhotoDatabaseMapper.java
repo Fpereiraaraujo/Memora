@@ -18,8 +18,10 @@ public final class PhotoDatabaseMapper {
 			.sizeBytes(photo.getSizeBytes())
 			.status(photo.getStatus())
 			.favorite(photo.isFavorite())
+			.likesCount(photo.getLikesCount())
 			.guestName(photo.getGuestName())
 			.guestMessage(photo.getGuestMessage())
+			.uploadGroupId(photo.getUploadGroupId())
 			.createdAt(photo.getCreatedAt())
 			.updatedAt(photo.getUpdatedAt())
 			.build();
@@ -35,8 +37,10 @@ public final class PhotoDatabaseMapper {
 			.sizeBytes(entity.getSizeBytes())
 			.status(entity.getStatus())
 			.favorite(entity.isFavorite())
+			.likesCount(entity.getLikesCount())
 			.guestName(entity.getGuestName())
 			.guestMessage(entity.getGuestMessage())
+			.uploadGroupId(entity.getUploadGroupId())
 			.createdAt(entity.getCreatedAt())
 			.updatedAt(entity.getUpdatedAt())
 			.build();

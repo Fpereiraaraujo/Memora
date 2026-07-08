@@ -49,11 +49,17 @@ public class PhotoJpaEntity {
 	@Column(name = "is_favorite", nullable = false)
 	private boolean favorite;
 
+	@Column(name = "likes_count", nullable = false)
+	private int likesCount;
+
 	@Column(name = "guest_name")
 	private String guestName;
 
 	@Column(name = "guest_message")
 	private String guestMessage;
+
+	@Column(name = "upload_group_id")
+	private UUID uploadGroupId;
 
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;

@@ -1,5 +1,7 @@
 package com.memora.core.domain.param;
 
+import java.util.UUID;
+
 public record UploadGuestPhotoParam(
 	String slug,
 	String guestName,
@@ -7,6 +9,7 @@ public record UploadGuestPhotoParam(
 	String originalFilename,
 	String contentType,
 	long sizeBytes,
-	byte[] content
+	byte[] content,
+	UUID uploadGroupId
 ) {
 }

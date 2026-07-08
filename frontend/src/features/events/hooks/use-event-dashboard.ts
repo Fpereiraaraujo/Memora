@@ -10,8 +10,10 @@ import {
   buildPublicEventUrl,
   buildPublicUploadUrl,
 } from '@/features/events/utils/event-dashboard-formatters';
+import { groupGuestMessages } from '@/features/events/utils/group-guest-messages';
 import { api } from '@/lib/api';
 import type { EventSummary } from '@/types/event';
+import type { EventGuestMessage } from '@/types/message';
 import type { Photo } from '@/types/photo';
 
 export interface UseEventDashboardResult {
@@ -27,7 +29,7 @@ export interface UseEventDashboardResult {
   uploadLinkCopied: boolean;
   favorites: string[];
   guestCount: number;
-  messagePhotos: Photo[];
+  messages: EventGuestMessage[];
   favoritePhotos: Photo[];
   galleryPreview: Photo[];
   toggleFavorite: (photoId: string) => Promise<void>;
@@ -145,13 +147,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     return uniqueGuests.size;
   }, [photos]);
 
-  const messagePhotos = useMemo(
-    () =>
-      photos
-        .filter((photo) => photo.guestMessage?.trim())
-        .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)),
-    [photos],
-  );
+  const messages = useMemo(() => groupGuestMessages(photos), [photos]);
 
   const mediaPhotos = useMemo(
     () => photos.filter((photo) => Boolean(photo.downloadUrl)),
@@ -260,7 +256,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     uploadLinkCopied,
     favorites,
     guestCount,
-    messagePhotos,
+    messages,
     favoritePhotos,
     galleryPreview,
     toggleFavorite,

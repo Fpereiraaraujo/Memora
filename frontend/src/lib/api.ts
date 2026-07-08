@@ -13,6 +13,7 @@ import type {
   GuestUploadResponse,
   Photo,
   PhotoFavoriteUpdateRequest,
+  PhotoLikeUpdateRequest,
   PhotoStatusUpdateRequest,
 } from '@/types/photo';
 
@@ -28,6 +29,10 @@ function extractErrorMessage(error: unknown) {
     return error instanceof Error ? error.message : 'Ocorreu um erro inesperado';
   }
 
+  if (!error.response) {
+    return 'Não foi possível se conectar agora. Verifique sua internet e tente novamente.';
+  }
+
   const responseData = error.response?.data;
 
   if (typeof responseData === 'string' && responseData.trim()) {
@@ -39,6 +44,10 @@ function extractErrorMessage(error: unknown) {
     if (typeof message === 'string' && message.trim()) {
       return message;
     }
+  }
+
+  if ((error.response?.status ?? 0) >= 500) {
+    return 'Estamos com uma instabilidade no momento. Tente novamente em instantes.';
   }
 
   return error.message || 'Ocorreu um erro inesperado';
@@ -204,6 +213,15 @@ export const api = {
   listPublicEventPhotosPage(slug: string, page: number, size: number) {
     return request<PageResponse<Photo>>(`/api/public/events/${slug}/photos/page?page=${page}&size=${size}`, {
       method: 'GET',
+    });
+  },
+  listPublicTopLikedPhotos(slug: string) {
+    return request<Photo[]>(`/api/public/events/${slug}/photos/top-liked`, { method: 'GET' });
+  },
+  updatePublicPhotoLike(slug: string, photoId: string, requestBody: PhotoLikeUpdateRequest) {
+    return request<Photo>(`/api/public/events/${slug}/photos/${photoId}/like`, {
+      method: 'PATCH',
+      data: requestBody,
     });
   },
   uploadGuestPhoto(slug: string, formData: FormData) {

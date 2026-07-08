@@ -3,31 +3,29 @@ import { MAX_GUEST_UPLOAD_FILES } from '@/features/shared/utils/upload-validatio
 const steps = [
   {
     title: 'Envie fotos reais do evento',
-    description: `Escolha até ${MAX_GUEST_UPLOAD_FILES} fotos do celular. Elas vão para a galeria dos anfitriões.`,
+    description: `Escolha ate ${MAX_GUEST_UPLOAD_FILES} fotos do celular. Elas vao para a galeria dos anfitrioes.`,
   },
   {
-    title: 'Recado é opcional',
-    description: 'O recado vai diretamente para os anfitriões. Ele não aparece junto da foto na galeria pública.',
+    title: 'Recado e opcional',
+    description: 'O recado vai diretamente para os anfitrioes. Ele nao aparece junto da foto na galeria publica.',
   },
   {
-    title: 'Nome só com recado',
-    description: 'Você pode enviar fotos sem nome. Se preencher seu nome, escreva também uma mensagem.',
+    title: 'Ajuste automatico quando precisar',
+    description: 'Se a imagem estiver pesada, a Memora tenta comprimir antes do envio para caber no limite.',
   },
 ];
 
 export function GuestUploadRulesCard() {
   return (
     <aside className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
-      <div className="grid size-14 place-items-center rounded-[18px] bg-[#fff1f2] text-[#ef7885]">
-        ♡
-      </div>
+      <div className="grid size-14 place-items-center rounded-[18px] bg-[#fff1f2] text-[#ef7885]">♡</div>
 
       <h2 className="mt-5 font-display text-[40px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
         Compartilhe esse momento
       </h2>
 
       <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
-        Você pode enviar apenas fotos, fotos com recado, ou somente um recado carinhoso para os anfitriões.
+        Voce pode enviar apenas fotos, fotos com recado, ou somente um recado carinhoso para os anfitrioes.
       </p>
 
       <div className="mt-6 space-y-3">
@@ -39,13 +37,9 @@ export function GuestUploadRulesCard() {
               </div>
 
               <div>
-                <h3 className="text-sm font-black text-[#161314]">
-                  {item.title}
-                </h3>
+                <h3 className="text-sm font-black text-[#161314]">{item.title}</h3>
 
-                <p className="mt-1 text-sm leading-6 text-[#2c2927]/62">
-                  {item.description}
-                </p>
+                <p className="mt-1 text-sm leading-6 text-[#2c2927]/62">{item.description}</p>
               </div>
             </div>
           </div>
@@ -53,12 +47,10 @@ export function GuestUploadRulesCard() {
       </div>
 
       <div className="mt-6 rounded-[18px] border border-[#f1ddd1] bg-[#fff8ef] p-5">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-          Importante
-        </p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Importante</p>
 
         <p className="mt-3 text-sm leading-7 text-[#2c2927]/68">
-          Envie apenas fotos relacionadas ao evento. Os anfitriões poderão remover imagens inadequadas.
+          Envie apenas fotos relacionadas ao evento. Os anfitrioes poderao remover imagens inadequadas.
         </p>
       </div>
     </aside>

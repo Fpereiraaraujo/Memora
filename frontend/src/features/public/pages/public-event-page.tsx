@@ -8,7 +8,9 @@ import { PublicEventHero } from '@/features/public/components/event-page/public-
 import { PublicGallerySection } from '@/features/public/components/event-page/public-gallery-section';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
+import { getLikedPhotoIds, setLikedPhotoIds } from '@/features/public/utils/public-photo-likes';
 import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
+import { preprocessGuestUploadFiles } from '@/features/shared/utils/image-upload-preprocessor';
 import { validateGuestUploadInput } from '@/features/shared/utils/upload-validation';
 import { api } from '@/lib/api';
 import type { PageResponse } from '@/types/api';
@@ -34,8 +36,8 @@ function PublicEventNotFoundState() {
     <PublicShell>
       <div className="mx-auto max-w-4xl px-4 py-20">
         <EmptyState
-          title="Evento não encontrado"
-          description="Não foi possível encontrar a página pública deste evento."
+          title="Evento nao encontrado"
+          description="Nao foi possivel encontrar a pagina publica deste evento."
         />
       </div>
     </PublicShell>
@@ -64,8 +66,8 @@ export function PublicEventPage() {
 
   const [event, setEvent] = useState<EventSummary | null>(null);
   const [backendCustomization, setBackendCustomization] = useState<PublicPageCustomization | null>(null);
-
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photoPages, setPhotoPages] = useState<Record<number, Photo[]>>({});
+  const [topLikedPhotos, setTopLikedPhotos] = useState<Photo[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
@@ -76,28 +78,49 @@ export function PublicEventPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [inputKey, setInputKey] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
+  const [processingFiles, setProcessingFiles] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [likedPhotoIds, setLikedPhotoIdsState] = useState<string[]>([]);
 
   const customization = useMemo(
     () => (event ? mergePublicPageCustomization(event, backendCustomization) : null),
     [backendCustomization, event],
   );
 
+  const currentPhotos = useMemo(() => photoPages[currentPage - 1] ?? [], [currentPage, photoPages]);
+
+  const allLoadedPhotos = useMemo(() => {
+    const orderedPhotos = Object.keys(photoPages)
+      .map((pageKey) => Number(pageKey))
+      .sort((a, b) => a - b)
+      .flatMap((pageKey) => photoPages[pageKey] ?? []);
+
+    const seenIds = new Set<string>();
+    return orderedPhotos.filter((photo) => {
+      if (seenIds.has(photo.id)) {
+        return false;
+      }
+
+      seenIds.add(photo.id);
+      return true;
+    });
+  }, [photoPages]);
+
   const previewUrls = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
 
   const guestCount = useMemo(() => {
     const guests = new Set(
-      photos
+      allLoadedPhotos
         .map((photo) => photo.guestName?.trim())
         .filter((name): name is string => Boolean(name)),
     );
 
     return guests.size;
-  }, [photos]);
+  }, [allLoadedPhotos]);
 
   const highlightImages = useMemo(() => {
     if (!customization) {
@@ -115,7 +138,29 @@ export function PublicEventPage() {
 
   useEffect(() => {
     setCurrentPage(1);
+    setPhotoPages({});
+    setTopLikedPhotos([]);
+    setLikedPhotoIdsState(slug ? getLikedPhotoIds(slug) : []);
   }, [slug]);
+
+  async function loadGalleryPage(currentSlug: string, pageIndex: number) {
+    const photoPage = await api
+      .listPublicEventPhotosPage(currentSlug, pageIndex, PUBLIC_GALLERY_PAGE_SIZE)
+      .catch(() => emptyPhotoPage(pageIndex));
+
+    setPhotoPages((current) => ({
+      ...current,
+      [pageIndex]: photoPage.content,
+    }));
+    setTotalElements(photoPage.totalElements);
+    setTotalPages(Math.max(1, photoPage.totalPages));
+    return photoPage;
+  }
+
+  async function loadTopLiked(currentSlug: string) {
+    const photos = await api.listPublicTopLikedPhotos(currentSlug).catch(() => []);
+    setTopLikedPhotos(photos);
+  }
 
   useEffect(() => {
     let active = true;
@@ -131,25 +176,37 @@ export function PublicEventPage() {
       try {
         const eventData = await api.getPublicEvent(slug).catch(() => buildFallbackPublicEvent(slug));
 
-        const [customizationData, photoPage] = await Promise.all([
+        const [customizationData, firstPage] = await Promise.all([
           api.getPublicEventCustomization(slug).catch(() => null),
           api.listPublicEventPhotosPage(slug, currentPage - 1, PUBLIC_GALLERY_PAGE_SIZE).catch(() =>
             emptyPhotoPage(currentPage - 1),
           ),
         ]);
 
-        if (active) {
-          setEvent(eventData);
-          setBackendCustomization(customizationData);
-          setPhotos(photoPage.content);
-          setTotalElements(photoPage.totalElements);
-          setTotalPages(Math.max(1, photoPage.totalPages));
+        if (!active) {
+          return;
+        }
+
+        setEvent(eventData);
+        setBackendCustomization(customizationData);
+        setPhotoPages((current) => ({
+          ...current,
+          [currentPage - 1]: firstPage.content,
+        }));
+        setTotalElements(firstPage.totalElements);
+        setTotalPages(Math.max(1, firstPage.totalPages));
+
+        void loadTopLiked(slug);
+
+        if (firstPage.totalPages > currentPage) {
+          void loadGalleryPage(slug, currentPage);
         }
       } catch {
         if (active) {
           setEvent(buildFallbackPublicEvent(slug));
           setBackendCustomization(null);
-          setPhotos([]);
+          setPhotoPages({});
+          setTopLikedPhotos([]);
           setTotalElements(0);
           setTotalPages(1);
         }
@@ -173,9 +230,58 @@ export function PublicEventPage() {
       .catch(() => emptyPhotoPage(0));
 
     setCurrentPage(1);
-    setPhotos(photoPage.content);
+    setPhotoPages((current) => ({
+      ...current,
+      0: photoPage.content,
+    }));
     setTotalElements(photoPage.totalElements);
     setTotalPages(Math.max(1, photoPage.totalPages));
+  }
+
+  async function handlePrefetchMore() {
+    if (!slug) {
+      return;
+    }
+
+    const loadedIndexes = Object.keys(photoPages).map((pageKey) => Number(pageKey));
+    const nextPageIndex = loadedIndexes.length === 0 ? 0 : Math.max(...loadedIndexes) + 1;
+
+    if (nextPageIndex >= totalPages || photoPages[nextPageIndex]) {
+      return;
+    }
+
+    await loadGalleryPage(slug, nextPageIndex);
+  }
+
+  function mergeUpdatedPhoto(updatedPhoto: Photo) {
+    setPhotoPages((current) => {
+      const nextPages: Record<number, Photo[]> = {};
+
+      Object.entries(current).forEach(([pageKey, pagePhotos]) => {
+        nextPages[Number(pageKey)] = pagePhotos.map((photo) =>
+          photo.id === updatedPhoto.id ? updatedPhoto : photo,
+        );
+      });
+
+      return nextPages;
+    });
+
+    setTopLikedPhotos((current) => {
+      const existing = current.some((photo) => photo.id === updatedPhoto.id);
+      const merged = existing
+        ? current.map((photo) => (photo.id === updatedPhoto.id ? updatedPhoto : photo))
+        : [...current, updatedPhoto];
+
+      return merged
+        .sort((firstPhoto, secondPhoto) => {
+          if (secondPhoto.likesCount !== firstPhoto.likesCount) {
+            return secondPhoto.likesCount - firstPhoto.likesCount;
+          }
+
+          return +new Date(secondPhoto.createdAt) - +new Date(firstPhoto.createdAt);
+        })
+        .slice(0, 10);
+    });
   }
 
   function handleClearFiles() {
@@ -187,23 +293,63 @@ export function PublicEventPage() {
     setFiles((current) => current.filter((_, currentIndex) => currentIndex !== index));
   }
 
-  function handleFilesChange(selectedFiles: File[]) {
-    setFiles((current) => [...current, ...selectedFiles]);
-    setError(null);
-    setSuccess(false);
-    setSuccessMessage(null);
+  async function handleFilesChange(selectedFiles: File[]) {
+    try {
+      setProcessingFiles(true);
+      const preparedFiles = await preprocessGuestUploadFiles(selectedFiles);
+      setFiles((current) => [...current, ...preparedFiles]);
+      setError(null);
+      setSuccess(false);
+      setSuccessMessage(null);
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel preparar as imagens.');
+    } finally {
+      setProcessingFiles(false);
+    }
+  }
+
+  async function handleLikeToggle(photo: Photo) {
+    if (!slug) {
+      return;
+    }
+
+    const alreadyLiked = likedPhotoIds.includes(photo.id);
+    const nextLikedIds = alreadyLiked
+      ? likedPhotoIds.filter((photoId) => photoId !== photo.id)
+      : [...likedPhotoIds, photo.id];
+
+    setLikedPhotoIdsState(nextLikedIds);
+    setLikedPhotoIds(slug, nextLikedIds);
+
+    const optimisticPhoto = {
+      ...photo,
+      likesCount: alreadyLiked ? Math.max(photo.likesCount - 1, 0) : photo.likesCount + 1,
+    };
+
+    mergeUpdatedPhoto(optimisticPhoto);
+
+    try {
+      const updatedPhoto = await api.updatePublicPhotoLike(slug, photo.id, { liked: !alreadyLiked });
+      mergeUpdatedPhoto(updatedPhoto);
+    } catch (exception) {
+      const rollbackIds = alreadyLiked ? [...likedPhotoIds, photo.id] : likedPhotoIds.filter((photoId) => photoId !== photo.id);
+      setLikedPhotoIdsState(rollbackIds);
+      setLikedPhotoIds(slug, rollbackIds);
+      mergeUpdatedPhoto(photo);
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel registrar sua curtida.');
+    }
   }
 
   async function handleSubmit(eventSubmit: FormEvent<HTMLFormElement>) {
     eventSubmit.preventDefault();
 
     if (!slug) {
-      setError('Evento não encontrado.');
+      setError('Evento nao encontrado.');
       return;
     }
 
     if (!confirmed) {
-      setError('Confirme que o conteúdo enviado é relacionado a este evento.');
+      setError('Confirme que o conteudo enviado e relacionado a este evento.');
       return;
     }
 
@@ -222,7 +368,6 @@ export function PublicEventPage() {
     try {
       const trimmedName = guestName.trim();
       const trimmedMessage = guestMessage.trim();
-
       const formData = new FormData();
 
       files.forEach((file) => {
@@ -252,15 +397,15 @@ export function PublicEventPage() {
       setSuccess(true);
       setSuccessMessage(
         files.length === 0
-          ? 'Recado enviado com sucesso. Obrigado por deixar sua mensagem para os anfitriões!'
+          ? 'Recado enviado com sucesso. Obrigado por deixar sua mensagem para os anfitrioes!'
           : uploadedCount > 1
             ? `${uploadedCount} fotos enviadas com sucesso. Obrigado por compartilhar esse momento!`
             : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
       );
 
-      await refreshFirstGalleryPage(slug);
+      await Promise.all([refreshFirstGalleryPage(slug), loadTopLiked(slug)]);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Não foi possível enviar o conteúdo.');
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar agora. Tente novamente.');
     } finally {
       setBusy(false);
     }
@@ -296,7 +441,7 @@ export function PublicEventPage() {
             guestMessage={guestMessage}
             files={files}
             previewUrls={previewUrls}
-            busy={busy}
+            busy={busy || processingFiles}
             success={success}
             successMessage={successMessage}
             error={error}
@@ -325,11 +470,16 @@ export function PublicEventPage() {
           />
 
           <PublicGallerySection
-            photos={photos}
+            photos={currentPhotos}
+            allLoadedPhotos={allLoadedPhotos}
+            topLikedPhotos={topLikedPhotos}
+            likedPhotoIds={likedPhotoIds}
             currentPage={currentPage}
             totalPages={totalPages}
             totalElements={totalElements}
             onPageChange={setCurrentPage}
+            onLikeToggle={handleLikeToggle}
+            onPrefetchMore={handlePrefetchMore}
           />
         </div>
       </div>

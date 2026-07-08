@@ -23,6 +23,8 @@ public interface PhotoRepository extends JpaRepository<PhotoJpaEntity, UUID> {
 
 	Page<PhotoJpaEntity> findAllByEventIdAndStatusAndObjectKeyIsNotNullOrderByCreatedAtDesc(UUID eventId, PhotoStatus status, Pageable pageable);
 
+	List<PhotoJpaEntity> findTop10ByEventIdAndStatusAndObjectKeyIsNotNullOrderByLikesCountDescCreatedAtDesc(UUID eventId, PhotoStatus status);
+
 	Optional<PhotoJpaEntity> findByIdAndEventId(UUID id, UUID eventId);
 
 	long countByEventId(UUID eventId);

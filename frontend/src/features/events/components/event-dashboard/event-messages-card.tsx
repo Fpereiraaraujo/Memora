@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 
 import { formatRelativeTime, getInitials } from '@/features/events/utils/event-dashboard-formatters';
-import type { Photo } from '@/types/photo';
+import type { EventGuestMessage } from '@/types/message';
 
 interface EventMessagesCardProps {
-  messages: Photo[];
+  messages: EventGuestMessage[];
   messagesPath: string;
 }
 
@@ -31,27 +31,32 @@ export function EventMessagesCard({ messages, messagesPath }: EventMessagesCardP
       </div>
 
       <div className="mt-6 divide-y divide-[#f0ded4]">
-        {messages.slice(0, 3).map((photo) => (
-          <div key={photo.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-            <MessageAvatar name={photo.guestName ?? 'Convidado'} />
+        {messages.slice(0, 3).map((message) => (
+          <div key={message.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+            <MessageAvatar name={message.guestName ?? 'Convidado'} />
 
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">
-                <p className="font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
+                <div>
+                  <p className="font-bold text-[#161314]">{message.guestName || 'Convidado anonimo'}</p>
+                  <p className="mt-1 text-xs text-[#2c2927]/45">
+                    {message.photoCount > 0 ? `${message.photoCount} foto(s) neste envio` : 'Recado sem foto'}
+                  </p>
+                </div>
 
                 <span className="shrink-0 text-xs font-medium text-[#2c2927]/45">
-                  {formatRelativeTime(photo.createdAt)}
+                  {formatRelativeTime(message.createdAt)}
                 </span>
               </div>
 
-              <p className="mt-2 text-sm leading-6 text-[#2c2927]/72">{photo.guestMessage}</p>
+              <p className="mt-2 text-sm leading-6 text-[#2c2927]/72">{message.guestMessage}</p>
             </div>
           </div>
         ))}
 
         {messages.length === 0 ? (
           <div className="rounded-[18px] bg-[#fff7f2] p-5 text-sm leading-7 text-[#2c2927]/62">
-            Nenhum recado ainda. Quando os convidados enviarem mensagens pela página pública, elas aparecerão aqui.
+            Nenhum recado ainda. Quando os convidados enviarem mensagens pela pagina publica, elas aparecerao aqui.
           </div>
         ) : null}
       </div>

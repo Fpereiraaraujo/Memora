@@ -1,0 +1,5 @@
+ALTER TABLE photos
+    ADD COLUMN IF NOT EXISTS likes_count INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE photos
+    ADD COLUMN IF NOT EXISTS upload_group_id UUID;

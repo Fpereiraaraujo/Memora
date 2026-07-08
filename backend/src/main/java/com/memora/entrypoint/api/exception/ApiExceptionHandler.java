@@ -38,12 +38,18 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
 	public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
 		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-			.body(Map.of("error", "Photo file exceeds maximum allowed size"));
+			.body(Map.of("error", "Cada envio aceita fotos de at\u00e9 20 MB. Tente novamente com uma imagem menor."));
 	}
 
 	@ExceptionHandler(TooManyRequestsException.class)
 	public ResponseEntity<Map<String, String>> handleTooManyRequestsException(TooManyRequestsException exception) {
 		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
 			.body(Map.of("error", exception.getMessage()));
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<Map<String, String>> handleUnexpectedException(Exception exception) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(Map.of("error", "Algo saiu do esperado por aqui. Tente novamente em instantes."));
 	}
 }

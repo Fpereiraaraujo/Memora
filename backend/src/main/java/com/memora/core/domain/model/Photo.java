@@ -16,8 +16,10 @@ public class Photo {
 	Long sizeBytes;
 	PhotoStatus status;
 	boolean favorite;
+	int likesCount;
 	String guestName;
 	String guestMessage;
+	UUID uploadGroupId;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 }

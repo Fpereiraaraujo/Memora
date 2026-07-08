@@ -80,10 +80,12 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 			.objectKey(objectKey)
 			.contentType(contentType)
 			.sizeBytes(param.sizeBytes())
-			.status(PhotoStatus.AVAILABLE)
+			.status(hasFile ? PhotoStatus.AVAILABLE : PhotoStatus.RECEIVED)
 			.favorite(false)
+			.likesCount(0)
 			.guestName(param.guestName())
 			.guestMessage(param.guestMessage())
+			.uploadGroupId(param.uploadGroupId())
 			.createdAt(now)
 			.updatedAt(now)
 			.build();
@@ -129,6 +131,10 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		String guestMessage = param.guestMessage();
 		if (guestMessage != null && guestMessage.isBlank()) {
 			throw new IllegalArgumentException("Guest message cannot be blank");
+		}
+
+		if (guestMessage != null && guestMessage.length() > 500) {
+			throw new IllegalArgumentException("Guest message exceeds maximum allowed size");
 		}
 	}
 

@@ -8,8 +8,10 @@ export interface Photo {
   sizeBytes: number | null;
   status: PhotoStatus;
   favorite: boolean;
+  likesCount: number;
   guestName: string | null;
   guestMessage: string | null;
+  uploadGroupId: string | null;
   createdAt: string;
   downloadUrl: string | null;
 }
@@ -29,6 +31,10 @@ export interface GuestUploadResponse {
 
 export interface PhotoFavoriteUpdateRequest {
   favorite: boolean;
+}
+
+export interface PhotoLikeUpdateRequest {
+  liked: boolean;
 }
 
 export interface PhotoStatusUpdateRequest {
