@@ -119,7 +119,7 @@ export function EventSidebar({
   return (
     <aside className="rounded-[26px] border border-[#f1ddd1] bg-white/94 p-5 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur">
       <div className="px-2 pt-1">
-        <MemoraLogo to="/app" iconClassName="size-9 rounded-xl" textClassName="text-[32px] text-[#161314]" />
+        <MemoraLogo to="/app" className="w-fit max-w-full" iconClassName="h-10 w-auto sm:h-11" />
       </div>
 
       <div className="mt-6 h-px bg-[#f2e4da]" />

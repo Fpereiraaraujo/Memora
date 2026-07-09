@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 
-import { MemoraLogo } from '@/components/brand/memora-logo';
+import { TopBrandHeader } from '@/components/layout/top-brand-header';
 import { FloralStage } from '@/components/theme/floral-stage';
 
 interface EventDashboardShellProps {
@@ -39,28 +39,19 @@ export function EventDashboardShell({ sidebar, children }: EventDashboardShellPr
 
   return (
     <FloralStage className="min-h-screen text-[#201914]" petals={false}>
-      <header className="sticky top-0 z-40 px-4 pt-3 sm:px-6 sm:pt-5 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="overflow-hidden rounded-[2rem] border border-[#ecd8ca] bg-white/88 shadow-[0_24px_80px_rgba(96,60,36,0.08)] backdrop-blur-2xl">
-            <div className="flex h-20 items-center justify-between gap-4 px-5 sm:px-7 lg:px-8">
-              <MemoraLogo
-                to="/app"
-                iconClassName="size-10 rounded-2xl"
-                textClassName="text-3xl text-[#161314]"
-              />
-
-              <button
-                type="button"
-                onClick={() => setMenuOpen(true)}
-                className="grid size-11 place-items-center rounded-2xl border border-[#ead1c4] bg-white/78 text-[#201914] shadow-[0_12px_30px_rgba(96,60,36,0.08)] lg:hidden"
-                aria-label="Abrir menu do evento"
-              >
-                <MenuIcon />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopBrandHeader
+        logoTo="/app"
+        rightContent={(
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="grid size-11 place-items-center rounded-2xl border border-[#ead1c4] bg-white text-[#201914] shadow-[0_12px_30px_rgba(96,60,36,0.08)] lg:hidden"
+            aria-label="Abrir menu do evento"
+          >
+            <MenuIcon />
+          </button>
+        )}
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid min-w-0 gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[336px_minmax(0,1fr)]">
