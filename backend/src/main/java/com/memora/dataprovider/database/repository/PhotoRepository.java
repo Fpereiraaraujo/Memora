@@ -16,6 +16,7 @@ public interface PhotoRepository extends JpaRepository<PhotoJpaEntity, UUID> {
 	List<PhotoJpaEntity> findAllByEventIdAndStatusOrderByCreatedAtDesc(UUID eventId, PhotoStatus status);
 
 	List<PhotoJpaEntity> findAllByEventIdAndStatusAndObjectKeyIsNotNullOrderByCreatedAtDesc(UUID eventId, PhotoStatus status);
+	List<PhotoJpaEntity> findAllByEventIdIn(List<UUID> eventIds);
 
 	Page<PhotoJpaEntity> findAllByEventIdOrderByCreatedAtDesc(UUID eventId, Pageable pageable);
 
@@ -30,4 +31,6 @@ public interface PhotoRepository extends JpaRepository<PhotoJpaEntity, UUID> {
 	long countByEventId(UUID eventId);
 
 	long countByEventIdAndObjectKeyIsNotNull(UUID eventId);
+
+	void deleteAllByEventIdIn(List<UUID> eventIds);
 }

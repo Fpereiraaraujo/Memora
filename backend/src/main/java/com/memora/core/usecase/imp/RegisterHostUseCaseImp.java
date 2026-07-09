@@ -2,6 +2,7 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.User;
 import com.memora.core.domain.model.UserRole;
+import com.memora.core.domain.model.UserStatus;
 import com.memora.core.domain.param.RegisterHostParam;
 import com.memora.core.usecase.RegisterHostUseCase;
 import com.memora.dataprovider.database.mapper.UserDatabaseMapper;
@@ -37,6 +38,9 @@ public class RegisterHostUseCaseImp implements RegisterHostUseCase {
 			.email(email)
 			.passwordHash(passwordEncoder.encode(param.rawPassword()))
 			.role(UserRole.HOST)
+			.status(UserStatus.ACTIVE)
+			.deletedAt(null)
+			.lastLoginAt(null)
 			.createdAt(now)
 			.updatedAt(now)
 			.build();

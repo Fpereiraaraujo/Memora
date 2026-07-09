@@ -5,10 +5,12 @@ import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
+import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.database.repository.UserRepository;
 import com.memora.dataprovider.storage.FileStorageService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -19,24 +21,27 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
-
-	private static final int FREE_PHOTO_LIMIT = 5;
-
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
+	private final UserRepository userRepository;
 	private final FileStorageService fileStorageService;
 	private final UploadProperties uploadProperties;
+	private final EventFeatureAccessService eventFeatureAccessService;
 
 	public UploadGuestPhotoUseCaseImp(
 		EventRepository eventRepository,
 		PhotoRepository photoRepository,
+		UserRepository userRepository,
 		FileStorageService fileStorageService,
-		UploadProperties uploadProperties
+		UploadProperties uploadProperties,
+		EventFeatureAccessService eventFeatureAccessService
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
+		this.userRepository = userRepository;
 		this.fileStorageService = fileStorageService;
 		this.uploadProperties = uploadProperties;
+		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override
@@ -45,7 +50,10 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Evento nao encontrado."));
 
-		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+		boolean ownerActive = userRepository.findById(event.getOwnerId())
+			.map(user -> user.getStatus() == com.memora.core.domain.model.UserStatus.ACTIVE)
+			.orElse(false);
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new IllegalArgumentException("Este evento nao esta disponivel para receber fotos.");
 		}
 
@@ -58,7 +66,7 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		boolean hasFile = param.content() != null && param.content().length > 0;
 		if (hasFile) {
 			long currentPhotos = photoRepository.countByEventIdAndObjectKeyIsNotNull(event.getId());
-			int photoLimit = effectivePhotoLimit(event);
+			int photoLimit = eventFeatureAccessService.effectivePhotoLimit(event);
 			if (currentPhotos >= photoLimit) {
 				throw new IllegalArgumentException("Limite de fotos atingido. Escolha um plano para liberar mais envios.");
 			}
@@ -146,13 +154,5 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		}
 
 		return contentType.trim().toLowerCase(Locale.ROOT);
-	}
-
-	private int effectivePhotoLimit(Event event) {
-		if (event.getPhotoLimit() != null && event.getPhotoLimit() > 0) {
-			return event.getPhotoLimit();
-		}
-
-		return FREE_PHOTO_LIMIT;
 	}
 }

@@ -1,6 +1,7 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.User;
+import com.memora.core.domain.model.UserStatus;
 import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.dataprovider.database.mapper.UserDatabaseMapper;
@@ -21,8 +22,14 @@ public class GetCurrentUserUseCaseImp implements GetCurrentUserUseCase {
 	@Cacheable(cacheNames = "currentUsers", key = "#param.email().trim().toLowerCase()")
 	public User execute(GetCurrentUserParam param) {
 		String email = param.email().trim().toLowerCase();
-		return userRepository.findByEmail(email)
+		User user = userRepository.findByEmail(email)
 			.map(UserDatabaseMapper::toDomain)
 			.orElseThrow(() -> new SecurityException("Authenticated user not found"));
+
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new SecurityException("Authenticated user is not active");
+		}
+
+		return user;
 	}
 }

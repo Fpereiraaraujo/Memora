@@ -21,6 +21,12 @@ import {
   buildEventPublicPageSettingsPath,
   buildEventQrPath,
 } from '@/features/events/utils/event-routes';
+import {
+  canCustomizePublicPage,
+  canUseFavorites,
+  canUsePrivateMessages,
+  getRequiredPlanLabel,
+} from '@/features/events/utils/event-plan-features';
 import type { EventSummary } from '@/types/event';
 
 interface EventSidebarProps {
@@ -36,6 +42,8 @@ interface SidebarItemProps {
   label: string;
   icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message' | 'public';
   end?: boolean;
+  disabled?: boolean;
+  badge?: string;
 }
 
 function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
@@ -51,7 +59,23 @@ function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
   return <DownloadIcon className={className} />;
 }
 
-function SidebarItem({ to, label, icon, end = false }: SidebarItemProps) {
+function SidebarItem({ to, label, icon, end = false, disabled = false, badge }: SidebarItemProps) {
+  if (disabled) {
+    return (
+      <div className="flex h-[50px] items-center gap-4 rounded-[14px] px-4 text-[15px] font-semibold text-[#2c2927]/42">
+        <span className="grid size-6 shrink-0 place-items-center opacity-55">
+          <SidebarIcon icon={icon} />
+        </span>
+        <span className="flex-1">{label}</span>
+        {badge ? (
+          <span className="rounded-full border border-[#f2dfd4] bg-[#fffaf7] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#c5922e]">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <NavLink
       to={to}
@@ -88,6 +112,9 @@ export function EventSidebar({
   const downloadsPath = buildEventDownloadsPath(event.id);
   const messagesPath = buildEventMessagesPath(event.id);
   const initials = event.title.trim().slice(0, 2).toUpperCase() || 'ME';
+  const favoritesEnabled = canUseFavorites(event);
+  const messagesEnabled = canUsePrivateMessages(event);
+  const publicCustomizationEnabled = canCustomizePublicPage(event);
 
   return (
     <aside className="rounded-[26px] border border-[#f1ddd1] bg-white/94 p-5 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur">
@@ -100,12 +127,30 @@ export function EventSidebar({
       <nav className="mt-4 space-y-1.5">
         <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
         <SidebarItem to="/app" label="Meus eventos" icon="events" end />
-        <SidebarItem to={publicSettingsPath} label="Página pública" icon="public" />
+        <SidebarItem
+          to={publicSettingsPath}
+          label="Página pública"
+          icon="public"
+          disabled={!publicCustomizationEnabled}
+          badge={!publicCustomizationEnabled ? getRequiredPlanLabel('public-page-customization') : undefined}
+        />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
-        <SidebarItem to={favoritesPath} label="Favoritas" icon="heart" />
+        <SidebarItem
+          to={favoritesPath}
+          label="Favoritas"
+          icon="heart"
+          disabled={!favoritesEnabled}
+          badge={!favoritesEnabled ? getRequiredPlanLabel('favorites') : undefined}
+        />
         <SidebarItem to={downloadsPath} label="Downloads" icon="download" />
-        <SidebarItem to={messagesPath} label="Recados" icon="message" />
+        <SidebarItem
+          to={messagesPath}
+          label="Recados"
+          icon="message"
+          disabled={!messagesEnabled}
+          badge={!messagesEnabled ? getRequiredPlanLabel('messages') : undefined}
+        />
       </nav>
 
       <div className="mt-6 rounded-[20px] border border-[#f2dfd4] bg-white p-5 shadow-[0_12px_28px_rgba(96,60,36,0.05)]">

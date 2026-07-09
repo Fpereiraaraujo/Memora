@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface EventCustomizationRepository extends JpaRepository<EventCustomizationJpaEntity, UUID> {
 
 	Optional<EventCustomizationJpaEntity> findByEventId(UUID eventId);
+
+	java.util.List<EventCustomizationJpaEntity> findAllByEventIdIn(java.util.List<java.util.UUID> eventIds);
 }

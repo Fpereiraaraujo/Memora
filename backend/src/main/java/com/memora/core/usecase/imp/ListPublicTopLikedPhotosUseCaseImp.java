@@ -7,6 +7,7 @@ import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.database.repository.UserRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,16 @@ public class ListPublicTopLikedPhotosUseCaseImp implements ListPublicTopLikedPho
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
+	private final UserRepository userRepository;
 
 	public ListPublicTopLikedPhotosUseCaseImp(
 		EventRepository eventRepository,
-		PhotoRepository photoRepository
+		PhotoRepository photoRepository,
+		UserRepository userRepository
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -31,7 +35,10 @@ public class ListPublicTopLikedPhotosUseCaseImp implements ListPublicTopLikedPho
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+		boolean ownerActive = userRepository.findById(event.getOwnerId())
+			.map(user -> user.getStatus() == com.memora.core.domain.model.UserStatus.ACTIVE)
+			.orElse(false);
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new NoSuchElementException("Event not found");
 		}
 

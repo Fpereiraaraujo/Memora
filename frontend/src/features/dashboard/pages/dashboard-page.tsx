@@ -130,7 +130,7 @@ export function DashboardPage() {
           </h1>
 
           <p className="mt-5 max-w-2xl text-base leading-8 text-[#2c2927]/68">
-            Depois da criacao, voce vai direto para o painel do evento com QR Code, pagina publica, galeria e recados.
+            Depois da criacao, voce vai direto para o painel do evento com QR Code, link publico, galeria privada e escolha de plano quando quiser ampliar os recursos.
           </p>
         </section>
 
@@ -162,11 +162,11 @@ export function DashboardPage() {
           <Card className="rounded-[28px] bg-[linear-gradient(135deg,#fffaf7,#fff1f2_48%,#fff8ef)]">
             <EmptyState
               title="Seu evento fica pronto em seguida"
-              description="Assim que criar, a Memora libera o painel com QR Code, pagina publica, upload dos convidados e galeria privada."
+              description="Assim que criar, a Memora libera o painel com QR Code, link publico, upload dos convidados e galeria privada no modo gratuito."
             />
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {['Pagina publica', 'QR Code', 'Upload dos convidados', 'Galeria privada'].map((item) => (
+              {['Link público', 'QR Code', 'Upload dos convidados', 'Galeria privada'].map((item) => (
                 <div key={item} className="rounded-[18px] border border-[#f1ddd1] bg-white/76 p-4">
                   <p className="text-sm font-black text-[#161314]">
                     {item}

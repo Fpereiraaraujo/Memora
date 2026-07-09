@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import { ExternalIcon, ImagesIcon } from '@/features/events/components/event-dashboard/event-icons';
-import { buildEventPublicPageSettingsPath } from '@/features/events/utils/event-routes';
+import { buildEventCheckoutPath, buildEventPublicPageSettingsPath } from '@/features/events/utils/event-routes';
+import { canCustomizePublicPage } from '@/features/events/utils/event-plan-features';
 import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 
@@ -17,12 +18,17 @@ export function EventPublicPageCard({
   publicLinksEnabled,
 }: EventPublicPageCardProps) {
   const settingsPath = buildEventPublicPageSettingsPath(event.id);
+  const checkoutPath = buildEventCheckoutPath(event.id);
   const previewImage = customization.coverImageUrl ?? customization.highlightImageUrls[0] ?? null;
+  const customizationEnabled = canCustomizePublicPage(event);
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#ffe9e2_0%,#fff8f3_52%,#ffffff_100%)] p-0 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
       <div className="grid gap-6 p-6 lg:grid-cols-[260px_1fr_auto] lg:items-center">
-        <Link to={settingsPath} className="group relative h-44 overflow-hidden rounded-[18px] bg-[linear-gradient(145deg,#fff4ef_0%,#ffe2db_48%,#f8c7bb_100%)] lg:h-40">
+        <Link
+          to={customizationEnabled ? settingsPath : checkoutPath}
+          className="group relative h-44 overflow-hidden rounded-[18px] bg-[linear-gradient(145deg,#fff4ef_0%,#ffe2db_48%,#f8c7bb_100%)] lg:h-40"
+        >
           {previewImage ? (
             <img
               src={previewImage}
@@ -39,7 +45,9 @@ export function EventPublicPageCard({
           </div>
 
           <div className="absolute inset-x-4 bottom-4 rounded-[16px] border border-white/70 bg-white/82 p-4 shadow-[0_10px_24px_rgba(96,60,36,0.10)] backdrop-blur">
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c5922e]">Capa principal</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c5922e]">
+              {customizationEnabled ? 'Capa principal' : 'Link público ativo'}
+            </p>
             <p className="mt-2 font-display text-[22px] font-semibold leading-none tracking-[-0.04em] text-[#201914]">
               {customization.title || event.title}
             </p>
@@ -48,25 +56,40 @@ export function EventPublicPageCard({
 
         <div>
           <p className="text-sm font-bold text-[#ef7885]">
-            Esta é a página que os convidados vão ver
+            {customizationEnabled
+              ? 'Esta é a página que os convidados vão ver'
+              : 'Seu link público já funciona, mas a personalização completa ainda está bloqueada'}
           </p>
 
           <h2 className="mt-2 font-display text-[36px] font-semibold leading-none tracking-[-0.04em] text-[#161314]">
-            Personalize sua página pública
+            {customizationEnabled
+              ? 'Personalize sua página pública'
+              : 'Desbloqueie a versão premium da página pública'}
           </h2>
 
           <p className="mt-3 max-w-2xl text-base leading-8 text-[#2c2927]/65">
-            Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.
+            {customizationEnabled
+              ? 'Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.'
+              : 'No modo gratuito e nos planos iniciais você já pode compartilhar o link e receber fotos. A personalização visual completa da página fica disponível no plano Premium.'}
           </p>
         </div>
 
         <div className="flex flex-col gap-3 lg:min-w-[210px]">
-          <Link
-            to={settingsPath}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-          >
-            Personalizar página
-          </Link>
+          {customizationEnabled ? (
+            <Link
+              to={settingsPath}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+            >
+              Personalizar página
+            </Link>
+          ) : (
+            <Link
+              to={checkoutPath}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+            >
+              Ver planos
+            </Link>
+          )}
 
           {publicLinksEnabled ? (
             <Link

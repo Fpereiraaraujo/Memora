@@ -1,67 +1,11 @@
 import type { EventPlanCode } from '@/types/event';
+import { EVENT_PLANS } from '@/types/payment';
 
 interface EventPlanSelectorProps {
   busy: boolean;
   selectedPlanCode: EventPlanCode | null;
   onSelectPlan: (planCode: EventPlanCode) => void;
 }
-
-const plans: Array<{
-  code: EventPlanCode;
-  name: string;
-  price: string;
-  description: string;
-  photoLimit: string;
-  storage: string;
-  badge?: string;
-  highlighted?: boolean;
-  features: string[];
-}> = [
-  {
-    code: 'ESSENTIAL',
-    name: 'Essencial',
-    price: 'R$ 39,90',
-    description: 'Para celebrações menores e eventos mais íntimos.',
-    photoLimit: 'Até 150 fotos',
-    storage: '3 meses',
-    features: [
-      'QR Code do evento',
-      'Página pública para convidados',
-      'Upload sem login',
-      'Galeria privada dos anfitriões',
-    ],
-  },
-  {
-    code: 'EVENT',
-    name: 'Evento',
-    price: 'R$ 69,90',
-    description: 'A melhor escolha para festas médias e eventos completos.',
-    photoLimit: 'Até 500 fotos',
-    storage: '6 meses',
-    badge: 'Mais escolhido',
-    highlighted: true,
-    features: [
-      'Tudo do Essencial',
-      'Mais fotos para os convidados',
-      'Recados privados para os anfitriões',
-      'Mais tempo para organizar tudo',
-    ],
-  },
-  {
-    code: 'PREMIUM',
-    name: 'Premium',
-    price: 'R$ 99,90',
-    description: 'Para casamentos, formaturas e eventos com muitos convidados.',
-    photoLimit: 'Até 1.500 fotos',
-    storage: '12 meses',
-    features: [
-      'Tudo do Evento',
-      'Maior limite de fotos',
-      'Mais tempo de armazenamento',
-      'Ideal para eventos grandes',
-    ],
-  },
-];
 
 function PlanFeature({ children }: { children: string }) {
   return (
@@ -80,7 +24,7 @@ function PlanCard({
   selected,
   onSelectPlan,
 }: {
-  plan: (typeof plans)[number];
+  plan: (typeof EVENT_PLANS)[number];
   busy: boolean;
   selected: boolean;
   onSelectPlan: (planCode: EventPlanCode) => void;
@@ -94,9 +38,9 @@ function PlanCard({
           : 'border-[#f1ddd1]',
       ].join(' ')}
     >
-      {plan.badge ? (
+      {plan.highlighted ? (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#d2a049] px-4 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white shadow-[0_10px_24px_rgba(210,160,73,0.25)]">
-          {plan.badge}
+          Mais escolhido
         </div>
       ) : null}
 
@@ -113,7 +57,7 @@ function PlanCard({
 
         <div className="text-right">
           <p className="text-3xl font-black tracking-[-0.06em] text-[#eb7d87]">
-            {plan.price}
+            {plan.priceLabel}
           </p>
 
           <p className="text-xs font-bold text-ink-800/42">
@@ -129,7 +73,7 @@ function PlanCard({
           </p>
 
           <p className="mt-2 text-sm font-black text-ink-950">
-            {plan.photoLimit}
+            {plan.photoLimitLabel}
           </p>
         </div>
 
@@ -139,13 +83,13 @@ function PlanCard({
           </p>
 
           <p className="mt-2 text-sm font-black text-ink-950">
-            {plan.storage}
+            {plan.storageLabel}
           </p>
         </div>
       </div>
 
       <ul className="mt-5 flex-1 space-y-3">
-        {plan.features.map((feature) => (
+        {plan.items.map((feature) => (
           <PlanFeature key={feature}>
             {feature}
           </PlanFeature>
@@ -176,7 +120,7 @@ export function EventPlanSelector({
 }: EventPlanSelectorProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      {plans.map((plan) => (
+      {EVENT_PLANS.map((plan) => (
         <PlanCard
           key={plan.code}
           plan={plan}

@@ -2,6 +2,7 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.param.UploadEventPublicPageCoverImageParam;
+import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
@@ -20,15 +21,18 @@ public class UploadEventPublicPageCoverImageUseCaseImp implements UploadEventPub
 	private final EventRepository eventRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
 	private final FileStorageService fileStorageService;
+	private final EventFeatureAccessService eventFeatureAccessService;
 
 	public UploadEventPublicPageCoverImageUseCaseImp(
 		EventRepository eventRepository,
 		EventCustomizationRepository eventCustomizationRepository,
-		FileStorageService fileStorageService
+		FileStorageService fileStorageService,
+		EventFeatureAccessService eventFeatureAccessService
 	) {
 		this.eventRepository = eventRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
 		this.fileStorageService = fileStorageService;
+		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override
@@ -36,6 +40,10 @@ public class UploadEventPublicPageCoverImageUseCaseImp implements UploadEventPub
 		var event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+
+		if (!eventFeatureAccessService.allowsPublicPageCustomization(event)) {
+			throw new IllegalArgumentException("A capa personalizada da pagina publica esta disponivel apenas no plano Premium.");
+		}
 
 		validateImage(param.content(), param.contentType());
 

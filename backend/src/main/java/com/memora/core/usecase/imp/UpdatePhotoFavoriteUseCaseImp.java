@@ -2,8 +2,10 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.param.UpdatePhotoFavoriteParam;
+import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
+import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
 import java.time.LocalDateTime;
@@ -16,16 +18,27 @@ public class UpdatePhotoFavoriteUseCaseImp implements UpdatePhotoFavoriteUseCase
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
+	private final EventFeatureAccessService eventFeatureAccessService;
 
-	public UpdatePhotoFavoriteUseCaseImp(EventRepository eventRepository, PhotoRepository photoRepository) {
+	public UpdatePhotoFavoriteUseCaseImp(
+		EventRepository eventRepository,
+		PhotoRepository photoRepository,
+		EventFeatureAccessService eventFeatureAccessService
+	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
+		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override
 	public Photo execute(UpdatePhotoFavoriteParam param) {
-		eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
+		var event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
+			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+
+		if (!eventFeatureAccessService.allowsFavorites(event)) {
+			throw new IllegalArgumentException("Favoritas estao disponiveis a partir do plano Evento.");
+		}
 
 		Photo photo = photoRepository.findByIdAndEventId(param.photoId(), param.eventId())
 			.map(PhotoDatabaseMapper::toDomain)

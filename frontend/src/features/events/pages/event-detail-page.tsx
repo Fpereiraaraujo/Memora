@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { EventDownloadsCard } from '@/features/events/components/event-dashboard/event-downloads-card';
+import { EventFeatureLockCard } from '@/features/events/components/event-dashboard/event-feature-lock-card';
 import { EventFavoritesSection } from '@/features/events/components/event-dashboard/event-favorites-section';
 import { EventGalleryPreview } from '@/features/events/components/event-dashboard/event-gallery-preview';
 import { EventHeader } from '@/features/events/components/event-dashboard/event-header';
@@ -10,6 +11,7 @@ import { EventPublicPageCard } from '@/features/events/components/event-dashboar
 import { EventQrCard } from '@/features/events/components/event-dashboard/event-qr-card';
 import { EventStatsSection } from '@/features/events/components/event-dashboard/event-stats-section';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
+import { canUseFavorites, canUsePrivateMessages } from '@/features/events/utils/event-plan-features';
 import {
   buildEventGalleryPath,
   buildEventMessagesPath,
@@ -21,6 +23,8 @@ export function EventDetailPage() {
 
   const galleryPath = dashboard.event ? buildEventGalleryPath(dashboard.event.id) : '';
   const messagesPath = dashboard.event ? buildEventMessagesPath(dashboard.event.id) : '';
+  const favoritesEnabled = canUseFavorites(dashboard.event);
+  const messagesEnabled = canUsePrivateMessages(dashboard.event);
 
   return (
     <EventPageLayout
@@ -69,6 +73,7 @@ export function EventDetailPage() {
             <EventMessagesCard
               messages={dashboard.messages}
               messagesPath={messagesPath}
+              disabled={!messagesEnabled}
             />
           </section>
 
@@ -81,10 +86,20 @@ export function EventDetailPage() {
             />
           </section>
 
-          <EventFavoritesSection
-            photos={dashboard.favoritePhotos}
-            onToggleFavorite={dashboard.toggleFavorite}
-          />
+          {favoritesEnabled ? (
+            <EventFavoritesSection
+              photos={dashboard.favoritePhotos}
+              onToggleFavorite={dashboard.toggleFavorite}
+            />
+          ) : (
+            <EventFeatureLockCard
+              eventId={dashboard.event.id}
+              requiredPlanLabel="Evento"
+              eyebrow="Favoritas premium"
+              title="Guarde suas fotos preferidas"
+              description="As favoritas ficam disponíveis a partir do plano Evento para você separar os melhores registros com mais calma."
+            />
+          )}
         </>
       ) : null}
     </EventPageLayout>

@@ -6,6 +6,7 @@ import type { EventGuestMessage } from '@/types/message';
 interface EventMessagesCardProps {
   messages: EventGuestMessage[];
   messagesPath: string;
+  disabled?: boolean;
 }
 
 function MessageAvatar({ name }: { name: string | null }) {
@@ -16,7 +17,7 @@ function MessageAvatar({ name }: { name: string | null }) {
   );
 }
 
-export function EventMessagesCard({ messages, messagesPath }: EventMessagesCardProps) {
+export function EventMessagesCard({ messages, messagesPath, disabled = false }: EventMessagesCardProps) {
   return (
     <section
       id="recados"
@@ -25,13 +26,25 @@ export function EventMessagesCard({ messages, messagesPath }: EventMessagesCardP
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-black text-[#161314]">Recados dos convidados</h2>
 
-        <Link to={messagesPath} className="text-sm font-bold text-[#ef7885] transition hover:text-[#e86d7b]">
-          Ver todos
-        </Link>
+        {disabled ? (
+          <span className="rounded-full border border-[#f2dfd4] bg-[#fffaf7] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#c5922e]">
+            Plano Evento
+          </span>
+        ) : (
+          <Link to={messagesPath} className="text-sm font-bold text-[#ef7885] transition hover:text-[#e86d7b]">
+            Ver todos
+          </Link>
+        )}
       </div>
 
       <div className="mt-6 divide-y divide-[#f0ded4]">
-        {messages.slice(0, 3).map((message) => (
+        {disabled ? (
+          <div className="rounded-[18px] bg-[#fff7f2] p-5 text-sm leading-7 text-[#2c2927]/62">
+            Os recados privados dos convidados são liberados a partir do plano Evento.
+          </div>
+        ) : null}
+
+        {!disabled ? messages.slice(0, 3).map((message) => (
           <div key={message.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
             <MessageAvatar name={message.guestName ?? 'Convidado'} />
 
@@ -52,9 +65,9 @@ export function EventMessagesCard({ messages, messagesPath }: EventMessagesCardP
               <p className="mt-2 text-sm leading-6 text-[#2c2927]/72">{message.guestMessage}</p>
             </div>
           </div>
-        ))}
+        )) : null}
 
-        {messages.length === 0 ? (
+        {!disabled && messages.length === 0 ? (
           <div className="rounded-[18px] bg-[#fff7f2] p-5 text-sm leading-7 text-[#2c2927]/62">
             Nenhum recado ainda. Quando os convidados enviarem mensagens pela pagina publica, elas aparecerao aqui.
           </div>

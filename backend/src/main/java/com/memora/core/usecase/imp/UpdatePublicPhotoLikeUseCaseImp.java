@@ -7,6 +7,7 @@ import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.database.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
@@ -17,13 +18,16 @@ public class UpdatePublicPhotoLikeUseCaseImp implements UpdatePublicPhotoLikeUse
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
+	private final UserRepository userRepository;
 
 	public UpdatePublicPhotoLikeUseCaseImp(
 		EventRepository eventRepository,
-		PhotoRepository photoRepository
+		PhotoRepository photoRepository,
+		UserRepository userRepository
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -32,7 +36,10 @@ public class UpdatePublicPhotoLikeUseCaseImp implements UpdatePublicPhotoLikeUse
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+		boolean ownerActive = userRepository.findById(event.getOwnerId())
+			.map(user -> user.getStatus() == com.memora.core.domain.model.UserStatus.ACTIVE)
+			.orElse(false);
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new NoSuchElementException("Event not found");
 		}
 

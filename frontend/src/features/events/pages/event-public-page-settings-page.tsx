@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/features/auth/auth-context';
+import { EventFeatureLockCard } from '@/features/events/components/event-dashboard/event-feature-lock-card';
 import {
   ExternalIcon,
   ImagesIcon,
@@ -12,6 +13,7 @@ import {
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
 import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
+import { canCustomizePublicPage } from '@/features/events/utils/event-plan-features';
 import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import {
   IMAGE_ACCEPT_ATTRIBUTE,
@@ -40,6 +42,7 @@ export function EventPublicPageSettingsPage() {
   const { token } = useAuth();
   const dashboard = useEventDashboard(eventId);
   const event = dashboard.event;
+  const customizationEnabled = canCustomizePublicPage(event);
 
   const [form, setForm] = useState<SettingsFormState | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -308,7 +311,15 @@ export function EventPublicPageSettingsPage() {
       emptyTitle="Evento não encontrado"
       emptyDescription="Não foi possível abrir a personalização da página pública."
     >
-      {event && form ? (
+      {event && !customizationEnabled ? (
+        <EventFeatureLockCard
+          eventId={event.id}
+          requiredPlanLabel="Premium"
+          eyebrow="Personalização premium"
+          title="Desbloqueie a página pública personalizada"
+          description="A edição completa de capa, destaques e mensagem principal fica disponível no plano Premium."
+        />
+      ) : event && form ? (
         <div className="space-y-6">
           <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
             <div className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[#f4a1aa]/20 blur-3xl" />

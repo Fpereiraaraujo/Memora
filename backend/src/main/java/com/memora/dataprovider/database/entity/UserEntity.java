@@ -1,6 +1,7 @@
 package com.memora.dataprovider.database.entity;
 
 import com.memora.core.domain.model.UserRole;
+import com.memora.core.domain.model.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,10 +41,19 @@ public class UserEntity {
 	@Column(nullable = false)
 	private UserRole role;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserStatus status;
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
+	@Column(name = "last_login_at")
+	private LocalDateTime lastLoginAt;
+
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 }
-

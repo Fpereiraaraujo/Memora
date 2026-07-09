@@ -13,7 +13,9 @@ public class User {
 	String email;
 	String passwordHash;
 	UserRole role;
+	UserStatus status;
+	LocalDateTime deletedAt;
+	LocalDateTime lastLoginAt;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 }
-

@@ -11,4 +11,8 @@ final class PublicEventAccessSupport {
 	static boolean canOpenPublicFlow(Event event) {
 		return event.getStatus() == EventStatus.DRAFT || event.getStatus() == EventStatus.ACTIVE;
 	}
+
+	static boolean canOpenPublicFlow(Event event, boolean ownerActive) {
+		return ownerActive && canOpenPublicFlow(event);
+	}
 }

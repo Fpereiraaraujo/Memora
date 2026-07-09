@@ -14,12 +14,17 @@ import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventType;
 import com.memora.core.domain.model.PhotoStatus;
+import com.memora.core.domain.model.UserRole;
+import com.memora.core.domain.model.UserStatus;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.entity.PhotoJpaEntity;
+import com.memora.dataprovider.database.entity.UserEntity;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.database.repository.UserRepository;
 import com.memora.dataprovider.storage.FileStorageService;
+import com.memora.core.service.EventFeatureAccessService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +44,7 @@ class UploadGuestPhotoUseCaseTest {
 
 	@Mock private EventRepository eventRepository;
 	@Mock private PhotoRepository photoRepository;
+	@Mock private UserRepository userRepository;
 	@Mock private FileStorageService fileStorageService;
 
 	private UploadGuestPhotoUseCaseImp useCase;
@@ -48,14 +54,17 @@ class UploadGuestPhotoUseCaseTest {
 		useCase = new UploadGuestPhotoUseCaseImp(
 			eventRepository,
 			photoRepository,
+			userRepository,
 			fileStorageService,
-			new UploadProperties(20 * 1024 * 1024, List.of("image/jpeg", "image/png", "image/webp"), 60, 60, 5)
+			new UploadProperties(20 * 1024 * 1024, List.of("image/jpeg", "image/png", "image/webp"), 60, 60, 5),
+			new EventFeatureAccessService()
 		);
 	}
 
 	@Test
 	void allowsDraftEventToReceivePhotosUntilFreeLimit() {
 		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(4L);
 		when(photoRepository.save(any(PhotoJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -69,6 +78,7 @@ class UploadGuestPhotoUseCaseTest {
 	@Test
 	void blocksPhotoUploadWhenFreeLimitIsReached() {
 		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(5L);
 
 		assertThatThrownBy(() -> useCase.execute(photoParam()))
@@ -82,6 +92,7 @@ class UploadGuestPhotoUseCaseTest {
 	@Test
 	void allowsPaidEventToUsePlanPhotoLimit() {
 		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.ACTIVE, EventPlanCode.EVENT, 500)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(499L);
 		when(photoRepository.save(any(PhotoJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -94,6 +105,7 @@ class UploadGuestPhotoUseCaseTest {
 	@Test
 	void allowsMessageOnlyEvenWhenPhotoLimitIsReached() {
 		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.save(any(PhotoJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		var photo = useCase.execute(messageOnlyParam());
@@ -144,6 +156,20 @@ class UploadGuestPhotoUseCaseTest {
 			.status(status)
 			.planCode(planCode)
 			.photoLimit(photoLimit)
+			.createdAt(now)
+			.updatedAt(now)
+			.build();
+	}
+
+	private UserEntity ownerEntity() {
+		LocalDateTime now = LocalDateTime.now();
+		return UserEntity.builder()
+			.id(OWNER_ID)
+			.name("Fernando")
+			.email("fernando@memora.com")
+			.passwordHash("hash")
+			.role(UserRole.HOST)
+			.status(UserStatus.ACTIVE)
 			.createdAt(now)
 			.updatedAt(now)
 			.build();

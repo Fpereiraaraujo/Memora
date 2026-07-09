@@ -15,6 +15,9 @@ public final class UserDatabaseMapper {
 			.email(user.getEmail())
 			.passwordHash(user.getPasswordHash())
 			.role(user.getRole())
+			.status(user.getStatus())
+			.deletedAt(user.getDeletedAt())
+			.lastLoginAt(user.getLastLoginAt())
 			.createdAt(user.getCreatedAt())
 			.updatedAt(user.getUpdatedAt())
 			.build();
@@ -27,6 +30,9 @@ public final class UserDatabaseMapper {
 			.email(entity.getEmail())
 			.passwordHash(entity.getPasswordHash())
 			.role(entity.getRole())
+			.status(entity.getStatus())
+			.deletedAt(entity.getDeletedAt())
+			.lastLoginAt(entity.getLastLoginAt())
 			.createdAt(entity.getCreatedAt())
 			.updatedAt(entity.getUpdatedAt())
 			.build();

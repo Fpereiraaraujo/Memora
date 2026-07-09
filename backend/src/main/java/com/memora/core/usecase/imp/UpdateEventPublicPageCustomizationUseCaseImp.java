@@ -2,6 +2,7 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.param.UpdateEventPublicPageCustomizationParam;
+import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
@@ -16,13 +17,16 @@ public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEvent
 
 	private final EventRepository eventRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
+	private final EventFeatureAccessService eventFeatureAccessService;
 
 	public UpdateEventPublicPageCustomizationUseCaseImp(
 		EventRepository eventRepository,
-		EventCustomizationRepository eventCustomizationRepository
+		EventCustomizationRepository eventCustomizationRepository,
+		EventFeatureAccessService eventFeatureAccessService
 	) {
 		this.eventRepository = eventRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
+		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override
@@ -38,6 +42,10 @@ public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEvent
 		var currentEvent = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+
+		if (!eventFeatureAccessService.allowsPublicPageCustomization(currentEvent)) {
+			throw new IllegalArgumentException("A personalizacao completa da pagina publica esta disponivel apenas no plano Premium.");
+		}
 
 		var event = currentEvent.toBuilder()
 			.title(param.title().trim())

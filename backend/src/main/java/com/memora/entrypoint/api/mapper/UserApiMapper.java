@@ -15,10 +15,10 @@ public final class UserApiMapper {
 	}
 
 	public static UserLoginResponseDto toLoginResponse(String token, User user) {
-		return new UserLoginResponseDto(token, user.getId(), user.getName(), user.getEmail());
+		return new UserLoginResponseDto(token, user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getStatus());
 	}
 
 	public static UserProfileResponseDto toProfileResponse(User user) {
-		return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail());
+		return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getStatus());
 	}
 }

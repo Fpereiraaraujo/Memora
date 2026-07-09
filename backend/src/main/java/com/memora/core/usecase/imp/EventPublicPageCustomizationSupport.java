@@ -9,12 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-final class EventPublicPageCustomizationSupport {
+public final class EventPublicPageCustomizationSupport {
 
 	private EventPublicPageCustomizationSupport() {
 	}
 
-	static EventCustomizationJpaEntity createEmpty(UUID eventId) {
+	public static EventCustomizationJpaEntity createEmpty(UUID eventId) {
 		return EventCustomizationJpaEntity.builder()
 			.id(UUID.randomUUID())
 			.eventId(eventId)
@@ -25,7 +25,7 @@ final class EventPublicPageCustomizationSupport {
 			.build();
 	}
 
-	static EventPublicPageCustomization toDomain(Event event, EventCustomizationJpaEntity customization) {
+	public static EventPublicPageCustomization toDomain(Event event, EventCustomizationJpaEntity customization) {
 		return EventPublicPageCustomization.builder()
 			.eventId(event.getId())
 			.title(event.getTitle())
@@ -37,7 +37,7 @@ final class EventPublicPageCustomizationSupport {
 			.build();
 	}
 
-	static String writeHighlightKeys(List<String> keys) {
+	public static String writeHighlightKeys(List<String> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return null;
 		}
@@ -45,7 +45,7 @@ final class EventPublicPageCustomizationSupport {
 		return String.join("\n", keys);
 	}
 
-	static List<String> readHighlightKeys(String value) {
+	public static List<String> readHighlightKeys(String value) {
 		if (value == null || value.isBlank()) {
 			return List.of();
 		}
