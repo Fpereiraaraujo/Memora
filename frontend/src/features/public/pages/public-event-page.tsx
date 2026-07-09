@@ -434,6 +434,7 @@ export function PublicEventPage() {
           <CoupleHighlightsSection images={highlightImages} />
 
           <GuestUploadCard
+            event={event}
             guestName={guestName}
             guestMessage={guestMessage}
             files={files}

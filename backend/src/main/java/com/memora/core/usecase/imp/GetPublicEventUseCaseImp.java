@@ -1,7 +1,6 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.Event;
-import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.param.GetPublicEventParam;
 import com.memora.core.usecase.GetPublicEventUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
@@ -26,7 +25,7 @@ public class GetPublicEventUseCaseImp implements GetPublicEventUseCase {
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (event.getStatus() != EventStatus.ACTIVE) {
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
 			throw new NoSuchElementException("Event not found");
 		}
 

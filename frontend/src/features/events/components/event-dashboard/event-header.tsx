@@ -3,7 +3,13 @@ import { Link } from 'react-router-dom';
 import { CalendarIcon, ExternalIcon, ShareIcon } from '@/features/events/components/event-dashboard/event-icons';
 import { formatEventDate } from '@/features/events/utils/event-dashboard-formatters';
 import { buildEventCheckoutPath } from '@/features/events/utils/event-routes';
-import type { EventStatus, EventSummary, EventType } from '@/types/event';
+import {
+  getEffectivePhotoLimit,
+  getEventPlanLabel,
+  type EventStatus,
+  type EventSummary,
+  type EventType,
+} from '@/types/event';
 import type { Photo } from '@/types/photo';
 
 interface EventHeaderProps {
@@ -25,8 +31,8 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 };
 
 const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
-  DRAFT: 'Rascunho',
-  ACTIVE: 'Evento ativo',
+  DRAFT: 'Modo gratuito',
+  ACTIVE: 'Plano ativo',
   PAUSED: 'Pausado',
   EXPIRED: 'Expirado',
 };
@@ -48,6 +54,8 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
     ? new Date(photos[0].createdAt).toLocaleDateString('pt-BR')
     : 'aguardando primeiro upload';
   const eventTypeLabel = EVENT_TYPE_LABELS[event.type];
+  const planLabel = getEventPlanLabel(event.planCode);
+  const photoLimit = getEffectivePhotoLimit(event);
 
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
@@ -76,7 +84,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-[#2c2927]/70">
-            Aqui você acompanha o evento, copia o link de upload, prepara o QR Code, vê uma prévia das fotos, recados e favoritas.
+            Aqui você acompanha o evento, copia o link de upload, prepara o QR Code e vê fotos, recados e favoritas.
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] font-medium text-[#2c2927]/62">
@@ -89,6 +97,10 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
             <span>{event.location || 'Local a confirmar'}</span>
             <span>•</span>
             <span>Fotos desde {firstPhotoDate}</span>
+            <span>•</span>
+            <span>
+              Plano {planLabel} · limite {photoLimit} fotos
+            </span>
 
             {mockMode ? (
               <>
@@ -110,12 +122,12 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
             </Link>
           ) : null}
 
-          {event.status === 'DRAFT' ? (
+          {!event.planCode ? (
             <Link
               to={buildEventCheckoutPath(event.id)}
               className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#efb6bb] bg-white px-6 text-sm font-bold text-[#ef7885] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
             >
-              Ver planos
+              Aumentar limite
             </Link>
           ) : null}
 

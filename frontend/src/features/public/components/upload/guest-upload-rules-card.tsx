@@ -1,21 +1,29 @@
 import { MAX_GUEST_UPLOAD_FILES } from '@/features/shared/utils/upload-validation';
+import { getEffectivePhotoLimit, getEventPlanLabel, type EventSummary } from '@/types/event';
 
-const steps = [
-  {
-    title: 'Envie fotos reais do evento',
-    description: `Escolha até ${MAX_GUEST_UPLOAD_FILES} fotos do celular. Elas vão para a galeria dos anfitriões.`,
-  },
-  {
-    title: 'Recado é opcional',
-    description: 'O recado vai diretamente para os anfitriões. Ele não aparece junto da foto na galeria pública.',
-  },
-  {
-    title: 'Ajuste automático quando precisar',
-    description: 'Se a imagem estiver pesada, a Memora tenta comprimir antes do envio para caber no limite.',
-  },
-];
+interface GuestUploadRulesCardProps {
+  event: EventSummary;
+}
 
-export function GuestUploadRulesCard() {
+export function GuestUploadRulesCard({ event }: GuestUploadRulesCardProps) {
+  const photoLimit = getEffectivePhotoLimit(event);
+  const planLabel = getEventPlanLabel(event.planCode);
+
+  const steps = [
+    {
+      title: 'Escolha suas melhores fotos',
+      description: `Envie até ${MAX_GUEST_UPLOAD_FILES} fotos por vez. O limite total deste evento é de ${photoLimit} fotos.`,
+    },
+    {
+      title: 'Recado é opcional',
+      description: 'Você pode enviar fotos com recado ou apenas uma mensagem carinhosa para os anfitriões.',
+    },
+    {
+      title: 'Tudo vai para os anfitriões',
+      description: 'As fotos entram na galeria e os recados aparecem no painel privado do casal.',
+    },
+  ];
+
   return (
     <aside className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
       <div className="grid size-14 place-items-center rounded-[18px] bg-[#fff1f2] text-[#ef7885]">♡</div>
@@ -25,7 +33,7 @@ export function GuestUploadRulesCard() {
       </h2>
 
       <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
-        Você pode enviar apenas fotos, fotos com recado, ou somente um recado carinhoso para os anfitriões.
+        Este evento está no plano {planLabel}. Se o limite de fotos acabar, os anfitriões podem ampliar o plano e liberar novos envios.
       </p>
 
       <div className="mt-6 space-y-3">

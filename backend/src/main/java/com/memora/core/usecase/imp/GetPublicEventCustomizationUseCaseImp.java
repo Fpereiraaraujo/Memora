@@ -1,7 +1,6 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.EventPublicPageCustomization;
-import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.param.GetPublicEventCustomizationParam;
 import com.memora.core.usecase.GetPublicEventCustomizationUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
@@ -30,7 +29,7 @@ public class GetPublicEventCustomizationUseCaseImp implements GetPublicEventCust
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (event.getStatus() != EventStatus.ACTIVE) {
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
 			throw new NoSuchElementException("Event not found");
 		}
 

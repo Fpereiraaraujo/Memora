@@ -29,7 +29,12 @@ public class UpdatePublicPhotoLikeUseCaseImp implements UpdatePublicPhotoLikeUse
 	@Override
 	public Photo execute(UpdatePublicPhotoLikeParam param) {
 		var event = eventRepository.findBySlug(param.slug())
+			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+			throw new NoSuchElementException("Event not found");
+		}
 
 		var photo = photoRepository.findByIdAndEventId(param.photoId(), event.getId())
 			.orElseThrow(() -> new NoSuchElementException("Photo not found"));

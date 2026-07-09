@@ -89,10 +89,6 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
         }
 
         const eventData = await api.getEvent(token, eventId);
-        const normalizedEvent =
-          eventData.status === 'DRAFT'
-            ? await api.updateEventStatus(token, eventId, 'ACTIVE').catch(() => eventData)
-            : eventData;
         const [photoResult, qrResult, customizationResult] = await Promise.allSettled([
           fetchAllEventPhotosPaged(token, eventId),
           api.fetchEventQrCode(token, eventId),
@@ -106,7 +102,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
         }
 
         if (active) {
-          setEvent(normalizedEvent);
+          setEvent(eventData);
           setPhotos(photoData);
           setFavorites(photoData.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(objectUrl);

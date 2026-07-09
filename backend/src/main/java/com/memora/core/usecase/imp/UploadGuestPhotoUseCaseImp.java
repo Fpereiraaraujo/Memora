@@ -2,15 +2,14 @@ package com.memora.core.usecase.imp;
 
 import com.memora.config.UploadProperties;
 import com.memora.core.domain.model.Event;
-import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
-import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
-import com.memora.dataprovider.database.repository.PhotoRepository;
 import com.memora.dataprovider.database.repository.EventRepository;
+import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.storage.FileStorageService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Locale;
@@ -20,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
+
+	private static final int FREE_PHOTO_LIMIT = 5;
 
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
@@ -42,30 +43,27 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 	public Photo execute(UploadGuestPhotoParam param) {
 		Event event = eventRepository.findBySlug(param.slug())
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado."));
+			.orElseThrow(() -> new NoSuchElementException("Evento nao encontrado."));
 
-		if (event.getStatus() != EventStatus.ACTIVE) {
-			throw new IllegalArgumentException("Este evento ainda não está ativo para receber fotos.");
-		}
-
-		if (event.getPlanCode() == null || event.getPhotoLimit() == null) {
-			throw new IllegalArgumentException("Este evento ainda não está pronto para receber fotos.");
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+			throw new IllegalArgumentException("Este evento nao esta disponivel para receber fotos.");
 		}
 
 		if (event.getStorageExpiresAt() != null && event.getStorageExpiresAt().isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
-			throw new IllegalArgumentException("O período de armazenamento deste evento já expirou.");
-		}
-
-		if (event.getPhotoLimit() != null) {
-			long currentPhotos = photoRepository.countByEventIdAndObjectKeyIsNotNull(event.getId());
-			if (currentPhotos >= event.getPhotoLimit()) {
-				throw new IllegalArgumentException("Limite de fotos do plano atingido.");
-			}
+			throw new IllegalArgumentException("O periodo de armazenamento deste evento ja expirou.");
 		}
 
 		validateUpload(param);
 
 		boolean hasFile = param.content() != null && param.content().length > 0;
+		if (hasFile) {
+			long currentPhotos = photoRepository.countByEventIdAndObjectKeyIsNotNull(event.getId());
+			int photoLimit = effectivePhotoLimit(event);
+			if (currentPhotos >= photoLimit) {
+				throw new IllegalArgumentException("Limite de fotos atingido. Escolha um plano para liberar mais envios.");
+			}
+		}
+
 		String originalFilename = hasFile ? (param.originalFilename() == null ? "photo" : param.originalFilename()) : null;
 		String contentType = hasFile ? normalizeContentType(param.contentType()) : null;
 		String objectKey = null;
@@ -114,27 +112,27 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 
 		if (hasFile) {
 			if (param.sizeBytes() <= 0) {
-				throw new IllegalArgumentException("Selecione uma foto válida para enviar.");
+				throw new IllegalArgumentException("Selecione uma foto valida para enviar.");
 			}
 
 			if (param.sizeBytes() > uploadProperties.maxFileSizeBytes()) {
-				throw new IllegalArgumentException("Cada envio aceita fotos de até 20 MB. Tente novamente com uma imagem menor.");
+				throw new IllegalArgumentException("Cada envio aceita fotos de ate 20 MB. Tente novamente com uma imagem menor.");
 			}
 
 			String contentType = normalizeContentType(param.contentType());
 			if (!uploadProperties.allowedContentTypes().contains(contentType)) {
-				throw new IllegalArgumentException("Formato de arquivo não suportado. Use JPG, PNG ou WEBP.");
+				throw new IllegalArgumentException("Formato de arquivo nao suportado. Use JPG, PNG ou WEBP.");
 			}
 		}
 
 		String guestName = param.guestName();
 		if (guestName != null && guestName.isBlank()) {
-			throw new IllegalArgumentException("O nome do convidado não pode ficar em branco.");
+			throw new IllegalArgumentException("O nome do convidado nao pode ficar em branco.");
 		}
 
 		String guestMessage = param.guestMessage();
 		if (guestMessage != null && guestMessage.isBlank()) {
-			throw new IllegalArgumentException("O recado do convidado não pode ficar em branco.");
+			throw new IllegalArgumentException("O recado do convidado nao pode ficar em branco.");
 		}
 
 		if (guestMessage != null && guestMessage.length() > 500) {
@@ -148,5 +146,13 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		}
 
 		return contentType.trim().toLowerCase(Locale.ROOT);
+	}
+
+	private int effectivePhotoLimit(Event event) {
+		if (event.getPhotoLimit() != null && event.getPhotoLimit() > 0) {
+			return event.getPhotoLimit();
+		}
+
+		return FREE_PHOTO_LIMIT;
 	}
 }

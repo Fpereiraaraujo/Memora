@@ -1,20 +1,21 @@
 package com.memora.core.usecase.imp;
 
-import com.memora.core.domain.model.PaymentVerificationResult;
 import com.memora.core.domain.model.Event;
-import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.PaymentOrderStatus;
+import com.memora.core.domain.model.PaymentVerificationCommand;
+import com.memora.core.domain.model.PaymentVerificationResult;
+import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.param.HandleInfinitePayWebhookParam;
 import com.memora.core.gateway.PaymentGateway;
 import com.memora.core.service.EventPlanService;
 import com.memora.core.usecase.HandleInfinitePayWebhookUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
-import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PaymentOrderDatabaseMapper;
+import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
-import com.memora.dataprovider.database.repository.PlanRepository;
 import com.memora.dataprovider.database.repository.PaymentOrderRepository;
+import com.memora.dataprovider.database.repository.PlanRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
@@ -49,22 +50,24 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 	public PaymentOrder execute(HandleInfinitePayWebhookParam param) {
 		String externalReference = resolveExternalReference(param);
 		if (externalReference == null || externalReference.isBlank()) {
-			throw new IllegalArgumentException("Webhook recebido sem referência de pagamento válida.");
+			throw new IllegalArgumentException("Webhook recebido sem referencia de pagamento valida.");
 		}
 
 		PaymentOrder paymentOrder = paymentOrderRepository.findWithLockByExternalReference(externalReference)
 			.map(PaymentOrderDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Ordem de pagamento não encontrada."));
+			.orElseThrow(() -> new NoSuchElementException("Ordem de pagamento nao encontrada."));
 
 		if (paymentOrder.getStatus() == PaymentOrderStatus.APPROVED) {
 			return paymentOrder;
 		}
 
-		PaymentVerificationResult verificationResult = paymentGateway.verifyPayment(
+		PaymentVerificationResult verificationResult = paymentGateway.verifyPayment(new PaymentVerificationCommand(
 			externalReference,
-			param.providerPaymentId() != null ? param.providerPaymentId() : param.transactionNsu(),
+			param.providerPaymentId(),
+			param.transactionNsu(),
+			param.invoiceSlug(),
 			param.amount()
-		);
+		));
 
 		if (!verificationResult.verified() || !verificationResult.approved()) {
 			return paymentOrder;
@@ -86,7 +89,7 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 		Plan plan = planRepository.findByCodeAndActiveTrue(paymentOrder.getPlanCode())
 			.map(PlanDatabaseMapper::toDomain)
-			.orElseThrow(() -> new IllegalArgumentException("Plano da ordem está inválido ou inativo."));
+			.orElseThrow(() -> new IllegalArgumentException("Plano da ordem esta invalido ou inativo."));
 
 		PaymentOrder approvedOrder = paymentOrder.toBuilder()
 			.status(PaymentOrderStatus.APPROVED)
@@ -103,7 +106,7 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 
 		Event event = eventRepository.findById(paymentOrder.getEventId())
 			.map(EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado."));
+			.orElseThrow(() -> new NoSuchElementException("Evento nao encontrado."));
 
 		Event activatedEvent = eventPlanService.applyPlanToEvent(event, plan, now);
 

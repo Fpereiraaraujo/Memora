@@ -2,8 +2,10 @@ import type { FormEvent } from 'react';
 
 import { GuestUploadFormCard } from '@/features/public/components/upload/guest-upload-form-card';
 import { GuestUploadRulesCard } from '@/features/public/components/upload/guest-upload-rules-card';
+import type { EventSummary } from '@/types/event';
 
 interface GuestUploadCardProps {
+  event: EventSummary;
   guestName: string;
   guestMessage: string;
   files: File[];
@@ -26,7 +28,7 @@ interface GuestUploadCardProps {
 export function GuestUploadCard(props: GuestUploadCardProps) {
   return (
     <section id="upload" className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
-      <GuestUploadRulesCard />
+      <GuestUploadRulesCard event={props.event} />
       <GuestUploadFormCard {...props} />
     </section>
   );

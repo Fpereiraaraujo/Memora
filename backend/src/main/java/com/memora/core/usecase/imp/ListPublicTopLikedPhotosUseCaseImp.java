@@ -28,7 +28,12 @@ public class ListPublicTopLikedPhotosUseCaseImp implements ListPublicTopLikedPho
 	@Override
 	public List<Photo> execute(ListPublicTopLikedPhotosParam param) {
 		var event = eventRepository.findBySlug(param.slug())
+			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+
+		if (!PublicEventAccessSupport.canOpenPublicFlow(event)) {
+			throw new NoSuchElementException("Event not found");
+		}
 
 		return photoRepository.findTop10ByEventIdAndStatusAndObjectKeyIsNotNullOrderByLikesCountDescCreatedAtDesc(
 				event.getId(),
