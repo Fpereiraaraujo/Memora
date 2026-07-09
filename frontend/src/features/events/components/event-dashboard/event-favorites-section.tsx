@@ -38,6 +38,7 @@ export function EventFavoritesSection({ photos, onToggleFavorite }: EventFavorit
                   <img
                     src={photoSrc}
                     alt={photo.originalFilename || 'Foto favorita'}
+                    loading="lazy"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
 

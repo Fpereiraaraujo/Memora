@@ -106,7 +106,7 @@ export function EventUploadHeader({ event, previewPhotos, customization }: Event
         <div className="grid gap-4 sm:grid-cols-[0.92fr_1.08fr]">
           <div className="flex flex-col gap-4">
             <div className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[#fffaf7] p-3 shadow-[0_18px_48px_rgba(96,60,36,0.10)]">
-              <img src={getPhotoSrc(coverImages[0])} alt="Momento do evento" className="h-[240px] w-full rounded-[18px] object-cover" />
+              <img src={getPhotoSrc(coverImages[0])} alt="Momento do evento" loading="lazy" className="h-[240px] w-full rounded-[18px] object-cover" />
             </div>
 
             <div className="rounded-[22px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fff7f4,#fff0f2)] p-5 shadow-[0_16px_38px_rgba(96,60,36,0.08)]">
@@ -118,10 +118,10 @@ export function EventUploadHeader({ event, previewPhotos, customization }: Event
           </div>
 
           <div className="overflow-hidden rounded-[26px] border border-[#f1ddd1] bg-white p-3 shadow-[0_24px_70px_rgba(96,60,36,0.12)]">
-            <img src={getPhotoSrc(coverImages[1])} alt="Evento em destaque" className="h-[210px] w-full rounded-[20px] object-cover" />
+            <img src={getPhotoSrc(coverImages[1])} alt="Evento em destaque" loading="lazy" className="h-[210px] w-full rounded-[20px] object-cover" />
 
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <img src={getPhotoSrc(coverImages[2])} alt="Detalhes da celebração" className="h-[122px] w-full rounded-[18px] object-cover" />
+              <img src={getPhotoSrc(coverImages[2])} alt="Detalhes da celebração" loading="lazy" className="h-[122px] w-full rounded-[18px] object-cover" />
               <div className="flex h-[122px] flex-col justify-between rounded-[18px] bg-[linear-gradient(145deg,#2f231d,#be835d_52%,#f6ceb3)] p-4 text-white">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/58">Memora</span>
                 <p className="font-display text-[26px] font-semibold leading-none tracking-[-0.04em]">

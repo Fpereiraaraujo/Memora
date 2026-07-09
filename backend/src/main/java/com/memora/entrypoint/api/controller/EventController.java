@@ -3,15 +3,15 @@ package com.memora.entrypoint.api.controller;
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.PaymentOrder;
-import com.memora.core.domain.model.User;
 import com.memora.core.domain.param.CreateEventParam;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
-import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.domain.param.GetEventParam;
 import com.memora.core.domain.param.GetEventPublicPageCustomizationParam;
 import com.memora.core.domain.param.ListEventsParam;
 import com.memora.core.domain.param.ListEventPhotosParam;
 import com.memora.core.domain.param.ListEventPhotosPageParam;
+import com.memora.core.domain.param.RemoveEventPublicPageCoverImageParam;
+import com.memora.core.domain.param.RemoveEventPublicPageHighlightImagesParam;
 import com.memora.core.domain.param.UpdateEventPublicPageCustomizationParam;
 import com.memora.core.domain.param.UpdatePhotoFavoriteParam;
 import com.memora.core.domain.param.UpdatePhotoStatusParam;
@@ -23,11 +23,12 @@ import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetEventPublicPageCustomizationUseCase;
-import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.core.usecase.ListEventPhotosPageUseCase;
 import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
+import com.memora.core.usecase.RemoveEventPublicPageCoverImageUseCase;
+import com.memora.core.usecase.RemoveEventPublicPageHighlightImagesUseCase;
 import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
 import com.memora.core.usecase.UpdatePhotoStatusUseCase;
 import com.memora.core.usecase.UpdateEventStatusUseCase;
@@ -35,6 +36,7 @@ import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
 import com.memora.core.usecase.UploadEventPublicPageHighlightImagesUseCase;
 import com.memora.config.AppProperties;
+import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
@@ -68,7 +70,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class EventController implements EventControllerApi {
 
-	private final GetCurrentUserUseCase getCurrentUserUseCase;
 	private final CreateEventUseCase createEventUseCase;
 	private final CreateEventCheckoutUseCase createEventCheckoutUseCase;
 	private final ListEventsUseCase listEventsUseCase;
@@ -77,6 +78,8 @@ public class EventController implements EventControllerApi {
 	private final UpdateEventStatusUseCase updateEventStatusUseCase;
 	private final GetEventPublicPageCustomizationUseCase getEventPublicPageCustomizationUseCase;
 	private final UpdateEventPublicPageCustomizationUseCase updateEventPublicPageCustomizationUseCase;
+	private final RemoveEventPublicPageCoverImageUseCase removeEventPublicPageCoverImageUseCase;
+	private final RemoveEventPublicPageHighlightImagesUseCase removeEventPublicPageHighlightImagesUseCase;
 	private final UploadEventPublicPageCoverImageUseCase uploadEventPublicPageCoverImageUseCase;
 	private final UploadEventPublicPageHighlightImagesUseCase uploadEventPublicPageHighlightImagesUseCase;
 	private final ListEventPhotosUseCase listEventPhotosUseCase;
@@ -89,7 +92,6 @@ public class EventController implements EventControllerApi {
 	private final EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
 
 	public EventController(
-		GetCurrentUserUseCase getCurrentUserUseCase,
 		CreateEventUseCase createEventUseCase,
 		CreateEventCheckoutUseCase createEventCheckoutUseCase,
 		ListEventsUseCase listEventsUseCase,
@@ -98,6 +100,8 @@ public class EventController implements EventControllerApi {
 		UpdateEventStatusUseCase updateEventStatusUseCase,
 		GetEventPublicPageCustomizationUseCase getEventPublicPageCustomizationUseCase,
 		UpdateEventPublicPageCustomizationUseCase updateEventPublicPageCustomizationUseCase,
+		RemoveEventPublicPageCoverImageUseCase removeEventPublicPageCoverImageUseCase,
+		RemoveEventPublicPageHighlightImagesUseCase removeEventPublicPageHighlightImagesUseCase,
 		UploadEventPublicPageCoverImageUseCase uploadEventPublicPageCoverImageUseCase,
 		UploadEventPublicPageHighlightImagesUseCase uploadEventPublicPageHighlightImagesUseCase,
 		ListEventPhotosUseCase listEventPhotosUseCase,
@@ -109,7 +113,6 @@ public class EventController implements EventControllerApi {
 		PhotoApiMapper photoApiMapper,
 		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper
 	) {
-		this.getCurrentUserUseCase = getCurrentUserUseCase;
 		this.createEventUseCase = createEventUseCase;
 		this.createEventCheckoutUseCase = createEventCheckoutUseCase;
 		this.listEventsUseCase = listEventsUseCase;
@@ -118,6 +121,8 @@ public class EventController implements EventControllerApi {
 		this.updateEventStatusUseCase = updateEventStatusUseCase;
 		this.getEventPublicPageCustomizationUseCase = getEventPublicPageCustomizationUseCase;
 		this.updateEventPublicPageCustomizationUseCase = updateEventPublicPageCustomizationUseCase;
+		this.removeEventPublicPageCoverImageUseCase = removeEventPublicPageCoverImageUseCase;
+		this.removeEventPublicPageHighlightImagesUseCase = removeEventPublicPageHighlightImagesUseCase;
 		this.uploadEventPublicPageCoverImageUseCase = uploadEventPublicPageCoverImageUseCase;
 		this.uploadEventPublicPageHighlightImagesUseCase = uploadEventPublicPageHighlightImagesUseCase;
 		this.listEventPhotosUseCase = listEventPhotosUseCase;
@@ -132,9 +137,8 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventCreateResponseDto> create(EventCreateRequestDto request, Authentication authentication) {
-		User user = resolveUser(authentication);
 		Event event = createEventUseCase.execute(new CreateEventParam(
-			user.getId(),
+			resolveUserId(authentication),
 			request.type(),
 			request.title(),
 			request.eventDate(),
@@ -147,9 +151,8 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventCheckoutResponseDto> createCheckout(UUID eventId, EventCheckoutRequestDto request, Authentication authentication) {
-		User user = resolveUser(authentication);
 		PaymentOrder paymentOrder = createEventCheckoutUseCase.execute(new CreateEventCheckoutParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			request.planCode()
 		));
@@ -165,8 +168,7 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<List<EventResponseDto>> list(Authentication authentication) {
-		User user = resolveUser(authentication);
-		List<EventResponseDto> events = listEventsUseCase.execute(new ListEventsParam(user.getId()))
+		List<EventResponseDto> events = listEventsUseCase.execute(new ListEventsParam(resolveUserId(authentication)))
 			.stream()
 			.map(EventApiMapper::toResponse)
 			.toList();
@@ -176,15 +178,13 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventResponseDto> get(UUID eventId, Authentication authentication) {
-		User user = resolveUser(authentication);
-		Event event = getEventUseCase.execute(new GetEventParam(user.getId(), eventId));
+		Event event = getEventUseCase.execute(new GetEventParam(resolveUserId(authentication), eventId));
 		return ResponseEntity.ok(EventApiMapper.toResponse(event));
 	}
 
 	@Override
 	public ResponseEntity<byte[]> qrcode(UUID eventId, Authentication authentication) {
-		User user = resolveUser(authentication);
-		Event event = getEventUseCase.execute(new GetEventParam(user.getId(), eventId));
+		Event event = getEventUseCase.execute(new GetEventParam(resolveUserId(authentication), eventId));
 		String publicBaseUrl = appProperties.publicBaseUrl().endsWith("/")
 			? appProperties.publicBaseUrl().substring(0, appProperties.publicBaseUrl().length() - 1)
 			: appProperties.publicBaseUrl();
@@ -203,9 +203,8 @@ public class EventController implements EventControllerApi {
 			throw new IllegalArgumentException("At least one field must be provided");
 		}
 
-		User user = resolveUser(authentication);
 		Event event = updateEventUseCase.execute(new UpdateEventParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			request.type(),
 			request.title(),
@@ -217,9 +216,8 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventResponseDto> updateStatus(UUID eventId, EventStatusUpdateRequestDto request, Authentication authentication) {
-		User user = resolveUser(authentication);
 		Event event = updateEventStatusUseCase.execute(new UpdateEventStatusParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			request.status()
 		));
@@ -228,9 +226,8 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventPublicPageCustomizationResponseDto> getPublicPageCustomization(UUID eventId, Authentication authentication) {
-		User user = resolveUser(authentication);
 		var customization = getEventPublicPageCustomizationUseCase.execute(new GetEventPublicPageCustomizationParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId
 		));
 
@@ -239,9 +236,8 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventPublicPageCustomizationResponseDto> updatePublicPageCustomization(UUID eventId, EventPublicPageCustomizationUpdateRequestDto request, Authentication authentication) {
-		User user = resolveUser(authentication);
 		var customization = updateEventPublicPageCustomizationUseCase.execute(new UpdateEventPublicPageCustomizationParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			request.title(),
 			request.eventDate(),
@@ -253,11 +249,9 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageCoverImage(UUID eventId, MultipartFile file, Authentication authentication) {
-		User user = resolveUser(authentication);
-
 		try {
 			var customization = uploadEventPublicPageCoverImageUseCase.execute(new UploadEventPublicPageCoverImageParam(
-				user.getId(),
+				resolveUserId(authentication),
 				eventId,
 				file == null ? null : file.getOriginalFilename(),
 				file == null ? null : file.getContentType(),
@@ -271,12 +265,20 @@ public class EventController implements EventControllerApi {
 	}
 
 	@Override
-	public ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(UUID eventId, List<MultipartFile> files, Authentication authentication) {
-		User user = resolveUser(authentication);
+	public ResponseEntity<EventPublicPageImageUploadResponseDto> removePublicPageCoverImage(UUID eventId, Authentication authentication) {
+		var customization = removeEventPublicPageCoverImageUseCase.execute(new RemoveEventPublicPageCoverImageParam(
+			resolveUserId(authentication),
+			eventId
+		));
 
+		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toCoverUploadResponse(customization));
+	}
+
+	@Override
+	public ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(UUID eventId, List<MultipartFile> files, Authentication authentication) {
 		try {
 			var customization = uploadEventPublicPageHighlightImagesUseCase.execute(new UploadEventPublicPageHighlightImagesParam(
-				user.getId(),
+				resolveUserId(authentication),
 				eventId,
 				files == null ? List.of() : files.stream().map(file -> {
 					try {
@@ -298,9 +300,18 @@ public class EventController implements EventControllerApi {
 	}
 
 	@Override
+	public ResponseEntity<EventPublicPageImageUploadResponseDto> removePublicPageHighlightImages(UUID eventId, Authentication authentication) {
+		var customization = removeEventPublicPageHighlightImagesUseCase.execute(new RemoveEventPublicPageHighlightImagesParam(
+			resolveUserId(authentication),
+			eventId
+		));
+
+		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toHighlightUploadResponse(customization));
+	}
+
+	@Override
 	public ResponseEntity<List<PhotoResponseDto>> photos(UUID eventId, Authentication authentication) {
-		User user = resolveUser(authentication);
-		List<PhotoResponseDto> photos = listEventPhotosUseCase.execute(new ListEventPhotosParam(user.getId(), eventId))
+		List<PhotoResponseDto> photos = listEventPhotosUseCase.execute(new ListEventPhotosParam(resolveUserId(authentication), eventId))
 			.stream()
 			.map(photoApiMapper::toResponse)
 			.toList();
@@ -310,10 +321,9 @@ public class EventController implements EventControllerApi {
 
 	@Override
 	public ResponseEntity<PageResponseDto<PhotoResponseDto>> pagedPhotos(UUID eventId, int page, int size, Authentication authentication) {
-		User user = resolveUser(authentication);
 		PageResult<PhotoResponseDto> result = mapPhotoPage(
 			listEventPhotosPageUseCase.execute(new ListEventPhotosPageParam(
-				user.getId(),
+				resolveUserId(authentication),
 				eventId,
 				normalizePage(page),
 				normalizeSize(size)
@@ -336,9 +346,8 @@ public class EventController implements EventControllerApi {
 			throw new IllegalArgumentException("Favorite value is required");
 		}
 
-		User user = resolveUser(authentication);
 		var photo = updatePhotoFavoriteUseCase.execute(new UpdatePhotoFavoriteParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			photoId,
 			request.favorite()
@@ -353,9 +362,8 @@ public class EventController implements EventControllerApi {
 			throw new IllegalArgumentException("Photo status is required");
 		}
 
-		User user = resolveUser(authentication);
 		var photo = updatePhotoStatusUseCase.execute(new UpdatePhotoStatusParam(
-			user.getId(),
+			resolveUserId(authentication),
 			eventId,
 			photoId,
 			request.status()
@@ -364,12 +372,12 @@ public class EventController implements EventControllerApi {
 		return ResponseEntity.ok(photoApiMapper.toResponse(photo));
 	}
 
-	private User resolveUser(Authentication authentication) {
-		if (authentication == null) {
+	private UUID resolveUserId(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
 			throw new SecurityException("Unauthorized");
 		}
 
-		return getCurrentUserUseCase.execute(new GetCurrentUserParam(authentication.getName()));
+		return principal.userId();
 	}
 
 	private int normalizePage(int page) {

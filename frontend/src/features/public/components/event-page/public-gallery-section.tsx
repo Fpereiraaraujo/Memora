@@ -54,8 +54,8 @@ export function PublicGallerySection({
   }, []);
 
   const viewerOpen = selectedIndex !== null && Boolean(allLoadedPhotos[selectedIndex]);
-  const topTenPhotos = useMemo(
-    () => topLikedPhotos.filter((photo) => Boolean(photo.downloadUrl) && photo.likesCount > 0).slice(0, 10),
+  const topFivePhotos = useMemo(
+    () => topLikedPhotos.filter((photo) => Boolean(photo.downloadUrl) && photo.likesCount > 0).slice(0, 5),
     [topLikedPhotos],
   );
 
@@ -82,24 +82,28 @@ export function PublicGallerySection({
         </span>
       </div>
 
-      {topTenPhotos.length > 0 ? (
+      {topFivePhotos.length > 0 ? (
         <div className="mt-6 rounded-[22px] border border-[#f1ddd1] bg-[#fffaf7] p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Top 10</p>
-              <p className="mt-1 text-sm font-bold text-[#161314]">Fotos mais curtidas pelos convidados</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Top 5</p>
+              <p className="mt-1 text-sm font-bold text-[#161314]">Fotos favoritas dos convidados</p>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {topTenPhotos.map((photo, index) => {
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            {topFivePhotos.map((photo, index) => {
               const photoUrl = getPhotoUrl(photo);
               const isLiked = likedPhotoIds.includes(photo.id);
+              const isFeatured = index === 0;
 
               return (
                 <div
                   key={photo.id}
-                  className="group relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2] text-left shadow-[0_12px_28px_rgba(96,60,36,0.07)]"
+                  className={[
+                    'group relative overflow-hidden rounded-[18px] bg-[#f5ded2] text-left shadow-[0_12px_28px_rgba(96,60,36,0.07)]',
+                    isFeatured ? 'aspect-[1.08/1] sm:row-span-2' : 'aspect-square',
+                  ].join(' ')}
                 >
                   <button
                     type="button"
@@ -115,13 +119,25 @@ export function PublicGallerySection({
                     <img
                       src={photoUrl}
                       alt={photo.guestName || `Foto ${index + 1}`}
+                      loading="lazy"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   </button>
 
-                  <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[#c5922e] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
-                    #{index + 1}
-                  </div>
+                    <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[#c5922e] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
+                      #{index + 1}
+                    </div>
+
+                    {isFeatured ? (
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent p-4 text-white">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-white/78">
+                          Mais curtida
+                        </p>
+                        <p className="mt-1 text-lg font-black">
+                          {photo.guestName?.trim() || 'Foto favorita do evento'}
+                        </p>
+                      </div>
+                    ) : null}
 
                   <button
                     type="button"
@@ -187,6 +203,7 @@ export function PublicGallerySection({
                       <img
                         src={photoUrl}
                         alt={photo.guestName || 'Foto do evento'}
+                        loading="lazy"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (

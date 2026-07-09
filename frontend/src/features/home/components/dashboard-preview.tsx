@@ -112,6 +112,7 @@ function ImageTile({ photo, index }: { photo: string; index: number }) {
       <img
         src={photo}
         alt={`Momento do casamento ${index + 1}`}
+        loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110"
         onError={(event) => {
           event.currentTarget.style.display = 'none';
@@ -224,6 +225,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
               <img
                 src={marketingWeddingAssets.coupleProfile}
                 alt="Isadora e Fernando"
+                loading="lazy"
                 className="size-10 rounded-xl object-cover"
                 onError={(event) => {
                   event.currentTarget.style.display = 'none';

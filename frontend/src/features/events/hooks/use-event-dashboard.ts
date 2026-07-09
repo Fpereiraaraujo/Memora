@@ -12,6 +12,8 @@ import {
 } from '@/features/events/utils/event-dashboard-formatters';
 import { groupGuestMessages } from '@/features/events/utils/group-guest-messages';
 import { api } from '@/lib/api';
+import { ENABLE_EVENT_DASHBOARD_MOCK } from '@/lib/env';
+import type { PageResponse } from '@/types/api';
 import type { EventSummary } from '@/types/event';
 import type { EventGuestMessage } from '@/types/message';
 import type { Photo } from '@/types/photo';
@@ -37,6 +39,18 @@ export interface UseEventDashboardResult {
   copyUploadLink: () => Promise<void>;
   shareEvent: () => Promise<void>;
   publicLinksEnabled: boolean;
+}
+
+async function fetchAllEventPhotosPaged(token: string, eventId: string): Promise<Photo[]> {
+  const pageSize = 100;
+  const firstPage = await api.listEventPhotosPage(token, eventId, 0, pageSize);
+  const pages: PageResponse<Photo>[] = [firstPage];
+
+  for (let pageIndex = 1; pageIndex < firstPage.totalPages; pageIndex += 1) {
+    pages.push(await api.listEventPhotosPage(token, eventId, pageIndex, pageSize));
+  }
+
+  return pages.flatMap((page) => page.content);
 }
 
 export function useEventDashboard(eventId?: string): UseEventDashboardResult {
@@ -75,7 +89,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
             ? await api.updateEventStatus(token, eventId, 'ACTIVE').catch(() => eventData)
             : eventData;
         const [photoResult, qrResult] = await Promise.allSettled([
-          api.listEventPhotos(token, eventId),
+          fetchAllEventPhotosPaged(token, eventId),
           api.fetchEventQrCode(token, eventId),
         ]);
 
@@ -92,14 +106,21 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
           setQrPreviewUrl(objectUrl);
           setMockMode(false);
         }
-      } catch {
-        if (active) {
+      } catch (exception) {
+        if (active && ENABLE_EVENT_DASHBOARD_MOCK) {
           const mockPhotos = buildMockPhotos(eventId);
           setEvent(buildMockEvent(eventId));
           setPhotos(mockPhotos);
           setFavorites(mockPhotos.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(buildMockQrDataUrl());
           setMockMode(true);
+        } else if (active) {
+          setEvent(null);
+          setPhotos([]);
+          setFavorites([]);
+          setQrPreviewUrl(null);
+          setMockMode(false);
+          console.error('Failed to load event dashboard', exception);
         }
       } finally {
         if (active) {

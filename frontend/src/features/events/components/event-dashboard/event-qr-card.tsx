@@ -47,7 +47,7 @@ export function EventQrCard({ qrPreviewUrl, copied, eventStatus, onCopyUploadLin
       <div className="mt-6 grid gap-5 sm:grid-cols-[170px_1fr] xl:grid-cols-1">
         <div className="mx-auto w-full max-w-[190px] rounded-[20px] border border-[#edc990] bg-[#fffdfb] p-3 shadow-[0_18px_44px_rgba(96,60,36,0.08)]">
           {qrPreviewUrl ? (
-            <img src={qrPreviewUrl} alt="QR Code do evento" className="w-full rounded-[16px] bg-white" />
+            <img src={qrPreviewUrl} alt="QR Code do evento" loading="lazy" className="w-full rounded-[16px] bg-white" />
           ) : (
             <QrPlaceholder eventStatus={eventStatus} />
           )}

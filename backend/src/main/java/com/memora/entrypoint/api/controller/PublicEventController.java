@@ -35,6 +35,7 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import com.memora.shared.PublicUploadRateLimiter;
+import com.memora.shared.PublicPhotoLikeRateLimiter;
 import com.memora.config.UploadProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,7 @@ public class PublicEventController implements PublicEventControllerApi {
 	private final UpdatePublicPhotoLikeUseCase updatePublicPhotoLikeUseCase;
 	private final UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
 	private final PublicUploadRateLimiter publicUploadRateLimiter;
+	private final PublicPhotoLikeRateLimiter publicPhotoLikeRateLimiter;
 	private final UploadProperties uploadProperties;
 	private final PhotoApiMapper photoApiMapper;
 	private final EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
@@ -64,6 +66,7 @@ public class PublicEventController implements PublicEventControllerApi {
 		UpdatePublicPhotoLikeUseCase updatePublicPhotoLikeUseCase,
 		UploadGuestPhotoUseCase uploadGuestPhotoUseCase,
 		PublicUploadRateLimiter publicUploadRateLimiter,
+		PublicPhotoLikeRateLimiter publicPhotoLikeRateLimiter,
 		UploadProperties uploadProperties,
 		PhotoApiMapper photoApiMapper,
 		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper
@@ -76,6 +79,7 @@ public class PublicEventController implements PublicEventControllerApi {
 		this.updatePublicPhotoLikeUseCase = updatePublicPhotoLikeUseCase;
 		this.uploadGuestPhotoUseCase = uploadGuestPhotoUseCase;
 		this.publicUploadRateLimiter = publicUploadRateLimiter;
+		this.publicPhotoLikeRateLimiter = publicPhotoLikeRateLimiter;
 		this.uploadProperties = uploadProperties;
 		this.photoApiMapper = photoApiMapper;
 		this.eventPublicPageCustomizationApiMapper = eventPublicPageCustomizationApiMapper;
@@ -134,10 +138,12 @@ public class PublicEventController implements PublicEventControllerApi {
 	}
 
 	@Override
-	public ResponseEntity<PhotoResponseDto> updatePhotoLike(String slug, UUID photoId, PhotoLikeUpdateRequestDto request) {
+	public ResponseEntity<PhotoResponseDto> updatePhotoLike(String slug, UUID photoId, PhotoLikeUpdateRequestDto request, HttpServletRequest httpServletRequest) {
 		if (request.liked() == null) {
 			throw new IllegalArgumentException("Like value is required");
 		}
+
+		publicPhotoLikeRateLimiter.checkLimit(slug, photoId.toString(), resolveClientIp(httpServletRequest));
 
 		Photo photo = updatePublicPhotoLikeUseCase.execute(new UpdatePublicPhotoLikeParam(
 			slug,

@@ -35,6 +35,16 @@ function PublicUploadRedirect() {
   return <Navigate to={{ pathname: `/e/${slug ?? ''}`, hash: '#upload' }} replace />;
 }
 
+function LegacyEventRedirect() {
+  const { eventId } = useParams();
+  return <Navigate to={`/app/events/${eventId ?? ''}`} replace />;
+}
+
+function LegacyEventPublicPageRedirect() {
+  const { eventId } = useParams();
+  return <Navigate to={`/app/events/${eventId ?? ''}/public-page`} replace />;
+}
+
 function NotFoundPage() {
   return (
     <PublicShell>
@@ -111,7 +121,7 @@ export default function App() {
           path="/app/event/:eventId"
           element={
             <ProtectedRoute>
-              <EventDetailPage />
+              <LegacyEventRedirect />
             </ProtectedRoute>
           }
         />
@@ -130,7 +140,7 @@ export default function App() {
           path="/app/event/:eventId/public-page"
           element={
             <ProtectedRoute>
-              <EventPublicPageSettingsPage />
+              <LegacyEventPublicPageRedirect />
             </ProtectedRoute>
           }
         />

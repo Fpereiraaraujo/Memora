@@ -23,6 +23,7 @@ public class CacheConfig {
 		caches.put("publicEvents", new CaffeineCache(
 			"publicEvents",
 			Caffeine.newBuilder()
+				.recordStats()
 				.maximumSize(500)
 				.expireAfterWrite(Duration.ofMinutes(5))
 				.build()
@@ -31,8 +32,18 @@ public class CacheConfig {
 		caches.put("eventQrCodes", new CaffeineCache(
 			"eventQrCodes",
 			Caffeine.newBuilder()
+				.recordStats()
 				.maximumSize(500)
 				.expireAfterWrite(Duration.ofDays(1))
+				.build()
+		));
+
+		caches.put("currentUsers", new CaffeineCache(
+			"currentUsers",
+			Caffeine.newBuilder()
+				.recordStats()
+				.maximumSize(1_000)
+				.expireAfterWrite(Duration.ofMinutes(10))
 				.build()
 		));
 

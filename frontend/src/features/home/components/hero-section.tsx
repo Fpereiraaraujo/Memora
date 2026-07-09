@@ -67,6 +67,7 @@ export function HeroSection() {
             <img
               src={heroBannerUrl}
               alt="Banner de demonstração da Memora com QR Code e fluxo de upload"
+              loading="lazy"
               className="h-full w-full object-cover object-center"
             />
 

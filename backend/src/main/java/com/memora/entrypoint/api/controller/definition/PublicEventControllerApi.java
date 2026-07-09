@@ -101,7 +101,8 @@ public interface PublicEventControllerApi {
 	ResponseEntity<PhotoResponseDto> updatePhotoLike(
 		@PathVariable String slug,
 		@PathVariable UUID photoId,
-		@Valid @RequestBody PhotoLikeUpdateRequestDto request
+		@Valid @RequestBody PhotoLikeUpdateRequestDto request,
+		HttpServletRequest httpServletRequest
 	);
 
 	@PostMapping(value = "/api/public/events/{slug}/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

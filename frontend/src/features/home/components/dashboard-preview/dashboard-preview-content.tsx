@@ -6,6 +6,7 @@ function ImageTile({ photo, index }: { photo: string; index: number }) {
       <img
         src={photo}
         alt={`Momento do casamento ${index + 1}`}
+        loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110"
         onError={(event) => {
           event.currentTarget.style.display = 'none';

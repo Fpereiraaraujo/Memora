@@ -5,6 +5,7 @@ import com.memora.core.domain.param.GetCurrentUserParam;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.dataprovider.database.mapper.UserDatabaseMapper;
 import com.memora.dataprovider.database.repository.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,7 @@ public class GetCurrentUserUseCaseImp implements GetCurrentUserUseCase {
 	}
 
 	@Override
+	@Cacheable(cacheNames = "currentUsers", key = "#param.email().trim().toLowerCase()")
 	public User execute(GetCurrentUserParam param) {
 		String email = param.email().trim().toLowerCase();
 		return userRepository.findByEmail(email)

@@ -20,6 +20,8 @@ export const PUBLIC_APP_BASE_URL =
 export const MARKETING_ASSET_BASE_URL =
   normalizeBaseUrl(import.meta.env.VITE_MARKETING_ASSET_BASE_URL)
   || 'https://memora-photos-278157447183-us-east-1.s3.amazonaws.com/marketing';
+export const ENABLE_EVENT_DASHBOARD_MOCK =
+  import.meta.env.DEV || String(import.meta.env.VITE_ENABLE_EVENT_DASHBOARD_MOCK).toLowerCase() === 'true';
 
 export function apiUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) {

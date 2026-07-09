@@ -40,6 +40,7 @@ export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps
             <img
               src={image}
               alt={`Destaque dos noivos ${index + 1}`}
+              loading="lazy"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />
           </div>

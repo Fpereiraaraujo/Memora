@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -228,6 +229,17 @@ public interface EventControllerApi {
 		Authentication authentication
 	);
 
+	@DeleteMapping("/api/events/{eventId}/public-page/cover-image")
+	@Operation(
+		summary = "Remove event public page cover image",
+		description = "Removes the cover image currently used on the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageImageUploadResponseDto> removePublicPageCoverImage(
+		@PathVariable UUID eventId,
+		Authentication authentication
+	);
+
 	@PostMapping(value = "/api/events/{eventId}/public-page/highlight-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "Upload event public page highlight images",
@@ -237,6 +249,17 @@ public interface EventControllerApi {
 	ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(
 		@PathVariable UUID eventId,
 		@RequestPart("files") List<MultipartFile> files,
+		Authentication authentication
+	);
+
+	@DeleteMapping("/api/events/{eventId}/public-page/highlight-images")
+	@Operation(
+		summary = "Remove event public page highlight images",
+		description = "Removes all highlight images currently used on the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageImageUploadResponseDto> removePublicPageHighlightImages(
+		@PathVariable UUID eventId,
 		Authentication authentication
 	);
 }

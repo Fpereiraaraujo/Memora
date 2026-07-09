@@ -97,6 +97,7 @@ export function EventDownloadsPage() {
                     <img
                       src={getPhotoSrc(photo.downloadUrl || '')}
                       alt={photo.originalFilename || 'Foto do evento'}
+                      loading="lazy"
                       className="h-24 w-full rounded-[16px] object-cover sm:w-28"
                     />
 

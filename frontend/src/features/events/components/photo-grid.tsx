@@ -97,6 +97,7 @@ export function PhotoGrid({
                   <img
                       src={imageUrl}
                       alt={photo.originalFilename || 'Foto do evento'}
+                      loading="lazy"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                   />
 

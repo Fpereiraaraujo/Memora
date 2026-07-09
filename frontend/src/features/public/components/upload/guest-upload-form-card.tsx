@@ -89,7 +89,7 @@ export function GuestUploadFormCard({
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                <img src={url} alt={`Pre-visualizacao ${index + 1}`} className="h-full w-full object-cover" />
+                <img src={url} alt={`Pre-visualizacao ${index + 1}`} loading="lazy" className="h-full w-full object-cover" />
 
                 <button
                   type="button"

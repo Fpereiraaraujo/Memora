@@ -158,11 +158,23 @@ export const api = {
       data: formData,
     });
   },
+  removeEventPublicPageCoverImage(token: string, eventId: string) {
+    return request<PublicPageImageUploadResponse>(`/api/events/${eventId}/public-page/cover-image`, {
+      method: 'DELETE',
+      token,
+    });
+  },
   uploadEventPublicPageHighlightImages(token: string, eventId: string, formData: FormData) {
     return request<PublicPageImageUploadResponse>(`/api/events/${eventId}/public-page/highlight-images`, {
       method: 'POST',
       token,
       data: formData,
+    });
+  },
+  removeEventPublicPageHighlightImages(token: string, eventId: string) {
+    return request<PublicPageImageUploadResponse>(`/api/events/${eventId}/public-page/highlight-images`, {
+      method: 'DELETE',
+      token,
     });
   },
   async fetchEventQrCode(token: string, eventId: string) {

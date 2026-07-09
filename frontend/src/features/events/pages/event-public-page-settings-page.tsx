@@ -12,6 +12,7 @@ import {
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
 import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
+import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
 import {
   IMAGE_ACCEPT_ATTRIBUTE,
   MAX_HIGHLIGHT_IMAGES,
@@ -19,9 +20,6 @@ import {
   MAX_PUBLIC_TITLE_LENGTH,
   validateCustomizationInput,
 } from '@/features/shared/utils/upload-validation';
-import {
-  mergePublicPageCustomization,
-} from '@/features/public/utils/public-page-customization';
 import { api } from '@/lib/api';
 import type { PublicPageCustomization } from '@/types/customization';
 
@@ -93,7 +91,10 @@ export function EventPublicPageSettingsPage() {
           ? await api.getEventPublicPageCustomization(token, event.id)
           : null;
 
-        const resolved = mergePublicPageCustomization(event, backendCustomization as PublicPageCustomization | null);
+        const resolved = mergePublicPageCustomization(
+          event,
+          backendCustomization as PublicPageCustomization | null,
+        );
 
         if (active) {
           setForm({
@@ -140,7 +141,9 @@ export function EventPublicPageSettingsPage() {
     }
 
     setHighlightFiles((current) => {
-      const existingKeys = new Set(current.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+      const existingKeys = new Set(
+        current.map((file) => `${file.name}-${file.size}-${file.lastModified}`),
+      );
       const next = [...current];
 
       for (const file of files) {
@@ -159,15 +162,73 @@ export function EventPublicPageSettingsPage() {
   }
 
   function removeHighlightFile(index: number) {
-    setHighlightFiles((current) => current.filter((_, currentIndex) => currentIndex !== index));
+    setHighlightFiles((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index),
+    );
     setSaved(false);
+  }
+
+  async function handleRemoveCurrentCover() {
+    if (!event || !token || !form) {
+      return;
+    }
+
+    setSaving(true);
+    setSaved(false);
+    setError(null);
+
+    try {
+      await api.removeEventPublicPageCoverImage(token, event.id);
+      setCoverFile(null);
+      setForm({
+        ...form,
+        coverImageUrl: null,
+      });
+      setSaved(true);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : 'Nao foi possivel remover a capa agora. Tente novamente.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemoveCurrentHighlights() {
+    if (!event || !token || !form) {
+      return;
+    }
+
+    setSaving(true);
+    setSaved(false);
+    setError(null);
+
+    try {
+      await api.removeEventPublicPageHighlightImages(token, event.id);
+      setHighlightFiles([]);
+      setForm({
+        ...form,
+        highlightImageUrls: [],
+      });
+      setSaved(true);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : 'Nao foi possivel remover os destaques agora. Tente novamente.',
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSubmit(eventSubmit: FormEvent<HTMLFormElement>) {
     eventSubmit.preventDefault();
 
     if (!event || !token || !form) {
-      setError('Não foi possível salvar. Faça login novamente e tente de novo.');
+      setError('Nao foi possivel salvar. Faca login novamente e tente de novo.');
       return;
     }
 
@@ -200,15 +261,24 @@ export function EventPublicPageSettingsPage() {
       if (coverFile) {
         const coverData = new FormData();
         coverData.append('file', coverFile);
-        const coverResponse = await api.uploadEventPublicPageCoverImage(token, event.id, coverData);
+        const coverResponse = await api.uploadEventPublicPageCoverImage(
+          token,
+          event.id,
+          coverData,
+        );
         nextCoverImageUrl = coverResponse.coverImageUrl ?? nextCoverImageUrl;
       }
 
       if (highlightFiles.length > 0) {
         const highlightData = new FormData();
         highlightFiles.forEach((file) => highlightData.append('files', file));
-        const highlightResponse = await api.uploadEventPublicPageHighlightImages(token, event.id, highlightData);
-        nextHighlightImageUrls = highlightResponse.highlightImageUrls ?? nextHighlightImageUrls;
+        const highlightResponse = await api.uploadEventPublicPageHighlightImages(
+          token,
+          event.id,
+          highlightData,
+        );
+        nextHighlightImageUrls =
+          highlightResponse.highlightImageUrls ?? nextHighlightImageUrls;
       }
 
       setForm({
@@ -225,7 +295,7 @@ export function EventPublicPageSettingsPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Não foi possível salvar a personalização. Verifique sua conexão e tente novamente.',
+          : 'Nao foi possivel salvar a personalizacao. Verifique sua conexao e tente novamente.',
       );
     } finally {
       setSaving(false);
@@ -236,8 +306,8 @@ export function EventPublicPageSettingsPage() {
     <EventPageLayout
       eventId={eventId}
       dashboard={dashboard}
-      emptyTitle="Evento não encontrado"
-      emptyDescription="Não foi possível abrir a personalização da página pública."
+      emptyTitle="Evento nao encontrado"
+      emptyDescription="Nao foi possivel abrir a personalizacao da pagina publica."
     >
       {event && form ? (
         <div className="space-y-6">
@@ -251,19 +321,19 @@ export function EventPublicPageSettingsPage() {
                   to={buildEventOverviewPath(event.id)}
                   className="mb-5 inline-flex h-11 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-5 text-sm font-bold text-[#201914] transition hover:bg-[#fff7f2]"
                 >
-                  ← Voltar ao hub
+                  Voltar ao hub
                 </Link>
 
                 <p className="text-[15px] font-bold text-[#ef7885]">
-                  Personalização da página pública
+                  Personalizacao da pagina publica
                 </p>
 
                 <h1 className="mt-2 max-w-4xl font-display text-[44px] font-semibold leading-none tracking-[-0.045em] text-[#161314] md:text-[56px]">
-                  Controle o que os convidados vão ver
+                  Controle o que os convidados vao ver
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#2c2927]/66">
-                  Edite as informações e escolha as imagens que vão abrir a experiência pública dos convidados.
+                  Edite titulo, mensagem, foto de capa e destaques da experiencia publica.
                 </p>
               </div>
 
@@ -273,28 +343,35 @@ export function EventPublicPageSettingsPage() {
                 rel="noreferrer"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d6a45a] bg-white px-6 text-sm font-bold text-[#b57b26] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff8ef]"
               >
-                Ver prévia pública
+                Ver previa publica
                 <ExternalIcon className="size-4" />
               </Link>
             </div>
           </section>
 
           <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-            <form onSubmit={handleSubmit} className="space-y-6 rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6 rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
+            >
               <div>
-                <h2 className="text-xl font-black text-[#161314]">Informações principais</h2>
+                <h2 className="text-xl font-black text-[#161314]">
+                  Informacoes principais
+                </h2>
                 <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                  Ajuste o título, a data e a mensagem de boas-vindas que aparecem para os convidados.
+                  Ajuste o titulo, a data e a mensagem principal dos convidados.
                 </p>
               </div>
 
               <label className="block space-y-2">
-                <span className="text-sm font-bold text-[#2c2927]/80">Nome dos noivos ou título do evento</span>
+                <span className="text-sm font-bold text-[#2c2927]/80">
+                  Nome dos noivos ou titulo do evento
+                </span>
                 <Input
                   value={form.title}
                   maxLength={MAX_PUBLIC_TITLE_LENGTH}
                   onChange={(inputEvent) => updateForm({ title: inputEvent.target.value })}
-                  placeholder="Ex: Ana & Gabriel"
+                  placeholder="Ex: Isadora & Fernando"
                 />
               </label>
 
@@ -303,16 +380,22 @@ export function EventPublicPageSettingsPage() {
                 <Input
                   type="date"
                   value={form.eventDate ?? ''}
-                  onChange={(inputEvent) => updateForm({ eventDate: inputEvent.target.value || null })}
+                  onChange={(inputEvent) =>
+                    updateForm({ eventDate: inputEvent.target.value || null })
+                  }
                 />
               </label>
 
               <label className="block space-y-2">
-                <span className="text-sm font-bold text-[#2c2927]/80">Mensagem para os convidados</span>
+                <span className="text-sm font-bold text-[#2c2927]/80">
+                  Mensagem para os convidados
+                </span>
                 <Textarea
                   value={form.welcomeMessage}
                   maxLength={MAX_PUBLIC_MESSAGE_LENGTH}
-                  onChange={(inputEvent) => updateForm({ welcomeMessage: inputEvent.target.value })}
+                  onChange={(inputEvent) =>
+                    updateForm({ welcomeMessage: inputEvent.target.value })
+                  }
                   placeholder="Escreva uma mensagem curta convidando as pessoas a enviarem fotos."
                 />
                 <span className="block text-right text-xs font-semibold text-[#2c2927]/45">
@@ -324,7 +407,7 @@ export function EventPublicPageSettingsPage() {
                 <label className="block rounded-[18px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 transition hover:bg-white">
                   <span className="text-sm font-black text-[#161314]">Foto de capa</span>
                   <span className="mt-2 block text-xs leading-5 text-[#2c2927]/56">
-                    Será usada como imagem principal da página pública.
+                    Apenas uma imagem principal para abrir a pagina publica.
                   </span>
                   <input
                     type="file"
@@ -339,9 +422,11 @@ export function EventPublicPageSettingsPage() {
                 </label>
 
                 <label className="block rounded-[18px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 transition hover:bg-white">
-                  <span className="text-sm font-black text-[#161314]">Fotos em destaque</span>
+                  <span className="text-sm font-black text-[#161314]">
+                    Fotos em destaque
+                  </span>
                   <span className="mt-2 block text-xs leading-5 text-[#2c2927]/56">
-                    Selecione até {MAX_HIGHLIGHT_IMAGES} fotos para abrir a experiência pública.
+                    Escolha ate {MAX_HIGHLIGHT_IMAGES} fotos para complementar a capa.
                   </span>
                   <input
                     type="file"
@@ -359,30 +444,52 @@ export function EventPublicPageSettingsPage() {
               {(coverPreviewUrl || form.coverImageUrl) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-black text-[#161314]">Capa {coverPreviewUrl ? 'selecionada' : 'atual'}</p>
-                    {coverPreviewUrl ? (
-                      <button
-                        type="button"
-                        onClick={() => setCoverFile(null)}
-                        className="rounded-[12px] border border-[#efb6bb] bg-white px-4 py-2 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
-                      >
-                        Remover prévia
-                      </button>
-                    ) : null}
+                    <p className="text-sm font-black text-[#161314]">
+                      Capa {coverPreviewUrl ? 'selecionada' : 'atual'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={
+                        coverPreviewUrl
+                          ? () => setCoverFile(null)
+                          : () => void handleRemoveCurrentCover()
+                      }
+                      className="rounded-[12px] border border-[#efb6bb] bg-white px-4 py-2 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
+                    >
+                      {coverPreviewUrl ? 'Remover previa' : 'Remover capa atual'}
+                    </button>
                   </div>
-                  <img src={coverPreviewUrl ?? form.coverImageUrl ?? ''} alt="Capa selecionada" className="mt-4 h-48 w-full rounded-[16px] object-cover" />
+                  <img
+                    src={coverPreviewUrl ?? form.coverImageUrl ?? ''}
+                    alt="Capa selecionada"
+                    loading="lazy"
+                    className="mt-4 h-48 w-full rounded-[16px] object-cover"
+                  />
                 </div>
               ) : null}
 
               {(highlightPreviewUrls.length > 0 || form.highlightImageUrls.length > 0) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <p className="text-sm font-black text-[#161314]">
-                    {highlightPreviewUrls.length > 0 ? 'Fotos selecionadas' : 'Fotos atuais'}
+                    {highlightPreviewUrls.length > 0
+                      ? 'Fotos selecionadas'
+                      : 'Fotos atuais'}
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-                    {(highlightPreviewUrls.length > 0 ? highlightPreviewUrls : form.highlightImageUrls).map((image, index) => (
-                      <div key={`${image}-${index}`} className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]">
-                        <img src={image} alt={`Foto em destaque ${index + 1}`} className="h-full w-full object-cover" />
+                    {(highlightPreviewUrls.length > 0
+                      ? highlightPreviewUrls
+                      : form.highlightImageUrls
+                    ).map((image, index) => (
+                      <div
+                        key={`${image}-${index}`}
+                        className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]"
+                      >
+                        <img
+                          src={image}
+                          alt={`Foto em destaque ${index + 1}`}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
                         {highlightPreviewUrls.length > 0 ? (
                           <button
                             type="button"
@@ -395,15 +502,19 @@ export function EventPublicPageSettingsPage() {
                       </div>
                     ))}
                   </div>
-                  {highlightPreviewUrls.length > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => setHighlightFiles([])}
-                      className="mt-4 rounded-[12px] border border-[#efb6bb] bg-white px-4 py-2 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
-                    >
-                      Limpar fotos selecionadas
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    onClick={
+                      highlightPreviewUrls.length > 0
+                        ? () => setHighlightFiles([])
+                        : () => void handleRemoveCurrentHighlights()
+                    }
+                    className="mt-4 rounded-[12px] border border-[#efb6bb] bg-white px-4 py-2 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
+                  >
+                    {highlightPreviewUrls.length > 0
+                      ? 'Limpar fotos selecionadas'
+                      : 'Remover fotos atuais'}
+                  </button>
                 </div>
               ) : null}
 
@@ -415,22 +526,30 @@ export function EventPublicPageSettingsPage() {
 
               {saved ? (
                 <div className="rounded-[16px] border border-[#c8e6c9] bg-[#f1fbf2] px-4 py-3 text-sm font-semibold text-[#3f8b46]">
-                  Personalização salva. Abra a prévia pública para visualizar.
+                  Personalizacao salva. Abra a previa publica para visualizar.
                 </div>
               ) : null}
 
-              <Button type="submit" disabled={saving || loadingCustomization} className="h-12 rounded-[14px]">
-                {saving ? 'Salvando...' : 'Salvar personalização'}
+              <Button
+                type="submit"
+                disabled={saving || loadingCustomization}
+                className="h-12 rounded-[14px]"
+              >
+                {saving ? 'Salvando...' : 'Salvar personalizacao'}
               </Button>
             </form>
 
             <section className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-bold text-[#ef7885]">Prévia dos convidados</p>
-                  <h2 className="mt-2 text-xl font-black text-[#161314]">Como a página vai aparecer</h2>
+                  <p className="text-sm font-bold text-[#ef7885]">
+                    Previa dos convidados
+                  </p>
+                  <h2 className="mt-2 text-xl font-black text-[#161314]">
+                    Como a pagina vai aparecer
+                  </h2>
                   <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                    Esta área simula a primeira dobra da página pública como os convidados irão ver.
+                    Esta area simula a primeira dobra da pagina publica.
                   </p>
                 </div>
                 <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff1f2] text-[#ef7885]">
@@ -441,7 +560,9 @@ export function EventPublicPageSettingsPage() {
               <div className="mt-6 overflow-hidden rounded-[22px] border border-[#f1ddd1] bg-[#fffaf7] p-5">
                 <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr] lg:items-center">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Evento especial</p>
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
+                      Evento especial
+                    </p>
                     <h3 className="mt-3 font-display text-[42px] font-semibold leading-none tracking-[-0.05em] text-[#161314]">
                       {form.title || event.title}
                     </h3>
@@ -452,13 +573,30 @@ export function EventPublicPageSettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     {(coverPreviewUrl || form.coverImageUrl) ? (
-                      <img src={coverPreviewUrl ?? form.coverImageUrl ?? ''} alt="Prévia da capa" className="col-span-2 h-40 w-full rounded-[18px] object-cover" />
+                      <img
+                        src={coverPreviewUrl ?? form.coverImageUrl ?? ''}
+                        alt="Previa da capa"
+                        loading="lazy"
+                        className="col-span-2 h-40 w-full rounded-[18px] object-cover"
+                      />
                     ) : (
                       <div className="col-span-2 h-40 rounded-[18px] bg-[#f9d7dc]" />
                     )}
-                    {(highlightPreviewUrls.length > 0 ? highlightPreviewUrls : form.highlightImageUrls).slice(0, 2).map((image, index) => (
-                      <img key={`${image}-${index}`} src={image} alt={`Destaque ${index + 1}`} className="h-28 w-full rounded-[16px] object-cover" />
-                    ))}
+
+                    {(highlightPreviewUrls.length > 0
+                      ? highlightPreviewUrls
+                      : form.highlightImageUrls
+                    )
+                      .slice(0, 2)
+                      .map((image, index) => (
+                        <img
+                          key={`${image}-${index}`}
+                          src={image}
+                          alt={`Destaque ${index + 1}`}
+                          loading="lazy"
+                          className="h-28 w-full rounded-[16px] object-cover"
+                        />
+                      ))}
                   </div>
                 </div>
               </div>

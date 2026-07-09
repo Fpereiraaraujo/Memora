@@ -6,7 +6,6 @@ interface PublicEventHeroProps {
   event: EventSummary;
   customization: PublicPageCustomization;
   totalPhotos: number;
-  guestCount: number;
 }
 
 function getEventLabel(type: string) {
@@ -27,7 +26,6 @@ export function PublicEventHero({
   event,
   customization,
   totalPhotos,
-  guestCount,
 }: PublicEventHeroProps) {
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
@@ -73,36 +71,10 @@ export function PublicEventHero({
             </a>
           </div>
 
-          <div className="mt-7 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-                Fotos
-              </p>
-
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                {totalPhotos}
-              </p>
-            </div>
-
-            <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-                Convidados
-              </p>
-
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                {guestCount}
-              </p>
-            </div>
-
-            <div className="rounded-[18px] border border-[#f1ddd1] bg-white/78 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-                Galeria
-              </p>
-
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#161314]">
-                {totalPhotos > 0 ? 'Ativa' : 'Nova'}
-              </p>
-            </div>
+          <div className="mt-7">
+            <span className="inline-flex items-center rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
+              {totalPhotos} foto{totalPhotos === 1 ? '' : 's'} ja compartilhada{totalPhotos === 1 ? '' : 's'}
+            </span>
           </div>
         </div>
 
@@ -113,6 +85,7 @@ export function PublicEventHero({
                 <img
                   src={customization.coverImageUrl}
                   alt={`Capa do evento ${customization.title}`}
+                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -136,12 +109,6 @@ export function PublicEventHero({
               )}
             </div>
 
-            <a
-              href="#upload"
-              className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.2)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] active:scale-[0.98]"
-            >
-              Enviar fotos
-            </a>
           </div>
         </div>
       </div>

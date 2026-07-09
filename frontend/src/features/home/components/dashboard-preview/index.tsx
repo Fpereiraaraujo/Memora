@@ -41,6 +41,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
               <img
                 src={marketingWeddingAssets.coupleProfile}
                 alt="Isadora e Fernando"
+                loading="lazy"
                 className="size-10 rounded-xl object-cover"
                 onError={(event) => {
                   event.currentTarget.style.display = 'none';

@@ -41,6 +41,7 @@ export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFa
                   <img
                     src={photoSrc}
                     alt={photo.originalFilename || 'Foto do evento'}
+                    loading="lazy"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
 

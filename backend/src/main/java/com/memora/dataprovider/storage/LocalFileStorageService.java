@@ -39,6 +39,24 @@ public class LocalFileStorageService implements FileStorageService {
 	}
 
 	@Override
+	public void delete(String objectKey) {
+		if (objectKey == null || objectKey.isBlank()) {
+			return;
+		}
+
+		Path target = basePath.resolve(objectKey).normalize();
+		if (!target.startsWith(basePath)) {
+			throw new IllegalArgumentException("Invalid storage path");
+		}
+
+		try {
+			Files.deleteIfExists(target);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Failed to delete file", exception);
+		}
+	}
+
+	@Override
 	public String resolvePublicUrl(String objectKey) {
 		return publicBaseUrl + "/uploads/" + objectKey;
 	}

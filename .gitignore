@@ -19,6 +19,8 @@ out/
 **/.turbo/
 coverage/
 **/coverage/
+*.tsbuildinfo
+**/*.tsbuildinfo
 
 # logs
 *.log

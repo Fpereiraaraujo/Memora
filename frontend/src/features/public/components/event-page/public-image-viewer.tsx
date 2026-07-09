@@ -200,6 +200,7 @@ export function PublicImageViewer({
             <img
               src={currentPhotoUrl}
               alt={currentPhoto.guestName || 'Foto do evento'}
+              loading="lazy"
               className="max-h-full max-w-full rounded-[18px] object-contain shadow-[0_18px_44px_rgba(96,60,36,0.12)]"
             />
           </div>

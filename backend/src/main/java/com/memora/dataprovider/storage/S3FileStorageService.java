@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -28,6 +29,20 @@ public class S3FileStorageService implements FileStorageService {
 			.build();
 
 		s3Client.putObject(request, RequestBody.fromBytes(content));
+	}
+
+	@Override
+	public void delete(String objectKey) {
+		if (objectKey == null || objectKey.isBlank()) {
+			return;
+		}
+
+		DeleteObjectRequest request = DeleteObjectRequest.builder()
+			.bucket(storageProperties.bucketName())
+			.key(objectKey)
+			.build();
+
+		s3Client.deleteObject(request);
 	}
 
 	@Override

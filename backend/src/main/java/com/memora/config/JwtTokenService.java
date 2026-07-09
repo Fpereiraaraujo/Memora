@@ -5,10 +5,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
+import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,6 +43,14 @@ public class JwtTokenService {
 	public boolean isTokenValid(String token) {
 		Claims claims = parseClaims(token);
 		return claims.getExpiration() != null && claims.getExpiration().after(new Date());
+	}
+
+	public UUID extractUserId(String token) {
+		return UUID.fromString(parseClaims(token).get("userId", String.class));
+	}
+
+	public String extractRole(String token) {
+		return parseClaims(token).get("role", String.class);
 	}
 
 	private Claims parseClaims(String token) {

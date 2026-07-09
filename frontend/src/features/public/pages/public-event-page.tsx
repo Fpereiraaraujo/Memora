@@ -112,16 +112,6 @@ export function PublicEventPage() {
 
   const previewUrls = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
 
-  const guestCount = useMemo(() => {
-    const guests = new Set(
-      allLoadedPhotos
-        .map((photo) => photo.guestName?.trim())
-        .filter((name): name is string => Boolean(name)),
-    );
-
-    return guests.size;
-  }, [allLoadedPhotos]);
-
   const highlightImages = useMemo(() => {
     if (!customization) {
       return [] as string[];
@@ -280,7 +270,7 @@ export function PublicEventPage() {
 
           return +new Date(secondPhoto.createdAt) - +new Date(firstPhoto.createdAt);
         })
-        .slice(0, 10);
+        .slice(0, 5);
     });
   }
 
@@ -431,7 +421,6 @@ export function PublicEventPage() {
             event={event}
             customization={customization}
             totalPhotos={totalElements}
-            guestCount={guestCount}
           />
 
           <CoupleHighlightsSection images={highlightImages} />

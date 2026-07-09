@@ -8,6 +8,7 @@ import com.memora.core.usecase.AuthenticateHostUseCase;
 import com.memora.core.usecase.GetCurrentUserUseCase;
 import com.memora.core.usecase.RegisterHostUseCase;
 import com.memora.config.JwtTokenService;
+import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.controller.definition.UserControllerApi;
 import com.memora.entrypoint.api.dto.UserLoginRequestDto;
 import com.memora.entrypoint.api.dto.UserLoginResponseDto;
@@ -73,11 +74,16 @@ public class AuthController implements UserControllerApi {
 
 	@Override
 	public ResponseEntity<UserProfileResponseDto> me(Authentication authentication) {
-		if (authentication == null) {
+		AuthenticatedUserPrincipal principal = resolvePrincipal(authentication);
+		User user = getCurrentUserUseCase.execute(new GetCurrentUserParam(principal.email()));
+		return ResponseEntity.ok(UserApiMapper.toProfileResponse(user));
+	}
+
+	private AuthenticatedUserPrincipal resolvePrincipal(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
 			throw new SecurityException("Unauthorized");
 		}
 
-		User user = getCurrentUserUseCase.execute(new GetCurrentUserParam(authentication.getName()));
-		return ResponseEntity.ok(UserApiMapper.toProfileResponse(user));
+		return principal;
 	}
 }

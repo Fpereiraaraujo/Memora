@@ -37,27 +37,28 @@ management:
 
 memora:
   app:
-    public-base-url: http://localhost:5173
-    api-base-url: http://localhost:8080
-    infinitepay-webhook-token: memora-infinitepay-local-token
+    public-base-url: ${PUBLIC_APP_BASE_URL:http://localhost:5173}
+    api-base-url: ${API_BASE_URL:http://localhost:8080}
+    infinitepay-webhook-token: ${INFINITEPAY_WEBHOOK_TOKEN:memora-infinitepay-local-token}
   infinitepay:
-    api-base-url: https://api.checkout.infinitepay.io
-    handle: ""
-    auth-header-name: ""
-    auth-header-value: ""
+    api-base-url: ${INFINITEPAY_API_BASE_URL:https://api.checkout.infinitepay.io}
+    handle: ${INFINITEPAY_HANDLE:}
+    auth-header-name: ${INFINITEPAY_AUTH_HEADER_NAME:}
+    auth-header-value: ${INFINITEPAY_AUTH_HEADER_VALUE:}
   upload:
-    max-file-size-bytes: 20971520
-    requests-per-minute-per-ip: 10
-    max-files-per-request: 5
+    max-file-size-bytes: ${UPLOAD_MAX_FILE_SIZE_BYTES:20971520}
+    requests-per-minute-per-ip: ${UPLOAD_REQUESTS_PER_MINUTE_PER_IP:10}
+    likes-per-minute-per-ip: ${UPLOAD_LIKES_PER_MINUTE_PER_IP:30}
+    max-files-per-request: ${UPLOAD_MAX_FILES_PER_REQUEST:5}
     allowed-content-types:
       - image/jpeg
       - image/png
       - image/webp
   security:
     jwt:
-      secret: bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=
-      expiration-minutes: 120
-      issuer: memora
+      secret: ${JWT_SECRET:bWVtb3JhLWp3dC1zZWNyZXQtbWVtb3JhLWp3dC1zZWNyZXQ=}
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+      issuer: ${JWT_ISSUER:memora}
     cors:
       allowed-origin-patterns:
         - http://localhost:*
@@ -69,8 +70,8 @@ memora:
         - https://*.ngrok-free.dev
         - https://memora.api.br
   storage:
-    provider: local
-    local-path: ./data/uploads
-    bucket-name: ""
-    region: us-east-1
-    public-base-url: ""
+    provider: ${STORAGE_PROVIDER:local}
+    local-path: ${STORAGE_LOCAL_PATH:./data/uploads}
+    bucket-name: ${STORAGE_BUCKET_NAME:}
+    region: ${STORAGE_REGION:us-east-1}
+    public-base-url: ${STORAGE_PUBLIC_BASE_URL:}

@@ -113,6 +113,7 @@ export function EventQrPanel({ eventId, publicUrl }: EventQrPanelProps) {
                   <img
                       src={previewUrl}
                       alt="QR Code do evento"
+                      loading="lazy"
                       className="w-full rounded-[1.5rem] bg-white p-3"
                   />
 

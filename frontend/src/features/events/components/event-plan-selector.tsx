@@ -1,96 +1,187 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EVENT_PLANS, type EventPlanPresentation } from '@/types/payment';
 import type { EventPlanCode } from '@/types/event';
 
 interface EventPlanSelectorProps {
-  busy?: boolean;
-  selectedPlanCode?: EventPlanCode | null;
+  busy: boolean;
+  selectedPlanCode: EventPlanCode | null;
   onSelectPlan: (planCode: EventPlanCode) => void;
+}
+
+const plans: Array<{
+  code: EventPlanCode;
+  name: string;
+  price: string;
+  description: string;
+  photoLimit: string;
+  storage: string;
+  badge?: string;
+  highlighted?: boolean;
+  features: string[];
+}> = [
+  {
+    code: 'ESSENTIAL',
+    name: 'Essencial',
+    price: 'R$ 39,90',
+    description: 'Para celebrações menores e eventos mais íntimos.',
+    photoLimit: 'Até 150 fotos',
+    storage: '3 meses',
+    features: [
+      'QR Code do evento',
+      'Página pública para convidados',
+      'Upload sem login',
+      'Galeria privada dos anfitriões',
+    ],
+  },
+  {
+    code: 'EVENT',
+    name: 'Evento',
+    price: 'R$ 69,90',
+    description: 'A melhor escolha para festas médias e eventos completos.',
+    photoLimit: 'Até 500 fotos',
+    storage: '6 meses',
+    badge: 'Mais escolhido',
+    highlighted: true,
+    features: [
+      'Tudo do Essencial',
+      'Mais fotos para os convidados',
+      'Recados privados para os anfitriões',
+      'Mais tempo para organizar tudo',
+    ],
+  },
+  {
+    code: 'PREMIUM',
+    name: 'Premium',
+    price: 'R$ 99,90',
+    description: 'Para casamentos, formaturas e eventos com muitos convidados.',
+    photoLimit: 'Até 1.500 fotos',
+    storage: '12 meses',
+    features: [
+      'Tudo do Evento',
+      'Maior limite de fotos',
+      'Mais tempo de armazenamento',
+      'Ideal para eventos grandes',
+    ],
+  },
+];
+
+function PlanFeature({ children }: { children: string }) {
+  return (
+    <li className="flex gap-3 text-sm leading-6 text-ink-800/70">
+      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#fff1f2] text-[10px] font-black text-[#ef7885]">
+        ✓
+      </span>
+      {children}
+    </li>
+  );
 }
 
 function PlanCard({
   plan,
   busy,
-  selectedPlanCode,
+  selected,
   onSelectPlan,
 }: {
-  plan: EventPlanPresentation;
+  plan: (typeof plans)[number];
   busy: boolean;
-  selectedPlanCode?: EventPlanCode | null;
+  selected: boolean;
   onSelectPlan: (planCode: EventPlanCode) => void;
 }) {
-  const isSelected = selectedPlanCode === plan.code;
-
   return (
     <article
       className={[
-        'relative overflow-hidden rounded-[1.9rem] border bg-white/92 p-6 shadow-[0_18px_44px_rgba(96,60,36,0.06)] transition',
-        plan.highlighted ? 'border-[#e7c387] shadow-[0_24px_54px_rgba(210,160,73,0.12)]' : 'border-[#f0d8ca]',
-        isSelected ? 'ring-4 ring-[#ef7885]/12' : '',
+        'relative flex h-full flex-col rounded-[1.8rem] border bg-white p-5 shadow-[0_16px_38px_rgba(96,60,36,0.06)] transition duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_26px_58px_rgba(96,60,36,0.13)] active:scale-[0.99]',
+        plan.highlighted
+          ? 'border-[#d9a94a] ring-4 ring-[#d9a94a]/10'
+          : 'border-[#f1ddd1]',
       ].join(' ')}
     >
-      {plan.highlighted ? (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#d2a049] px-4 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
-          Mais escolhido
+      {plan.badge ? (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#d2a049] px-4 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white shadow-[0_10px_24px_rgba(210,160,73,0.25)]">
+          {plan.badge}
         </div>
       ) : null}
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-display text-3xl font-semibold tracking-[-0.04em] text-ink-900">
+          <h3 className="text-2xl font-black tracking-[-0.04em] text-ink-950">
             {plan.name}
           </h3>
-          <p className="mt-2 text-sm leading-6 text-ink-800/66">{plan.description}</p>
+
+          <p className="mt-2 text-sm leading-6 text-ink-800/62">
+            {plan.description}
+          </p>
         </div>
 
-        <Badge tone={plan.highlighted ? 'premium' : 'accent'}>
-          {plan.photoLimitLabel}
-        </Badge>
+        <div className="text-right">
+          <p className="text-3xl font-black tracking-[-0.06em] text-[#eb7d87]">
+            {plan.price}
+          </p>
+
+          <p className="text-xs font-bold text-ink-800/42">
+            /evento
+          </p>
+        </div>
       </div>
 
-      <div className="mt-5 rounded-[1.4rem] border border-[#f3e3d8] bg-[#fffaf7] px-4 py-4">
-        <p className="text-3xl font-black tracking-[-0.05em] text-[#eb7d87]">{plan.priceLabel}</p>
-        <p className="mt-1 text-sm font-semibold text-ink-800/56">{plan.storageLabel} de armazenamento</p>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="rounded-[1.2rem] border border-[#f1ddd1] bg-[#fffaf7] p-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#c5922e]">
+            Fotos
+          </p>
+
+          <p className="mt-2 text-sm font-black text-ink-950">
+            {plan.photoLimit}
+          </p>
+        </div>
+
+        <div className="rounded-[1.2rem] border border-[#f1ddd1] bg-[#fffaf7] p-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#c5922e]">
+            Armazenamento
+          </p>
+
+          <p className="mt-2 text-sm font-black text-ink-950">
+            {plan.storage}
+          </p>
+        </div>
       </div>
 
-      <ul className="mt-5 space-y-3">
-        {plan.items.map((item) => (
-          <li key={item} className="flex items-center gap-3 text-sm text-ink-800/78">
-            <span className="grid size-6 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
-              ✓
-            </span>
-            {item}
-          </li>
+      <ul className="mt-5 flex-1 space-y-3">
+        {plan.features.map((feature) => (
+          <PlanFeature key={feature}>
+            {feature}
+          </PlanFeature>
         ))}
       </ul>
 
-      <Button
+      <button
         type="button"
         disabled={busy}
-        loading={busy && isSelected}
         onClick={() => onSelectPlan(plan.code)}
-        className="mt-6 w-full py-4"
+        className={[
+          'mt-6 inline-flex h-12 w-full items-center justify-center rounded-[1rem] px-5 text-sm font-bold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-65',
+          plan.highlighted
+            ? 'bg-[linear-gradient(135deg,#f28e94,#eb7d87)] text-white shadow-[0_18px_40px_rgba(239,120,133,0.24)] hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(239,120,133,0.3)]'
+            : 'border border-[#ead1c4] bg-white text-ink-900 shadow-[0_14px_32px_rgba(96,60,36,0.06)] hover:-translate-y-0.5 hover:bg-[#fff7f2]',
+        ].join(' ')}
       >
-        {busy && isSelected ? 'Abrindo checkout...' : `Escolher ${plan.name}`}
-      </Button>
+        {busy && selected ? 'Abrindo checkout...' : `Escolher ${plan.name}`}
+      </button>
     </article>
   );
 }
 
 export function EventPlanSelector({
-  busy = false,
-  selectedPlanCode = null,
+  busy,
+  selectedPlanCode,
   onSelectPlan,
 }: EventPlanSelectorProps) {
   return (
-    <div className="grid gap-4 xl:grid-cols-3">
-      {EVENT_PLANS.map((plan) => (
+    <div className="grid gap-4 lg:grid-cols-3">
+      {plans.map((plan) => (
         <PlanCard
           key={plan.code}
           plan={plan}
           busy={busy}
-          selectedPlanCode={selectedPlanCode}
+          selected={selectedPlanCode === plan.code}
           onSelectPlan={onSelectPlan}
         />
       ))}
