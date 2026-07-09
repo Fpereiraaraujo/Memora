@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -107,7 +108,7 @@ public interface EventControllerApi {
 			@ApiResponse(responseCode = "404", description = "Event not found")
 		}
 	)
-	ResponseEntity<byte[]> qrcode(@PathVariable UUID eventId, Authentication authentication);
+	ResponseEntity<byte[]> qrcode(@PathVariable UUID eventId, Authentication authentication, HttpServletRequest request);
 
 	@GetMapping("/api/events/{eventId}/photos")
 	@Operation(

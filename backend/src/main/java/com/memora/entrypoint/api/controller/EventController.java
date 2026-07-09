@@ -56,9 +56,12 @@ import com.memora.entrypoint.api.mapper.EventApiMapper;
 import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.shared.EventQrCodeService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -183,11 +186,9 @@ public class EventController implements EventControllerApi {
 	}
 
 	@Override
-	public ResponseEntity<byte[]> qrcode(UUID eventId, Authentication authentication) {
+	public ResponseEntity<byte[]> qrcode(UUID eventId, Authentication authentication, HttpServletRequest request) {
 		Event event = getEventUseCase.execute(new GetEventParam(resolveUserId(authentication), eventId));
-		String publicBaseUrl = appProperties.publicBaseUrl().endsWith("/")
-			? appProperties.publicBaseUrl().substring(0, appProperties.publicBaseUrl().length() - 1)
-			: appProperties.publicBaseUrl();
+		String publicBaseUrl = resolvePublicBaseUrl(request);
 		String publicUrl = publicBaseUrl + "/e/" + event.getSlug() + "/upload";
 		byte[] qrCode = eventQrCodeService.generateCachedPng(publicUrl);
 
@@ -386,6 +387,56 @@ public class EventController implements EventControllerApi {
 
 	private int normalizeSize(int size) {
 		return Math.min(Math.max(size, 1), 100);
+	}
+
+	private String resolvePublicBaseUrl(HttpServletRequest request) {
+		String requestOrigin = extractRequestOrigin(request);
+		if (requestOrigin != null) {
+			return requestOrigin;
+		}
+
+		String configuredBaseUrl = normalizeBaseUrl(appProperties.publicBaseUrl());
+		if (configuredBaseUrl != null) {
+			return configuredBaseUrl;
+		}
+
+		throw new IllegalStateException("Public app base URL is not configured");
+	}
+
+	private String extractRequestOrigin(HttpServletRequest request) {
+		if (request == null) {
+			return null;
+		}
+
+		String originHeader = normalizeBaseUrl(request.getHeader("Origin"));
+		if (originHeader != null) {
+			return originHeader;
+		}
+
+		String referer = request.getHeader("Referer");
+		if (referer == null || referer.isBlank()) {
+			return null;
+		}
+
+		try {
+			URI refererUri = new URI(referer);
+			if (refererUri.getScheme() == null || refererUri.getAuthority() == null) {
+				return null;
+			}
+			return normalizeBaseUrl(refererUri.getScheme() + "://" + refererUri.getAuthority());
+		} catch (URISyntaxException exception) {
+			return null;
+		}
+	}
+
+	private String normalizeBaseUrl(String value) {
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+
+		return value.endsWith("/")
+			? value.substring(0, value.length() - 1)
+			: value;
 	}
 
 	private PageResult<PhotoResponseDto> mapPhotoPage(PageResult<com.memora.core.domain.model.Photo> result) {
