@@ -180,7 +180,10 @@ export const api = {
   async fetchEventQrCode(token: string, eventId: string) {
     try {
       const response = await http.get<Blob>(`/api/events/${eventId}/qrcode`, {
-        headers: authHeaders(token),
+        headers: {
+          ...authHeaders(token),
+          Accept: 'image/png, application/octet-stream, */*',
+        },
         responseType: 'blob',
       });
 

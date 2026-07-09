@@ -97,7 +97,7 @@ public interface EventControllerApi {
 	)
 	ResponseEntity<EventResponseDto> get(@PathVariable UUID eventId, Authentication authentication);
 
-	@GetMapping(value = "/api/events/{eventId}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+	@GetMapping("/api/events/{eventId}/qrcode")
 	@Operation(
 		summary = "Get event QR code",
 		description = "Returns the QR code image pointing to the public event page.",
