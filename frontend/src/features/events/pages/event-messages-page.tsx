@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { Pagination } from '@/components/ui/pagination';
-import { EventPageHero } from '@/features/events/components/event-dashboard/event-page-hero';
+import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { formatRelativeTime, getInitials } from '@/features/events/utils/event-dashboard-formatters';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
@@ -30,7 +30,7 @@ export function EventMessagesPage() {
     >
       {dashboard.event ? (
         <>
-          <EventPageHero
+          <EventPageHeader
             eyebrow="Recados dos convidados"
             title="Mensagens deixadas no evento"
             description="Acompanhe tudo o que seus convidados escreveram sem repetir o mesmo texto quando ele vier junto com varias fotos no mesmo envio."

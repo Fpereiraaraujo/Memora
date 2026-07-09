@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { Pagination } from '@/components/ui/pagination';
-import { EventPageHero } from '@/features/events/components/event-dashboard/event-page-hero';
+import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import {
   buildEventFavoritesPath,
@@ -34,7 +34,7 @@ export function EventDownloadsPage() {
     >
       {dashboard.event ? (
         <>
-          <EventPageHero
+          <EventPageHeader
             eyebrow="Downloads"
             title="Baixe e organize suas memórias"
             description="Acesse todas as fotos recebidas e use as favoritas como um atalho para separar os arquivos mais importantes."

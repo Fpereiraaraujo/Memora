@@ -22,7 +22,7 @@ export function EventPublicPageCard({ event, publicLinksEnabled }: EventPublicPa
             Pagina dos convidados
           </div>
           <div className="absolute inset-x-4 bottom-4 rounded-[16px] border border-white/70 bg-white/82 p-4 shadow-[0_10px_24px_rgba(96,60,36,0.10)] backdrop-blur">
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c5922e]">Hero do evento</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c5922e]">Capa principal</p>
             <p className="mt-2 font-display text-[22px] font-semibold leading-none tracking-[-0.04em] text-[#201914]">
               {event.title}
             </p>

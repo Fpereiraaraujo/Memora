@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-import { EventPageHero } from '@/features/events/components/event-dashboard/event-page-hero';
+import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { EventQrCard } from '@/features/events/components/event-dashboard/event-qr-card';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
@@ -18,7 +18,7 @@ export function EventQrCodePage() {
     >
       {dashboard.event ? (
         <>
-          <EventPageHero
+          <EventPageHeader
             eyebrow="QR Code do evento"
             title="Compartilhe com seus convidados"
             description="Baixe o QR Code, copie o link público e deixe o acesso do evento pronto para mesas, entrada e lembranças."

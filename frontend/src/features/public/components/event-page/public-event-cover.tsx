@@ -2,7 +2,7 @@ import { formatEventDate } from '@/features/events/utils/event-dashboard-formatt
 import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 
-interface PublicEventHeroProps {
+interface PublicEventCoverProps {
   event: EventSummary;
   customization: PublicPageCustomization;
   totalPhotos: number;
@@ -22,11 +22,11 @@ function getEventLabel(type: string) {
   return labels[type] ?? 'Evento especial';
 }
 
-export function PublicEventHero({
+export function PublicEventCover({
   event,
   customization,
   totalPhotos,
-}: PublicEventHeroProps) {
+}: PublicEventCoverProps) {
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
       <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[#f4a1aa]/16 blur-3xl" />

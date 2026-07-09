@@ -1,5 +1,5 @@
 import { PublicShell } from '@/components/layout/public-shell';
-import { HeroSection } from '@/features/home/components/hero-section';
+import { HomeIntroSection } from '@/features/home/components/home-intro-section';
 import { LandingFinalCta } from '@/features/home/components/landing-final-cta';
 import { ProductShowcaseSection } from '@/features/home/components/product-showcase-section';
 
@@ -32,7 +32,7 @@ function StepCard({
 export function HomePage() {
   return (
     <PublicShell>
-      <HeroSection />
+      <HomeIntroSection />
 
       <section id="como-funciona" className="px-4 py-3 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,250,245,0.88),rgba(255,245,240,0.84))] p-5 shadow-[0_16px_44px_rgba(96,60,36,0.05)] sm:p-7 lg:p-8">

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-interface EventPageHeroProps {
+interface EventPageHeaderProps {
   eyebrow: string;
   title: string;
   description: string;
@@ -8,13 +8,13 @@ interface EventPageHeroProps {
   actions?: ReactNode;
 }
 
-export function EventPageHero({
+export function EventPageHeader({
   eyebrow,
   title,
   description,
   badge,
   actions,
-}: EventPageHeroProps) {
+}: EventPageHeaderProps) {
   return (
     <section className="rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">

@@ -1,7 +1,7 @@
 import { marketingAssetUrl } from '@/lib/env';
 
 export const marketingWeddingAssets = {
-  heroBanner: marketingAssetUrl('/wedding/hero-banner.png'),
+  showcaseBanner: marketingAssetUrl('/wedding/hero-banner.png'),
   coupleProfile: marketingAssetUrl('/wedding/543.jpg'),
   gallery: [
     marketingAssetUrl('/wedding/700.jpg'),

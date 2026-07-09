@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { marketingWeddingAssets } from '@/lib/public-assets';
 
-const heroBannerUrl = marketingWeddingAssets.heroBanner;
+const showcaseBannerUrl = marketingWeddingAssets.showcaseBanner;
 
 function TrustItem({
   label,
@@ -21,7 +21,7 @@ function TrustItem({
   );
 }
 
-export function HeroSection() {
+export function HomeIntroSection() {
   return (
     <section className="px-4 pb-4 pt-3 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1520px] overflow-hidden rounded-[2.1rem] bg-white shadow-[0_24px_80px_rgba(96,60,36,0.08)]">
@@ -65,7 +65,7 @@ export function HeroSection() {
 
           <div className="relative overflow-hidden rounded-[1.8rem] md:my-5 md:mr-5 md:block lg:my-4 lg:mr-4">
             <img
-              src={heroBannerUrl}
+              src={showcaseBannerUrl}
               alt="Banner de demonstração da Memora com QR Code e fluxo de upload"
               loading="lazy"
               className="h-full w-full object-cover object-center"

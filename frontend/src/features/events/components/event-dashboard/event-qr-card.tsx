@@ -9,8 +9,6 @@ interface EventQrCardProps {
 }
 
 function QrPlaceholder({ eventStatus }: { eventStatus?: EventStatus }) {
-  const isDraft = eventStatus === 'DRAFT';
-
   return (
     <div className="flex aspect-[3/4] flex-col items-center justify-center rounded-[16px] bg-[linear-gradient(180deg,#fff8f3,#fff1f2)] px-4 text-center">
       <div className="grid size-16 place-items-center rounded-[18px] bg-white text-[#ef7885] shadow-[0_12px_28px_rgba(96,60,36,0.08)]">
@@ -18,13 +16,13 @@ function QrPlaceholder({ eventStatus }: { eventStatus?: EventStatus }) {
       </div>
 
       <p className="mt-5 text-sm font-black text-[#161314]">
-        {isDraft ? 'QR Code ainda não gerado' : 'QR Code indisponível'}
+        QR Code indisponivel
       </p>
 
       <p className="mt-2 text-xs leading-5 text-[#2c2927]/56">
-        {isDraft
-          ? 'O preview aparece aqui. O QR final fica disponível quando o evento for ativado.'
-          : 'Você ainda pode copiar o link de upload para testar o fluxo.'}
+        {eventStatus === 'DRAFT'
+          ? 'O evento ainda esta em configuracao, mas o link de upload ja pode ser copiado.'
+          : 'Voce ainda pode copiar o link de upload para testar o fluxo enquanto a imagem do QR Code nao chega.'}
       </p>
     </div>
   );
@@ -40,7 +38,7 @@ export function EventQrCard({ qrPreviewUrl, copied, eventStatus, onCopyUploadLin
         <h2 className="text-xl font-black text-[#161314]">QR Code do evento</h2>
 
         <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-          Use o QR Code ou o link direto para levar os convidados à página de upload do evento.
+          Use o QR Code ou o link direto para levar os convidados a pagina de upload do evento.
         </p>
       </div>
 
@@ -65,7 +63,7 @@ export function EventQrCard({ qrPreviewUrl, copied, eventStatus, onCopyUploadLin
             </a>
           ) : (
             <div className="rounded-[16px] border border-[#f1ddd1] bg-[#fffaf7] px-4 py-3 text-sm leading-6 text-[#2c2927]/62">
-              O QR final será exibido quando a API retornar a imagem. O link de upload já pode ser copiado para teste.
+              Quando a API retornar a imagem, o QR Code aparecera aqui automaticamente.
             </div>
           )}
 

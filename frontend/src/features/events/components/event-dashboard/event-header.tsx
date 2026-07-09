@@ -16,9 +16,9 @@ interface EventHeaderProps {
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   WEDDING: 'Casamento',
-  BIRTHDAY: 'Aniversário',
+  BIRTHDAY: 'Aniversario',
   GRADUATION: 'Formatura',
-  BABY_SHOWER: 'Chá de bebê',
+  BABY_SHOWER: 'Cha de bebe',
   BAPTISM: 'Batizado',
   CORPORATE: 'Corporativo',
   OTHER: 'Evento',
@@ -59,7 +59,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <span className="inline-flex h-10 items-center gap-2 rounded-full border border-[#f2d4cc] bg-white/75 px-4 text-xs font-bold uppercase tracking-[0.18em] text-[#c5922e] shadow-[0_12px_28px_rgba(96,60,36,0.06)] backdrop-blur">
               <span className="size-2 rounded-full bg-[#ef7885]" />
-              Hub do evento
+              Painel do evento
             </span>
 
             <span className={`inline-flex h-10 items-center rounded-full px-4 text-xs font-bold ${statusClassName(event.status)}`}>
@@ -72,11 +72,11 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
           </p>
 
           <h1 className="mt-2 max-w-4xl font-display text-[46px] font-semibold leading-[0.95] tracking-[-0.055em] text-[#161314] md:text-[64px]">
-            O centro das memórias do seu evento
+            O centro das memorias do seu evento
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-[#2c2927]/70">
-            Aqui você acompanha o evento, copia o link de upload, prepara o QR Code, vê uma prévia das fotos, recados e favoritas. As páginas completas ficam separadas para manter o painel leve e organizado.
+            Aqui voce acompanha o evento, copia o link de upload, prepara o QR Code, ve uma previa das fotos, recados e favoritas.
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] font-medium text-[#2c2927]/62">
@@ -93,7 +93,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
             {mockMode ? (
               <>
                 <span>•</span>
-                <span className="font-bold text-[#c5922e]">modo demonstração</span>
+                <span className="font-bold text-[#c5922e]">modo demonstracao</span>
               </>
             ) : null}
           </div>
@@ -105,7 +105,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
               to={`/e/${event.slug}`}
               className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] border border-[#d6a45a] bg-white px-6 text-sm font-bold text-[#b57b26] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5"
             >
-              Ver página pública
+              Ver pagina publica
               <ExternalIcon className="size-4" />
             </Link>
           ) : null}
@@ -126,7 +126,7 @@ export function EventHeader({ event, photos, mockMode, onShareEvent, publicLinks
             className="inline-flex h-12 items-center justify-center gap-3 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.26)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] disabled:cursor-not-allowed disabled:bg-[#d8c6bd] disabled:shadow-none disabled:hover:translate-y-0"
           >
             <ShareIcon className="size-4" />
-            {publicLinksEnabled ? 'Compartilhar evento' : 'Link indisponível'}
+            {publicLinksEnabled ? 'Compartilhar evento' : 'Link indisponivel'}
           </button>
         </div>
       </div>

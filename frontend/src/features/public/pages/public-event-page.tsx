@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CoupleHighlightsSection } from '@/features/public/components/event-page/couple-highlights-section';
-import { PublicEventHero } from '@/features/public/components/event-page/public-event-hero';
+import { PublicEventCover } from '@/features/public/components/event-page/public-event-cover';
 import { PublicGallerySection } from '@/features/public/components/event-page/public-gallery-section';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
@@ -417,7 +417,7 @@ export function PublicEventPage() {
     <PublicShell>
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
-          <PublicEventHero
+          <PublicEventCover
             event={event}
             customization={customization}
             totalPhotos={totalElements}

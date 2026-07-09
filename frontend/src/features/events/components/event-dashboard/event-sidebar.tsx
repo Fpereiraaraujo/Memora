@@ -146,10 +146,10 @@ export function EventSidebar({
 
           <div className="min-w-0">
             <p className="truncate text-[15px] font-bold text-[#201914]">{event.title}</p>
-            <p className="mt-1 text-sm text-[#2c2927]/56">Hub do evento</p>
+            <p className="mt-1 text-sm text-[#2c2927]/56">Painel do evento</p>
           </div>
 
-          <Link to={overviewPath} className="ml-auto text-[#2c2927]/42" aria-label="Abrir hub">
+          <Link to={overviewPath} className="ml-auto text-[#2c2927]/42" aria-label="Abrir painel do evento">
             ›
           </Link>
         </div>

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { Pagination } from '@/components/ui/pagination';
 import { EventFavoritesSection } from '@/features/events/components/event-dashboard/event-favorites-section';
-import { EventPageHero } from '@/features/events/components/event-dashboard/event-page-hero';
+import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
 
@@ -30,7 +30,7 @@ export function EventFavoritesPage() {
     >
       {dashboard.event ? (
         <>
-          <EventPageHero
+          <EventPageHeader
             eyebrow="Favoritas"
             title="Suas melhores escolhas"
             description="Centralize aqui as fotos que você mais gostou para revisar com calma, compartilhar e baixar depois."

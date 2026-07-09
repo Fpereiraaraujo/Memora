@@ -94,7 +94,7 @@ export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) 
 
           {isDraft ? (
             <div className="rounded-[1.4rem] border border-[#f7dec7] bg-[#fff7ef] px-4 py-3 text-sm text-[#8f6228]">
-              Casamento em rascunho. Abra o hub para revisar links, QR Code, galeria e recados antes de seguir.
+              Casamento em rascunho. Abra o painel para revisar links, QR Code, galeria e recados antes de seguir.
             </div>
           ) : null}
         </div>
@@ -104,7 +104,7 @@ export function EventCard({ event, publicLinksEnabled = true }: EventCardProps) 
             to={buildEventOverviewPath(event.id)}
             className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5"
           >
-            Abrir hub
+            Abrir painel
           </Link>
 
           {canOpenPublicPage ? (

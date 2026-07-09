@@ -321,7 +321,7 @@ export function EventPublicPageSettingsPage() {
                   to={buildEventOverviewPath(event.id)}
                   className="mb-5 inline-flex h-11 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-5 text-sm font-bold text-[#201914] transition hover:bg-[#fff7f2]"
                 >
-                  Voltar ao hub
+                  Voltar ao painel
                 </Link>
 
                 <p className="text-[15px] font-bold text-[#ef7885]">

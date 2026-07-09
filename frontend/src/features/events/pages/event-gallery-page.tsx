@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { Pagination } from '@/components/ui/pagination';
 import { EventFullGallerySection } from '@/features/events/components/event-dashboard/event-full-gallery-section';
-import { EventPageHero } from '@/features/events/components/event-dashboard/event-page-hero';
+import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { useAuth } from '@/features/auth/auth-context';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
@@ -99,7 +99,7 @@ export function EventGalleryPage() {
     >
       {dashboard.event ? (
         <>
-          <EventPageHero
+          <EventPageHeader
             eyebrow="Galeria completa"
             title="Todas as fotos do evento"
             description="Explore todos os envios dos convidados em uma visualização paginada, pronta para curtir, revisar e compartilhar."

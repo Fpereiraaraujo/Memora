@@ -1,5 +1,5 @@
 export function buildEventOverviewPath(eventId: string) {
-  return `/app/event/${eventId}`;
+  return `/app/events/${eventId}`;
 }
 
 export function buildEventCheckoutPath(eventId: string) {
