@@ -146,7 +146,7 @@ export function PublicGallerySection({
                   </div>
 
                   {isFeatured ? (
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent p-4 text-white">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent p-4 text-white">
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-white/78">
                         Mais curtida
                       </p>
@@ -227,7 +227,7 @@ export function PublicGallerySection({
                     )}
                   </button>
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-transparent opacity-60 transition group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-transparent opacity-60 transition group-hover:opacity-100" />
 
                   <button
                     type="button"

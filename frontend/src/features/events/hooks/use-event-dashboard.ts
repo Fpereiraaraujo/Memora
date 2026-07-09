@@ -14,6 +14,7 @@ import { groupGuestMessages } from '@/features/events/utils/group-guest-messages
 import { api } from '@/lib/api';
 import { ENABLE_EVENT_DASHBOARD_MOCK } from '@/lib/env';
 import type { PageResponse } from '@/types/api';
+import { EMPTY_PUBLIC_PAGE_CUSTOMIZATION, type PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 import type { EventGuestMessage } from '@/types/message';
 import type { Photo } from '@/types/photo';
@@ -25,6 +26,7 @@ export interface UseEventDashboardResult {
   qrPreviewUrl: string | null;
   publicPageUrl: string;
   publicUploadUrl: string;
+  publicPageCustomization: PublicPageCustomization;
   loading: boolean;
   mockMode: boolean;
   copied: boolean;
@@ -59,6 +61,9 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
   const [event, setEvent] = useState<EventSummary | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [qrPreviewUrl, setQrPreviewUrl] = useState<string | null>(null);
+  const [publicPageCustomization, setPublicPageCustomization] = useState<PublicPageCustomization>(
+    EMPTY_PUBLIC_PAGE_CUSTOMIZATION,
+  );
 
   const [loading, setLoading] = useState(true);
   const [mockMode, setMockMode] = useState(false);
@@ -88,9 +93,10 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
           eventData.status === 'DRAFT'
             ? await api.updateEventStatus(token, eventId, 'ACTIVE').catch(() => eventData)
             : eventData;
-        const [photoResult, qrResult] = await Promise.allSettled([
+        const [photoResult, qrResult, customizationResult] = await Promise.allSettled([
           fetchAllEventPhotosPaged(token, eventId),
           api.fetchEventQrCode(token, eventId),
+          api.getEventPublicPageCustomization(token, eventId),
         ]);
 
         const photoData = photoResult.status === 'fulfilled' ? photoResult.value : [];
@@ -104,6 +110,11 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
           setPhotos(photoData);
           setFavorites(photoData.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(objectUrl);
+          setPublicPageCustomization(
+            customizationResult.status === 'fulfilled' && customizationResult.value
+              ? customizationResult.value
+              : EMPTY_PUBLIC_PAGE_CUSTOMIZATION,
+          );
           setMockMode(false);
         }
       } catch (exception) {
@@ -113,12 +124,17 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
           setPhotos(mockPhotos);
           setFavorites(mockPhotos.filter((photo) => photo.favorite).map((photo) => photo.id));
           setQrPreviewUrl(buildMockQrDataUrl());
+          setPublicPageCustomization({
+            ...EMPTY_PUBLIC_PAGE_CUSTOMIZATION,
+            title: buildMockEvent(eventId).title,
+          });
           setMockMode(true);
         } else if (active) {
           setEvent(null);
           setPhotos([]);
           setFavorites([]);
           setQrPreviewUrl(null);
+          setPublicPageCustomization(EMPTY_PUBLIC_PAGE_CUSTOMIZATION);
           setMockMode(false);
           console.error('Failed to load event dashboard', exception);
         }
@@ -271,6 +287,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     qrPreviewUrl,
     publicPageUrl,
     publicUploadUrl,
+    publicPageCustomization,
     loading,
     mockMode,
     copied,

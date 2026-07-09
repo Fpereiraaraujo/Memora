@@ -16,13 +16,13 @@ function QrPlaceholder({ eventStatus }: { eventStatus?: EventStatus }) {
       </div>
 
       <p className="mt-5 text-sm font-black text-[#161314]">
-        QR Code indisponivel
+        QR Code indisponível
       </p>
 
       <p className="mt-2 text-xs leading-5 text-[#2c2927]/56">
         {eventStatus === 'DRAFT'
-          ? 'O evento ainda esta em configuracao, mas o link de upload ja pode ser copiado.'
-          : 'Voce ainda pode copiar o link de upload para testar o fluxo enquanto a imagem do QR Code nao chega.'}
+          ? 'O evento ainda está em configuração, mas o link de upload já pode ser copiado.'
+          : 'Você ainda pode copiar o link de upload para testar o fluxo enquanto a imagem do QR Code não chega.'}
       </p>
     </div>
   );
@@ -38,7 +38,7 @@ export function EventQrCard({ qrPreviewUrl, copied, eventStatus, onCopyUploadLin
         <h2 className="text-xl font-black text-[#161314]">QR Code do evento</h2>
 
         <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-          Use o QR Code ou o link direto para levar os convidados a pagina de upload do evento.
+          Use o QR Code ou o link direto para levar os convidados à página de upload do evento.
         </p>
       </div>
 
@@ -63,7 +63,7 @@ export function EventQrCard({ qrPreviewUrl, copied, eventStatus, onCopyUploadLin
             </a>
           ) : (
             <div className="rounded-[16px] border border-[#f1ddd1] bg-[#fffaf7] px-4 py-3 text-sm leading-6 text-[#2c2927]/62">
-              Quando a API retornar a imagem, o QR Code aparecera aqui automaticamente.
+              Quando a API retornar a imagem, o QR Code aparecerá aqui automaticamente.
             </div>
           )}
 

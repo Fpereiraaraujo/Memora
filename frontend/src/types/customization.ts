@@ -7,6 +7,15 @@ export interface PublicPageCustomization {
   updatedAt: string | null;
 }
 
+export const EMPTY_PUBLIC_PAGE_CUSTOMIZATION: PublicPageCustomization = {
+  title: '',
+  eventDate: null,
+  welcomeMessage: '',
+  coverImageUrl: null,
+  highlightImageUrls: [],
+  updatedAt: null,
+};
+
 export interface PublicPageCustomizationUpdateRequest {
   title: string;
   eventDate: string | null;

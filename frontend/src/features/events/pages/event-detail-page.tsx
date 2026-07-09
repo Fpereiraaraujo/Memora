@@ -41,6 +41,7 @@ export function EventDetailPage() {
 
           <EventPublicPageCard
             event={dashboard.event}
+            customization={dashboard.publicPageCustomization}
             publicLinksEnabled={dashboard.publicLinksEnabled}
           />
 

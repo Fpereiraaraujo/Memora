@@ -39,22 +39,26 @@ export function EventDashboardShell({ sidebar, children }: EventDashboardShellPr
 
   return (
     <FloralStage className="min-h-screen text-[#201914]" petals={false}>
-      <header className="sticky top-0 z-40 border-b border-[#f0d8ca]/75 bg-[#fffaf7]/84 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <MemoraLogo
-            to="/app"
-            iconClassName="size-10 rounded-2xl"
-            textClassName="text-3xl text-[#161314]"
-          />
+      <header className="sticky top-0 z-40 px-4 pt-3 sm:px-6 sm:pt-5 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="overflow-hidden rounded-[2rem] border border-[#ecd8ca] bg-white/88 shadow-[0_24px_80px_rgba(96,60,36,0.08)] backdrop-blur-2xl">
+            <div className="flex h-20 items-center justify-between gap-4 px-5 sm:px-7 lg:px-8">
+              <MemoraLogo
+                to="/app"
+                iconClassName="size-10 rounded-2xl"
+                textClassName="text-3xl text-[#161314]"
+              />
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-4 text-sm font-bold text-white shadow-[0_14px_34px_rgba(239,120,133,0.22)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] lg:hidden"
-            aria-label="Abrir menu do evento"
-          >
-            <MenuIcon />
-          </button>
+              <button
+                type="button"
+                onClick={() => setMenuOpen(true)}
+                className="grid size-11 place-items-center rounded-2xl border border-[#ead1c4] bg-white/78 text-[#201914] shadow-[0_12px_30px_rgba(96,60,36,0.08)] lg:hidden"
+                aria-label="Abrir menu do evento"
+              >
+                <MenuIcon />
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 

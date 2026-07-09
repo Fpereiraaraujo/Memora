@@ -100,7 +100,7 @@ export function EventSidebar({
       <nav className="mt-4 space-y-1.5">
         <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
         <SidebarItem to="/app" label="Meus eventos" icon="events" end />
-        <SidebarItem to={publicSettingsPath} label="Pagina publica" icon="public" />
+        <SidebarItem to={publicSettingsPath} label="Página pública" icon="public" />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem to={favoritesPath} label="Favoritas" icon="heart" />
@@ -116,7 +116,7 @@ export function EventSidebar({
         <p className="text-[15px] font-bold text-[#201914]">Links do evento</p>
 
         <p className="mt-3 text-sm leading-6 text-[#2c2927]/64">
-          Compartilhe a pagina publica ou copie o link direto para upload dos convidados.
+          Compartilhe a página pública ou copie o link direto para upload dos convidados.
         </p>
 
         <div className="mt-5 grid gap-2">
@@ -133,7 +133,7 @@ export function EventSidebar({
             onClick={onCopyPublicLink}
             className="inline-flex h-11 w-full items-center justify-center rounded-[14px] border border-[#efb6bb] bg-white px-5 text-sm font-bold text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
           >
-            {publicCopied ? 'Pagina copiada' : 'Copiar pagina publica'}
+            {publicCopied ? 'Página copiada' : 'Copiar página pública'}
           </button>
         </div>
       </div>
