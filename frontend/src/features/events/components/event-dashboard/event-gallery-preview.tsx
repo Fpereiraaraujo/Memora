@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 
+import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
 import { getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
 import type { Photo } from '@/types/photo';
@@ -12,6 +14,19 @@ interface EventGalleryPreviewProps {
 }
 
 export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFavorite }: EventGalleryPreviewProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const viewerImages = useMemo(
+    () =>
+      photos.map((photo) => ({
+        id: photo.id,
+        src: getPhotoSrc(photo.downloadUrl || ''),
+        alt: 'Foto do evento',
+        title: photo.guestName || 'Memória enviada por convidado',
+      })),
+    [photos],
+  );
+
   return (
     <section
       id="galeria"
@@ -32,18 +47,24 @@ export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFa
       ) : (
         <>
           <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
-            {photos.map((photo) => {
+            {photos.map((photo, index) => {
               const isFavorite = favorites.includes(photo.id);
               const photoSrc = getPhotoSrc(photo.downloadUrl || '');
 
               return (
                 <div key={photo.id} className="group relative aspect-[1.08/1] overflow-hidden rounded-[16px] bg-[#f5ded2]">
-                  <img
-                    src={photoSrc}
-                    alt={photo.originalFilename || 'Foto do evento'}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIndex(index)}
+                    className="h-full w-full"
+                  >
+                    <img
+                      src={photoSrc}
+                      alt="Foto do evento"
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </button>
 
                   <button
                     type="button"
@@ -67,6 +88,29 @@ export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFa
           >
             Ver todas as fotos
           </Link>
+
+          <EventImageViewer
+            images={viewerImages}
+            open={selectedIndex !== null}
+            currentIndex={selectedIndex ?? 0}
+            onClose={() => setSelectedIndex(null)}
+            onChangeIndex={setSelectedIndex}
+            renderHeaderAction={(image) => {
+              const isFavorite = favorites.includes(image.id);
+
+              return (
+                <button
+                  type="button"
+                  onClick={() => onToggleFavorite(image.id)}
+                  className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+                  aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                >
+                  <HeartIcon className="size-4" filled={isFavorite} />
+                  {isFavorite ? 'Favorita' : 'Favoritar'}
+                </button>
+              );
+            }}
+          />
         </>
       )}
     </section>

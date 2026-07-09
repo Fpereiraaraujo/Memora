@@ -1,6 +1,7 @@
-import type { FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -51,6 +52,17 @@ export function GuestUploadFormCard({
 }: GuestUploadFormCardProps) {
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
   const canSubmit = confirmed && !busy;
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const viewerImages = useMemo(
+    () =>
+      previewUrls.map((url, index) => ({
+        id: `${url}-${index}`,
+        src: url,
+        alt: `Pré-visualização ${index + 1}`,
+        title: `Prévia ${index + 1}`,
+      })),
+    [previewUrls],
+  );
 
   return (
     <form
@@ -89,12 +101,22 @@ export function GuestUploadFormCard({
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                <img
-                  src={url}
-                  alt={`Pré-visualização ${index + 1}`}
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setSelectedIndex(index);
+                  }}
+                  className="h-full w-full"
+                >
+                  <img
+                    src={url}
+                    alt={`Pré-visualização ${index + 1}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </button>
 
                 <button
                   type="button"
@@ -221,6 +243,14 @@ export function GuestUploadFormCard({
           Marque a confirmação acima para liberar o envio.
         </p>
       ) : null}
+
+      <EventImageViewer
+        images={viewerImages}
+        open={selectedIndex !== null}
+        currentIndex={selectedIndex ?? 0}
+        onClose={() => setSelectedIndex(null)}
+        onChangeIndex={setSelectedIndex}
+      />
     </form>
   );
 }

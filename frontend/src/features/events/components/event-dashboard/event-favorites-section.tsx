@@ -1,3 +1,6 @@
+import { useMemo, useState } from 'react';
+
+import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
 import { getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
 import type { Photo } from '@/types/photo';
@@ -8,6 +11,19 @@ interface EventFavoritesSectionProps {
 }
 
 export function EventFavoritesSection({ photos, onToggleFavorite }: EventFavoritesSectionProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const viewerImages = useMemo(
+    () =>
+      photos.map((photo) => ({
+        id: photo.id,
+        src: getPhotoSrc(photo.downloadUrl || ''),
+        alt: 'Foto favorita',
+        title: photo.guestName || 'Memória favorita do evento',
+      })),
+    [photos],
+  );
+
   return (
     <section
       id="favoritas"
@@ -28,42 +44,63 @@ export function EventFavoritesSection({ photos, onToggleFavorite }: EventFavorit
       </div>
 
       {photos.length > 0 ? (
-        <div className="mt-6 grid gap-4 md:grid-cols-3 xl:grid-cols-5">
-          {photos.map((photo) => {
-            const photoSrc = getPhotoSrc(photo.downloadUrl || '');
+        <>
+          <div className="mt-6 grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+            {photos.map((photo, index) => {
+              const photoSrc = getPhotoSrc(photo.downloadUrl || '');
 
-            return (
-              <div key={photo.id} className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
-                <a href={photoSrc} target="_blank" rel="noreferrer" className="relative block aspect-square overflow-hidden bg-[#f5ded2]">
-                  <img
-                    src={photoSrc}
-                    alt={photo.originalFilename || 'Foto favorita'}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-
-                  <span className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/92 text-sm text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
-                    <HeartIcon className="size-4" filled />
-                  </span>
-                </a>
-
-                <div className="p-4">
-                  <p className="truncate text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
-
-                  <p className="mt-1 truncate text-xs text-[#2c2927]/52">{photo.originalFilename || 'Foto enviada pelo convidado'}</p>
-
+              return (
+                <div key={photo.id} className="group overflow-hidden rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7]">
                   <button
                     type="button"
-                    onClick={() => onToggleFavorite(photo.id)}
-                    className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-[12px] border border-[#efb6bb] bg-white px-4 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
+                    onClick={() => setSelectedIndex(index)}
+                    className="relative block aspect-square w-full overflow-hidden bg-[#f5ded2]"
                   >
-                    Remover favorita
+                    <img
+                      src={photoSrc}
+                      alt="Foto favorita"
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+
+                    <span className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/92 text-sm text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
+                      <HeartIcon className="size-4" filled />
+                    </span>
                   </button>
+
+                  <div className="p-4">
+                    <button
+                      type="button"
+                      onClick={() => onToggleFavorite(photo.id)}
+                      className="inline-flex h-10 w-full items-center justify-center rounded-[12px] border border-[#efb6bb] bg-white px-4 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
+                    >
+                      Remover favorita
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+
+          <EventImageViewer
+            images={viewerImages}
+            open={selectedIndex !== null}
+            currentIndex={selectedIndex ?? 0}
+            onClose={() => setSelectedIndex(null)}
+            onChangeIndex={setSelectedIndex}
+            renderHeaderAction={(image) => (
+              <button
+                type="button"
+                onClick={() => onToggleFavorite(image.id)}
+                className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+                aria-label="Remover dos favoritos"
+              >
+                <HeartIcon className="size-4" filled />
+                Remover
+              </button>
+            )}
+          />
+        </>
       ) : (
         <div className="mt-6 rounded-[18px] bg-[#fff7f2] p-6 text-sm leading-7 text-[#2c2927]/62">
           Você ainda não curtiu nenhuma foto. Clique no coração das imagens da galeria para marcar suas favoritas.

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { Pagination } from '@/components/ui/pagination';
+import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import {
@@ -17,6 +18,7 @@ export function EventDownloadsPage() {
   const { eventId } = useParams();
   const dashboard = useEventDashboard(eventId);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(dashboard.mediaPhotos.length / DOWNLOADS_PER_PAGE));
 
@@ -24,6 +26,18 @@ export function EventDownloadsPage() {
     const start = (currentPage - 1) * DOWNLOADS_PER_PAGE;
     return dashboard.mediaPhotos.slice(start, start + DOWNLOADS_PER_PAGE);
   }, [currentPage, dashboard.mediaPhotos]);
+
+  const viewerImages = useMemo(
+    () =>
+      visiblePhotos.map((photo) => ({
+        id: photo.id,
+        src: getPhotoSrc(photo.downloadUrl || ''),
+        alt: 'Foto do evento',
+        title: photo.guestName || 'Memória enviada por convidado',
+        subtitle: formatRelativeTime(photo.createdAt),
+      })),
+    [visiblePhotos],
+  );
 
   return (
     <EventPageLayout
@@ -86,31 +100,47 @@ export function EventDownloadsPage() {
               </div>
 
               <div className="mt-6 space-y-3">
-                {visiblePhotos.map((photo) => (
-                  <a
+                {visiblePhotos.map((photo, index) => (
+                  <div
                     key={photo.id}
-                    href={getPhotoSrc(photo.downloadUrl || '')}
-                    target="_blank"
-                    rel="noreferrer"
                     className="flex flex-col gap-4 rounded-[18px] border border-[#f2dfd4] bg-[#fffaf7] p-4 transition hover:-translate-y-0.5 hover:bg-white sm:flex-row sm:items-center"
                   >
-                    <img
-                      src={getPhotoSrc(photo.downloadUrl || '')}
-                      alt={photo.originalFilename || 'Foto do evento'}
-                      loading="lazy"
-                      className="h-24 w-full rounded-[16px] object-cover sm:w-28"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIndex(index)}
+                      className="h-24 w-full overflow-hidden rounded-[16px] bg-[#f5ded2] sm:w-28"
+                    >
+                      <img
+                        src={getPhotoSrc(photo.downloadUrl || '')}
+                        alt="Foto do evento"
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[#161314]">{photo.originalFilename || 'Foto enviada pelo convidado'}</p>
-                      <p className="mt-1 text-sm text-[#2c2927]/58">{photo.guestName || 'Convidado anônimo'}</p>
+                      <p className="text-sm font-bold text-[#161314]">{photo.guestName || 'Convidado anônimo'}</p>
                       <p className="mt-2 text-xs text-[#2c2927]/46">{formatRelativeTime(photo.createdAt)}</p>
                     </div>
 
-                    <span className="inline-flex h-11 items-center justify-center rounded-[14px] border border-[#ead6cb] bg-white px-5 text-sm font-bold text-[#201914]">
-                      Abrir arquivo
-                    </span>
-                  </a>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedIndex(index)}
+                        className="inline-flex h-11 items-center justify-center rounded-[14px] border border-[#ead6cb] bg-white px-5 text-sm font-bold text-[#201914]"
+                      >
+                        Abrir
+                      </button>
+
+                      <a
+                        href={getPhotoSrc(photo.downloadUrl || '')}
+                        download
+                        className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b]"
+                      >
+                        Baixar
+                      </a>
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>
@@ -120,6 +150,14 @@ export function EventDownloadsPage() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
+          />
+
+          <EventImageViewer
+            images={viewerImages}
+            open={selectedIndex !== null}
+            currentIndex={selectedIndex ?? 0}
+            onClose={() => setSelectedIndex(null)}
+            onChangeIndex={setSelectedIndex}
           />
         </>
       ) : null}
