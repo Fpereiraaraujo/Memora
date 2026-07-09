@@ -1,107 +1,123 @@
 package com.memora.core.usecase.imp;
 
+import com.memora.core.domain.model.PaymentVerificationResult;
 import com.memora.core.domain.model.Event;
-import com.memora.core.domain.model.EventStatus;
+import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.param.HandleInfinitePayWebhookParam;
+import com.memora.core.gateway.PaymentGateway;
+import com.memora.core.service.EventPlanService;
 import com.memora.core.usecase.HandleInfinitePayWebhookUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
+import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PaymentOrderDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
+import com.memora.dataprovider.database.repository.PlanRepository;
 import com.memora.dataprovider.database.repository.PaymentOrderRepository;
-import com.memora.dataprovider.infinitepay.InfinitePayCheckoutClient;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebhookUseCase {
 
 	private final PaymentOrderRepository paymentOrderRepository;
 	private final EventRepository eventRepository;
-	private final InfinitePayCheckoutClient infinitePayCheckoutClient;
+	private final PlanRepository planRepository;
+	private final PaymentGateway paymentGateway;
+	private final EventPlanService eventPlanService;
 
 	public HandleInfinitePayWebhookUseCaseImp(
 		PaymentOrderRepository paymentOrderRepository,
 		EventRepository eventRepository,
-		InfinitePayCheckoutClient infinitePayCheckoutClient
+		PlanRepository planRepository,
+		PaymentGateway paymentGateway,
+		EventPlanService eventPlanService
 	) {
 		this.paymentOrderRepository = paymentOrderRepository;
 		this.eventRepository = eventRepository;
-		this.infinitePayCheckoutClient = infinitePayCheckoutClient;
+		this.planRepository = planRepository;
+		this.paymentGateway = paymentGateway;
+		this.eventPlanService = eventPlanService;
 	}
 
 	@Override
+	@Transactional
 	public PaymentOrder execute(HandleInfinitePayWebhookParam param) {
-		PaymentOrder paymentOrder = paymentOrderRepository.findByOrderNsu(param.orderNsu())
+		String externalReference = resolveExternalReference(param);
+		if (externalReference == null || externalReference.isBlank()) {
+			throw new IllegalArgumentException("Webhook recebido sem referência de pagamento válida.");
+		}
+
+		PaymentOrder paymentOrder = paymentOrderRepository.findWithLockByExternalReference(externalReference)
 			.map(PaymentOrderDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Payment order not found"));
+			.orElseThrow(() -> new NoSuchElementException("Ordem de pagamento não encontrada."));
 
 		if (paymentOrder.getStatus() == PaymentOrderStatus.APPROVED) {
 			return paymentOrder;
 		}
 
-		InfinitePayCheckoutClient.PaymentCheckResponse paymentCheckResponse = infinitePayCheckoutClient.paymentCheck(
-			new InfinitePayCheckoutClient.PaymentCheckRequest(
-				infinitePayCheckoutClient.handle(),
-				param.orderNsu(),
-				param.transactionNsu(),
-				param.invoiceSlug()
-			)
+		PaymentVerificationResult verificationResult = paymentGateway.verifyPayment(
+			externalReference,
+			param.providerPaymentId() != null ? param.providerPaymentId() : param.transactionNsu(),
+			param.amount()
 		);
 
-		if (paymentCheckResponse == null || !paymentCheckResponse.success() || !paymentCheckResponse.paid()) {
-			throw new IllegalArgumentException("InfinitePay payment is not approved");
+		if (!verificationResult.verified() || !verificationResult.approved()) {
+			return paymentOrder;
 		}
 
-		Integer paidAmount = paymentCheckResponse.paidAmount() != null
-			? paymentCheckResponse.paidAmount()
-			: param.paidAmount();
-		Integer amount = paymentCheckResponse.amount() != null
-			? paymentCheckResponse.amount()
-			: param.amount();
+		int expectedAmount = paymentOrder.getAmountCents();
+		int informedAmount = verificationResult.amountCents() != null ? verificationResult.amountCents() : expectedAmount;
+		if (informedAmount != expectedAmount) {
+			PaymentOrder failedOrder = paymentOrder.toBuilder()
+				.status(PaymentOrderStatus.FAILED)
+				.updatedAt(LocalDateTime.now(ZoneOffset.UTC))
+				.build();
 
-		if (amount != null && amount != paymentOrder.getAmountCents()) {
-			throw new IllegalArgumentException("InfinitePay amount does not match payment order");
+			return PaymentOrderDatabaseMapper.toDomain(
+				paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(failedOrder))
+			);
 		}
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		Plan plan = planRepository.findByCodeAndActiveTrue(paymentOrder.getPlanCode())
+			.map(PlanDatabaseMapper::toDomain)
+			.orElseThrow(() -> new IllegalArgumentException("Plano da ordem está inválido ou inativo."));
+
 		PaymentOrder approvedOrder = paymentOrder.toBuilder()
 			.status(PaymentOrderStatus.APPROVED)
-			.providerTransactionNsu(
-				paymentCheckResponse.transactionNsu() != null
-					? paymentCheckResponse.transactionNsu()
-					: param.transactionNsu()
-			)
-			.providerInvoiceSlug(
-				paymentCheckResponse.slug() != null
-					? paymentCheckResponse.slug()
-					: param.invoiceSlug()
-			)
+			.providerPaymentId(verificationResult.providerPaymentId())
+			.providerTransactionNsu(param.transactionNsu())
+			.providerInvoiceSlug(param.invoiceSlug())
 			.receiptUrl(param.receiptUrl())
-			.paidAmountCents(paidAmount)
+			.paidAmountCents(
+				verificationResult.paidAmountCents() != null ? verificationResult.paidAmountCents() : param.paidAmount()
+			)
 			.paidAt(now)
 			.updatedAt(now)
 			.build();
 
 		Event event = eventRepository.findById(paymentOrder.getEventId())
 			.map(EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado."));
 
-		Event activatedEvent = event.toBuilder()
-			.status(EventStatus.ACTIVE)
-			.planCode(paymentOrder.getPlanCode())
-			.photoLimit(paymentOrder.getPlanCode().getPhotoLimit())
-			.storageExpiresAt(now.plusMonths(paymentOrder.getPlanCode().getStorageMonths()))
-			.paidAt(now)
-			.updatedAt(now)
-			.build();
+		Event activatedEvent = eventPlanService.applyPlanToEvent(event, plan, now);
 
 		eventRepository.save(EventDatabaseMapper.toEntity(activatedEvent));
 		return PaymentOrderDatabaseMapper.toDomain(
 			paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(approvedOrder))
 		);
+	}
+
+	private String resolveExternalReference(HandleInfinitePayWebhookParam param) {
+		if (param.externalReference() != null && !param.externalReference().isBlank()) {
+			return param.externalReference();
+		}
+
+		return param.orderNsu();
 	}
 }

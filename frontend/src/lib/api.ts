@@ -3,7 +3,11 @@ import { API_BASE_URL } from '@/lib/env';
 import type { PageResponse } from '@/types/api';
 import type { EventCreateRequest, EventStatus, EventSummary, EventUpdateRequest } from '@/types/event';
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
-import type { EventCheckoutRequest, EventCheckoutResponse } from '@/types/payment';
+import type {
+  EventCheckoutRequest,
+  EventCheckoutResponse,
+  EventCheckoutStatusResponse,
+} from '@/types/payment';
 import type {
   PublicPageCustomization,
   PublicPageCustomizationUpdateRequest,
@@ -122,6 +126,12 @@ export const api = {
       method: 'POST',
       token,
       data: requestBody,
+    });
+  },
+  getEventCheckoutStatus(token: string, eventId: string) {
+    return request<EventCheckoutStatusResponse>(`/api/events/${eventId}/checkout/status`, {
+      method: 'GET',
+      token,
     });
   },
   updateEvent(token: string, eventId: string, requestBody: EventUpdateRequest) {

@@ -4,6 +4,7 @@ import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
+import com.memora.entrypoint.api.dto.EventCheckoutStatusResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
@@ -69,6 +70,22 @@ public interface EventControllerApi {
 	ResponseEntity<EventCheckoutResponseDto> createCheckout(
 		@PathVariable UUID eventId,
 		@Valid @RequestBody EventCheckoutRequestDto request,
+		Authentication authentication
+	);
+
+	@GetMapping("/api/events/{eventId}/checkout/status")
+	@Operation(
+		summary = "Get event checkout status",
+		description = "Returns the latest checkout status for the authenticated host event.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Checkout status returned"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventCheckoutStatusResponseDto> checkoutStatus(
+		@PathVariable UUID eventId,
 		Authentication authentication
 	);
 

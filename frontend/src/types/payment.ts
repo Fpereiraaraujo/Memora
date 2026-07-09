@@ -7,8 +7,17 @@ export interface EventCheckoutRequest {
 export interface EventCheckoutResponse {
   paymentOrderId: string;
   planCode: EventPlanCode;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
   amountCents: number;
+  checkoutUrl: string | null;
+}
+
+export interface EventCheckoutStatusResponse {
+  paymentOrderId: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | null;
+  planCode: EventPlanCode | null;
+  eventStatus: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED';
+  paidAt: string | null;
   checkoutUrl: string | null;
 }
 
@@ -32,9 +41,9 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
     photoLimitLabel: '150 fotos',
     description: 'Ideal para eventos pequenos e celebracoes mais intimistas.',
     items: [
-      'Ate 150 fotos',
-      'Galeria privada do anfitriao',
-      'Galeria publica por link',
+      'Até 150 fotos',
+      'Galeria privada do anfitrião',
+      'Galeria pública por link',
       'Armazenamento por 3 meses',
     ],
   },
@@ -44,12 +53,12 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
     priceLabel: 'R$ 69,90',
     storageLabel: '6 meses',
     photoLimitLabel: '500 fotos',
-    description: 'O melhor equilibrio para aniversarios, formaturas e festas medias.',
+    description: 'O melhor equilíbrio para aniversários, formaturas e festas médias.',
     highlighted: true,
     items: [
-      'Ate 500 fotos',
-      'QR Code e link publico',
-      'Favoritas e moderacao',
+      'Até 500 fotos',
+      'QR Code e link público',
+      'Favoritas e moderação',
       'Armazenamento por 6 meses',
     ],
   },
@@ -61,9 +70,9 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
     photoLimitLabel: '1.500 fotos',
     description: 'Perfeito para casamentos e eventos com grande valor emocional.',
     items: [
-      'Ate 1.500 fotos',
+      'Até 1.500 fotos',
       'Galeria completa do evento',
-      'Downloads e organizacao premium',
+      'Downloads e organização premium',
       'Armazenamento por 12 meses',
     ],
   },

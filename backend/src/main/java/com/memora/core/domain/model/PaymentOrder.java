@@ -14,8 +14,10 @@ public class PaymentOrder {
 	EventPlanCode planCode;
 	PaymentProvider provider;
 	PaymentOrderStatus status;
+	String externalReference;
 	String orderNsu;
 	String checkoutUrl;
+	String providerPaymentId;
 	String providerTransactionNsu;
 	String providerInvoiceSlug;
 	String receiptUrl;

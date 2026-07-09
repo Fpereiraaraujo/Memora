@@ -47,11 +47,17 @@ public class PaymentOrderJpaEntity {
 	@Column(nullable = false)
 	private PaymentOrderStatus status;
 
+	@Column(name = "external_reference", nullable = false, unique = true)
+	private String externalReference;
+
 	@Column(name = "order_nsu", nullable = false, unique = true)
 	private String orderNsu;
 
 	@Column(name = "checkout_url")
 	private String checkoutUrl;
+
+	@Column(name = "provider_payment_id")
+	private String providerPaymentId;
 
 	@Column(name = "provider_transaction_nsu")
 	private String providerTransactionNsu;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
@@ -12,6 +12,7 @@ import {
 } from '@/features/events/utils/event-routes';
 import { api } from '@/lib/api';
 import type { EventPlanCode, EventSummary } from '@/types/event';
+import type { EventCheckoutStatusResponse } from '@/types/payment';
 
 function formatDate(date: string | null) {
   if (!date) {
@@ -19,7 +20,6 @@ function formatDate(date: string | null) {
   }
 
   const parsedDate = new Date(`${date}T00:00:00`);
-
   if (Number.isNaN(parsedDate.getTime())) {
     return date;
   }
@@ -71,7 +71,8 @@ function CheckoutHeader({
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/68 sm:text-base sm:leading-8">
-            Após o pagamento aprovado, o QR Code e a página pública ficam prontos para receber fotos dos convidados.
+            O evento só é liberado quando o pagamento for confirmado pelo backend.
+            Assim o QR Code, a página pública e a galeria ficam protegidos desde o início.
           </p>
         </div>
 
@@ -89,7 +90,6 @@ function CheckoutHeader({
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c5922e]">
               Evento
             </p>
-
             <p className="mt-2 line-clamp-2 text-lg font-black leading-6 text-ink-950">
               {event.title}
             </p>
@@ -99,7 +99,6 @@ function CheckoutHeader({
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c5922e]">
               Data
             </p>
-
             <p className="mt-2 text-lg font-black text-ink-950">
               {formatDate(event.eventDate)}
             </p>
@@ -109,7 +108,6 @@ function CheckoutHeader({
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c5922e]">
               Plano atual
             </p>
-
             <p className="mt-2 text-lg font-black text-ink-950">
               {getPlanLabel(event.planCode)}
             </p>
@@ -160,9 +158,7 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
 
         <div className="space-y-4 p-6 sm:p-7">
           <div className="rounded-[1.5rem] border border-[#f1ddd1] bg-[#fffaf7] p-5">
-            <p className="text-sm font-black text-ink-950">
-              O que será liberado
-            </p>
+            <p className="text-sm font-black text-ink-950">O que será liberado</p>
 
             <ul className="mt-4 space-y-3 text-sm leading-6 text-ink-800/68">
               <li className="flex gap-3">
@@ -171,14 +167,12 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
                 </span>
                 Página pública para os convidados enviarem fotos.
               </li>
-
               <li className="flex gap-3">
                 <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#fff1f2] text-[10px] font-black text-[#ef7885]">
                   ✓
                 </span>
                 QR Code compartilhável para usar no evento.
               </li>
-
               <li className="flex gap-3">
                 <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#fff1f2] text-[10px] font-black text-[#ef7885]">
                   ✓
@@ -189,7 +183,7 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
           </div>
 
           <div className="rounded-[1.5rem] border border-[#f7dec7] bg-[#fff7ef] p-5 text-sm leading-7 text-[#8f6228]">
-            Você paga uma vez por evento. O plano define o limite de fotos e o tempo de armazenamento.
+            O backend valida plano, preço, ativação do evento e limite de fotos. Nada é liberado só por clique ou redirecionamento.
           </div>
         </div>
       </div>
@@ -214,7 +208,8 @@ function ActivePlanCard({ event }: { event: EventSummary }) {
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2f7a3e]/80">
-            O plano {getPlanLabel(event.planCode)} já está ativo para este evento. Você pode abrir o painel ou acessar o QR Code para compartilhar com os convidados.
+            O plano {getPlanLabel(event.planCode)} já está ativo para este evento.
+            Agora você pode abrir o painel ou acessar o QR Code para compartilhar com os convidados.
           </p>
         </div>
 
@@ -238,18 +233,95 @@ function ActivePlanCard({ event }: { event: EventSummary }) {
   );
 }
 
+function PendingPaymentCard({
+  event,
+  checkoutStatus,
+  onRefresh,
+  refreshing,
+}: {
+  event: EventSummary;
+  checkoutStatus: EventCheckoutStatusResponse;
+  onRefresh: () => void;
+  refreshing: boolean;
+}) {
+  return (
+    <Card className="rounded-[2rem] border-[#f7dec7] bg-[#fffaf4] p-6 shadow-[0_22px_60px_rgba(209,154,56,0.10)] sm:p-7">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.08)]">
+            <span className="grid size-5 place-items-center rounded-full bg-[#fff4ef] text-[#d19a38]">
+              ◌
+            </span>
+            Pagamento em análise
+          </div>
+
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-none tracking-[-0.05em] text-ink-950">
+            Estamos aguardando a confirmação
+          </h2>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/72">
+            Assim que o pagamento do plano {getPlanLabel(checkoutStatus.planCode)} for confirmado,
+            o evento {event.title} será liberado automaticamente.
+          </p>
+        </div>
+
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-fit">
+          {checkoutStatus.checkoutUrl ? (
+            <a
+              href={checkoutStatus.checkoutUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-[#ead1c4] bg-white px-6 text-sm font-bold text-ink-900 shadow-[0_18px_40px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
+            >
+              Abrir checkout
+            </a>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-6 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {refreshing ? 'Atualizando...' : 'Atualizar status'}
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function FailedPaymentCard({
+  status,
+}: {
+  status: NonNullable<EventCheckoutStatusResponse['status']>;
+}) {
+  const messageMap: Record<string, string> = {
+    FAILED: 'Não foi possível confirmar o pagamento desta tentativa.',
+    REJECTED: 'O pagamento foi recusado. Você pode escolher o plano novamente.',
+    CANCELLED: 'O checkout foi cancelado. Se quiser, escolha um plano novamente.',
+    EXPIRED: 'O checkout expirou. Gere uma nova tentativa para seguir.',
+  };
+
+  return (
+    <div className="mb-5 rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
+      {messageMap[status] ?? 'Não foi possível concluir este pagamento.'}
+    </div>
+  );
+}
+
 function CheckoutHelpCard() {
   return (
     <div className="rounded-[2rem] border border-[#f1ddd1] bg-white/78 p-6 shadow-[0_18px_44px_rgba(96,60,36,0.05)] sm:p-7">
       <p className="text-xs font-bold uppercase tracking-[0.26em] text-[#d19a38]">
-        Depois do checkout
+        Como funciona
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {[
-          ['1', 'Pagamento aprovado', 'O provedor confirma o pagamento com segurança.'],
-          ['2', 'Evento liberado', 'O plano é aplicado e o QR Code fica disponível.'],
-          ['3', 'Convidados enviam fotos', 'A página pública começa a receber memórias.'],
+          ['1', 'Escolha do plano', 'O backend registra a tentativa com status pendente e valor oficial do plano.'],
+          ['2', 'Confirmação segura', 'O evento só é ativado depois da confirmação server-side do pagamento.'],
+          ['3', 'Evento liberado', 'Com o plano aprovado, QR Code, página pública e limite de fotos entram em vigor.'],
         ].map(([step, title, description]) => (
           <div
             key={step}
@@ -259,13 +331,8 @@ function CheckoutHelpCard() {
               {step}
             </span>
 
-            <p className="mt-4 text-sm font-black text-ink-950">
-              {title}
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-ink-800/62">
-              {description}
-            </p>
+            <p className="mt-4 text-sm font-black text-ink-950">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-ink-800/62">{description}</p>
           </div>
         ))}
       </div>
@@ -279,28 +346,44 @@ export function EventCheckoutPage() {
   const navigate = useNavigate();
 
   const [event, setEvent] = useState<EventSummary | null>(null);
+  const [checkoutStatus, setCheckoutStatus] = useState<EventCheckoutStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanCode, setSelectedPlanCode] = useState<EventPlanCode | null>(null);
 
+  const hasActivePlan = useMemo(
+    () => Boolean(event?.planCode && event?.status === 'ACTIVE'),
+    [event],
+  );
+
   useEffect(() => {
     let active = true;
 
-    async function loadEvent() {
+    async function loadCheckoutContext(showLoader = true) {
       if (!token || !eventId) {
-        setLoading(false);
+        if (showLoader) {
+          setLoading(false);
+        }
         return;
       }
 
+      if (showLoader) {
+        setLoading(true);
+      }
+
       try {
-        const data = await api.getEvent(token, eventId);
+        const [eventResponse, checkoutResponse] = await Promise.all([
+          api.getEvent(token, eventId),
+          api.getEventCheckoutStatus(token, eventId),
+        ]);
 
         if (!active) {
           return;
         }
 
-        setEvent(data);
+        setEvent(eventResponse);
+        setCheckoutStatus(checkoutResponse);
         setError(null);
       } catch (exception) {
         if (!active) {
@@ -313,18 +396,65 @@ export function EventCheckoutPage() {
             : 'Não foi possível carregar este evento.',
         );
       } finally {
-        if (active) {
+        if (active && showLoader) {
           setLoading(false);
         }
       }
     }
 
-    void loadEvent();
+    void loadCheckoutContext(true);
 
     return () => {
       active = false;
     };
   }, [eventId, token]);
+
+  useEffect(() => {
+    if (!token || !eventId || checkoutStatus?.status !== 'PENDING' || hasActivePlan) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void api.getEventCheckoutStatus(token, eventId)
+        .then((response) => {
+          setCheckoutStatus(response);
+          if (response.eventStatus === 'ACTIVE') {
+            return api.getEvent(token, eventId).then(setEvent);
+          }
+
+          return undefined;
+        })
+        .catch(() => undefined);
+    }, 12000);
+
+    return () => window.clearInterval(intervalId);
+  }, [checkoutStatus?.status, eventId, hasActivePlan, token]);
+
+  async function handleRefreshStatus() {
+    if (!token || !eventId) {
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const [eventResponse, checkoutResponse] = await Promise.all([
+        api.getEvent(token, eventId),
+        api.getEventCheckoutStatus(token, eventId),
+      ]);
+
+      setEvent(eventResponse);
+      setCheckoutStatus(checkoutResponse);
+      setError(null);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : 'Não foi possível atualizar o status do pagamento.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleSelectPlan(planCode: EventPlanCode) {
     if (!token || !event) {
@@ -337,9 +467,17 @@ export function EventCheckoutPage() {
 
     try {
       const checkout = await api.createEventCheckout(token, event.id, { planCode });
+      setCheckoutStatus({
+        paymentOrderId: checkout.paymentOrderId,
+        status: checkout.status,
+        planCode: checkout.planCode,
+        eventStatus: event.status,
+        paidAt: event.paidAt,
+        checkoutUrl: checkout.checkoutUrl,
+      });
 
       if (!checkout.checkoutUrl) {
-        throw new Error('A InfinitePay não retornou um link de checkout para este evento.');
+        throw new Error('Não foi possível iniciar o checkout.');
       }
 
       window.location.assign(checkout.checkoutUrl);
@@ -385,9 +523,24 @@ export function EventCheckoutPage() {
               </button>
             )}
           />
-        ) : event.planCode ? (
+        ) : hasActivePlan ? (
           <div className="space-y-6">
             <ActivePlanCard event={event} />
+            <CheckoutHelpCard />
+          </div>
+        ) : checkoutStatus?.status === 'PENDING' ? (
+          <div className="space-y-6">
+            {error ? (
+              <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
+                {error}
+              </div>
+            ) : null}
+            <PendingPaymentCard
+              event={event}
+              checkoutStatus={checkoutStatus}
+              onRefresh={handleRefreshStatus}
+              refreshing={busy}
+            />
             <CheckoutHelpCard />
           </div>
         ) : (
@@ -411,6 +564,10 @@ export function EventCheckoutPage() {
                   Selecione uma opção abaixo para seguir para o checkout seguro.
                 </p>
               </div>
+
+              {checkoutStatus?.status && checkoutStatus.status !== 'APPROVED' ? (
+                <FailedPaymentCard status={checkoutStatus.status} />
+              ) : null}
 
               {error ? (
                 <div className="mb-5 rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">

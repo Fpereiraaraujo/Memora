@@ -42,20 +42,24 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 	public Photo execute(UploadGuestPhotoParam param) {
 		Event event = eventRepository.findBySlug(param.slug())
 			.map(com.memora.dataprovider.database.mapper.EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado."));
 
 		if (event.getStatus() != EventStatus.ACTIVE) {
-			throw new IllegalArgumentException("Event is not accepting uploads");
+			throw new IllegalArgumentException("Este evento ainda não está ativo para receber fotos.");
+		}
+
+		if (event.getPlanCode() == null || event.getPhotoLimit() == null) {
+			throw new IllegalArgumentException("Este evento ainda não está pronto para receber fotos.");
 		}
 
 		if (event.getStorageExpiresAt() != null && event.getStorageExpiresAt().isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
-			throw new IllegalArgumentException("Event storage period has expired");
+			throw new IllegalArgumentException("O período de armazenamento deste evento já expirou.");
 		}
 
 		if (event.getPhotoLimit() != null) {
 			long currentPhotos = photoRepository.countByEventIdAndObjectKeyIsNotNull(event.getId());
 			if (currentPhotos >= event.getPhotoLimit()) {
-				throw new IllegalArgumentException("Event photo limit has been reached");
+				throw new IllegalArgumentException("Limite de fotos do plano atingido.");
 			}
 		}
 
@@ -105,36 +109,36 @@ public class UploadGuestPhotoUseCaseImp implements UploadGuestPhotoUseCase {
 		boolean hasMessage = param.guestMessage() != null && !param.guestMessage().isBlank();
 
 		if (!hasFile && !hasMessage) {
-			throw new IllegalArgumentException("Send at least one photo or a guest message");
+			throw new IllegalArgumentException("Envie pelo menos uma foto ou um recado.");
 		}
 
 		if (hasFile) {
 			if (param.sizeBytes() <= 0) {
-				throw new IllegalArgumentException("Photo file is required");
+				throw new IllegalArgumentException("Selecione uma foto válida para enviar.");
 			}
 
 			if (param.sizeBytes() > uploadProperties.maxFileSizeBytes()) {
-				throw new IllegalArgumentException("Photo file exceeds maximum allowed size");
+				throw new IllegalArgumentException("Cada envio aceita fotos de até 20 MB. Tente novamente com uma imagem menor.");
 			}
 
 			String contentType = normalizeContentType(param.contentType());
 			if (!uploadProperties.allowedContentTypes().contains(contentType)) {
-				throw new IllegalArgumentException("Unsupported photo content type");
+				throw new IllegalArgumentException("Formato de arquivo não suportado. Use JPG, PNG ou WEBP.");
 			}
 		}
 
 		String guestName = param.guestName();
 		if (guestName != null && guestName.isBlank()) {
-			throw new IllegalArgumentException("Guest name cannot be blank");
+			throw new IllegalArgumentException("O nome do convidado não pode ficar em branco.");
 		}
 
 		String guestMessage = param.guestMessage();
 		if (guestMessage != null && guestMessage.isBlank()) {
-			throw new IllegalArgumentException("Guest message cannot be blank");
+			throw new IllegalArgumentException("O recado do convidado não pode ficar em branco.");
 		}
 
 		if (guestMessage != null && guestMessage.length() > 500) {
-			throw new IllegalArgumentException("Guest message exceeds maximum allowed size");
+			throw new IllegalArgumentException("O recado ultrapassou o limite de 500 caracteres.");
 		}
 	}
 

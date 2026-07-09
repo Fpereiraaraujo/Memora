@@ -26,6 +26,10 @@ public class CreateEventUseCaseImp implements CreateEventUseCase {
 
 	@Override
 	public Event execute(CreateEventParam param) {
+		if (eventRepository.existsByOwnerId(param.ownerId())) {
+			throw new IllegalArgumentException("Sua conta já possui um evento principal.");
+		}
+
 		String slug = slugGenerator.generate(param.title() + "-" + UUID.randomUUID());
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 

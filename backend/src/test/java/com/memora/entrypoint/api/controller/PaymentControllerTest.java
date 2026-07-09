@@ -40,7 +40,7 @@ class PaymentControllerTest {
 
 		ResponseEntity<?> response = controller.infinitePayWebhook(
 			"secret-token",
-			new InfinitePayWebhookRequestDto("order-1", "transaction-1", "invoice-1", 4990, 4990, "https://receipt")
+			new InfinitePayWebhookRequestDto("external-1", "order-1", "provider-1", "transaction-1", "invoice-1", "APPROVED", 4990, 4990, "https://receipt")
 		);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -53,7 +53,7 @@ class PaymentControllerTest {
 
 		assertThatThrownBy(() -> controller.infinitePayWebhook(
 			"wrong-token",
-			new InfinitePayWebhookRequestDto("order-1", "transaction-1", "invoice-1", 4990, 4990, "https://receipt")
+			new InfinitePayWebhookRequestDto("external-1", "order-1", "provider-1", "transaction-1", "invoice-1", "APPROVED", 4990, 4990, "https://receipt")
 		)).isInstanceOf(SecurityException.class);
 
 		verify(handleInfinitePayWebhookUseCase, never()).execute(any());

@@ -37,9 +37,12 @@ public class PaymentController implements PaymentControllerApi {
 		}
 
 		handleInfinitePayWebhookUseCase.execute(new HandleInfinitePayWebhookParam(
+			request.externalReference(),
 			request.orderNsu(),
+			request.providerPaymentId(),
 			request.transactionNsu(),
 			request.invoiceSlug(),
+			request.status(),
 			request.amount(),
 			request.paidAmount(),
 			request.receiptUrl()

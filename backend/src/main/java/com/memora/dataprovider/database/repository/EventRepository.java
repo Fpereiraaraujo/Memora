@@ -10,4 +10,5 @@ public interface EventRepository extends JpaRepository<EventJpaEntity, UUID> {
 	Optional<EventJpaEntity> findBySlug(String slug);
 	List<EventJpaEntity> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
 	Optional<EventJpaEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+	boolean existsByOwnerId(UUID ownerId);
 }

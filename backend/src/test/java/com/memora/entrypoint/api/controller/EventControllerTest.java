@@ -20,6 +20,7 @@ import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.CreateEventUseCase;
+import com.memora.core.usecase.GetEventCheckoutStatusUseCase;
 import com.memora.core.usecase.GetEventPublicPageCustomizationUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.ListEventPhotosPageUseCase;
@@ -74,6 +75,7 @@ class EventControllerTest {
 
 	@Mock private CreateEventUseCase createEventUseCase;
 	@Mock private CreateEventCheckoutUseCase createEventCheckoutUseCase;
+	@Mock private GetEventCheckoutStatusUseCase getEventCheckoutStatusUseCase;
 	@Mock private ListEventsUseCase listEventsUseCase;
 	@Mock private GetEventUseCase getEventUseCase;
 	@Mock private UpdateEventUseCase updateEventUseCase;
@@ -101,6 +103,7 @@ class EventControllerTest {
 		controller = new EventController(
 			createEventUseCase,
 			createEventCheckoutUseCase,
+			getEventCheckoutStatusUseCase,
 			listEventsUseCase,
 			getEventUseCase,
 			updateEventUseCase,
@@ -485,6 +488,8 @@ class EventControllerTest {
 			.planCode(EventPlanCode.EVENT)
 			.provider(PaymentProvider.INFINITEPAY)
 			.status(PaymentOrderStatus.PENDING)
+			.externalReference("MEMORA-529205f4-3ed6-4cef-b5dc-b7d640aa4ab1-87553897-2b22-4ed4-a6b9-e3d182669c70")
+			.orderNsu("MEMORA-529205f4-3ed6-4cef-b5dc-b7d640aa4ab1-87553897-2b22-4ed4-a6b9-e3d182669c70")
 			.checkoutUrl("https://checkout.memora.app/pay/1")
 			.amountCents(6990)
 			.createdAt(LocalDateTime.now())

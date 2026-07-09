@@ -1,20 +1,24 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.config.AppProperties;
+import com.memora.core.domain.model.CheckoutResponse;
+import com.memora.core.domain.model.CreateCheckoutCommand;
 import com.memora.core.domain.model.Event;
+import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.model.PaymentProvider;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
+import com.memora.core.gateway.PaymentGateway;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
+import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PaymentOrderDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
+import com.memora.dataprovider.database.repository.PlanRepository;
 import com.memora.dataprovider.database.repository.PaymentOrderRepository;
-import com.memora.dataprovider.infinitepay.InfinitePayCheckoutClient;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -23,19 +27,22 @@ import org.springframework.stereotype.Service;
 public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase {
 
 	private final EventRepository eventRepository;
+	private final PlanRepository planRepository;
 	private final PaymentOrderRepository paymentOrderRepository;
-	private final InfinitePayCheckoutClient infinitePayCheckoutClient;
+	private final PaymentGateway paymentGateway;
 	private final AppProperties appProperties;
 
 	public CreateEventCheckoutUseCaseImp(
 		EventRepository eventRepository,
+		PlanRepository planRepository,
 		PaymentOrderRepository paymentOrderRepository,
-		InfinitePayCheckoutClient infinitePayCheckoutClient,
+		PaymentGateway paymentGateway,
 		AppProperties appProperties
 	) {
 		this.eventRepository = eventRepository;
+		this.planRepository = planRepository;
 		this.paymentOrderRepository = paymentOrderRepository;
-		this.infinitePayCheckoutClient = infinitePayCheckoutClient;
+		this.paymentGateway = paymentGateway;
 		this.appProperties = appProperties;
 	}
 
@@ -47,48 +54,54 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 
 		Event event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.map(EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Event not found"));
+			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado."));
 
 		if (event.getPaidAt() != null && event.getPlanCode() != null) {
-			throw new IllegalArgumentException("Event already has an approved plan");
+			throw new IllegalArgumentException("Este evento já possui um plano aprovado.");
 		}
 
+		Plan plan = planRepository.findByCodeAndActiveTrue(param.planCode())
+			.map(PlanDatabaseMapper::toDomain)
+			.orElseThrow(() -> new IllegalArgumentException("Plano inválido."));
+
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-		String orderNsu = "memora-" + event.getId() + "-" + UUID.randomUUID();
+		UUID paymentOrderId = UUID.randomUUID();
+		String externalReference = "MEMORA-" + event.getId() + "-" + paymentOrderId;
 
 		PaymentOrder pendingOrder = PaymentOrder.builder()
-			.id(UUID.randomUUID())
+			.id(paymentOrderId)
 			.eventId(event.getId())
 			.userId(event.getOwnerId())
-			.planCode(param.planCode())
+			.planCode(plan.getCode())
 			.provider(PaymentProvider.INFINITEPAY)
 			.status(PaymentOrderStatus.PENDING)
-			.orderNsu(orderNsu)
-			.amountCents(param.planCode().getAmountCents())
+			.externalReference(externalReference)
+			.orderNsu(externalReference)
+			.amountCents(plan.getPriceCents())
 			.createdAt(now)
 			.updatedAt(now)
 			.build();
 
-		String redirectUrl = normalizeBaseUrl(appProperties.publicBaseUrl()) + "/app/events/" + event.getId();
+		String redirectUrl = normalizeBaseUrl(appProperties.publicBaseUrl()) + "/app/events/" + event.getId() + "/checkout";
 		String webhookUrl = normalizeBaseUrl(appProperties.apiBaseUrl())
 			+ "/api/payments/infinitepay/webhook?token=" + appProperties.infinitepayWebhookToken();
 
-		InfinitePayCheckoutClient.CreateCheckoutLinkResponse response = infinitePayCheckoutClient.createCheckoutLink(
-			new InfinitePayCheckoutClient.CreateCheckoutLinkRequest(
-				infinitePayCheckoutClient.handle(),
-				List.of(new InfinitePayCheckoutClient.CheckoutItem(
-					param.planCode().getDisplayName(),
-					1,
-					param.planCode().getAmountCents()
-				)),
-				orderNsu,
+		CheckoutResponse checkoutResponse = paymentGateway.createCheckout(
+			new CreateCheckoutCommand(
+				plan,
+				externalReference,
 				redirectUrl,
 				webhookUrl
 			)
 		);
 
 		PaymentOrder orderWithCheckout = pendingOrder.toBuilder()
-			.checkoutUrl(response != null ? response.checkoutUrl() : null)
+			.orderNsu(
+				checkoutResponse != null && checkoutResponse.providerReference() != null
+					? checkoutResponse.providerReference()
+					: externalReference
+			)
+			.checkoutUrl(checkoutResponse != null ? checkoutResponse.checkoutUrl() : null)
 			.updatedAt(LocalDateTime.now(ZoneOffset.UTC))
 			.build();
 
