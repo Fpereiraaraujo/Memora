@@ -17,8 +17,8 @@ export function FloralStage({ children, className, petals = true }: FloralStageP
         <div className="absolute right-[-4rem] top-[-3rem] h-[20rem] w-[20rem] rounded-full bg-[radial-gradient(circle,rgba(244,227,214,0.32),transparent_60%)] blur-3xl" />
         <div className="absolute bottom-[-6rem] right-[10%] h-[16rem] w-[16rem] rounded-full bg-[radial-gradient(circle,rgba(251,228,234,0.18),transparent_60%)] blur-3xl" />
       </div>
-      {petals ? <FallingPetals className="pointer-events-none absolute inset-0 z-10 opacity-80" /> : null}
       <div className="relative z-20">{children}</div>
+      {petals ? <FallingPetals className="pointer-events-none absolute inset-0 z-30 opacity-95" /> : null}
     </div>
   );
 }

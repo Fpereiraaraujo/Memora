@@ -102,7 +102,7 @@ export function EventPublicPageSettingsPage() {
             eventDate: resolved.eventDate,
             welcomeMessage: resolved.welcomeMessage,
             coverImageUrl: resolved.coverImageUrl,
-            highlightImageUrls: resolved.highlightImageUrls,
+            highlightImageUrls: resolved.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
           });
         }
       } catch {
@@ -112,7 +112,7 @@ export function EventPublicPageSettingsPage() {
             eventDate: fallback.eventDate,
             welcomeMessage: fallback.welcomeMessage,
             coverImageUrl: fallback.coverImageUrl,
-            highlightImageUrls: fallback.highlightImageUrls,
+            highlightImageUrls: fallback.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
           });
         }
       } finally {
@@ -155,7 +155,7 @@ export function EventPublicPageSettingsPage() {
         }
       }
 
-      return next;
+      return next.slice(0, MAX_HIGHLIGHT_IMAGES);
     });
     setSaved(false);
     setError(null);
@@ -189,7 +189,7 @@ export function EventPublicPageSettingsPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Nao foi possivel remover a capa agora. Tente novamente.',
+          : 'Não foi possível remover a capa agora. Tente novamente.',
       );
     } finally {
       setSaving(false);
@@ -217,7 +217,7 @@ export function EventPublicPageSettingsPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Nao foi possivel remover os destaques agora. Tente novamente.',
+          : 'Não foi possível remover os destaques agora. Tente novamente.',
       );
     } finally {
       setSaving(false);
@@ -228,7 +228,7 @@ export function EventPublicPageSettingsPage() {
     eventSubmit.preventDefault();
 
     if (!event || !token || !form) {
-      setError('Nao foi possivel salvar. Faca login novamente e tente de novo.');
+      setError('Não foi possível salvar. Faça login novamente e tente de novo.');
       return;
     }
 
@@ -277,8 +277,7 @@ export function EventPublicPageSettingsPage() {
           event.id,
           highlightData,
         );
-        nextHighlightImageUrls =
-          highlightResponse.highlightImageUrls ?? nextHighlightImageUrls;
+        nextHighlightImageUrls = highlightResponse.highlightImageUrls ?? nextHighlightImageUrls;
       }
 
       setForm({
@@ -286,7 +285,7 @@ export function EventPublicPageSettingsPage() {
         eventDate: updated.eventDate,
         welcomeMessage: updated.welcomeMessage,
         coverImageUrl: nextCoverImageUrl,
-        highlightImageUrls: nextHighlightImageUrls,
+        highlightImageUrls: nextHighlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
       });
       setCoverFile(null);
       setHighlightFiles([]);
@@ -295,7 +294,7 @@ export function EventPublicPageSettingsPage() {
       setError(
         exception instanceof Error
           ? exception.message
-          : 'Nao foi possivel salvar a personalizacao. Verifique sua conexao e tente novamente.',
+          : 'Não foi possível salvar a personalização. Verifique sua conexão e tente novamente.',
       );
     } finally {
       setSaving(false);
@@ -306,8 +305,8 @@ export function EventPublicPageSettingsPage() {
     <EventPageLayout
       eventId={eventId}
       dashboard={dashboard}
-      emptyTitle="Evento nao encontrado"
-      emptyDescription="Nao foi possivel abrir a personalizacao da pagina publica."
+      emptyTitle="Evento não encontrado"
+      emptyDescription="Não foi possível abrir a personalização da página pública."
     >
       {event && form ? (
         <div className="space-y-6">
@@ -325,15 +324,15 @@ export function EventPublicPageSettingsPage() {
                 </Link>
 
                 <p className="text-[15px] font-bold text-[#ef7885]">
-                  Personalizacao da pagina publica
+                  Personalização da página pública
                 </p>
 
                 <h1 className="mt-2 max-w-4xl font-display text-[44px] font-semibold leading-none tracking-[-0.045em] text-[#161314] md:text-[56px]">
-                  Controle o que os convidados vao ver
+                  Controle o que os convidados vão ver
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#2c2927]/66">
-                  Edite titulo, mensagem, foto de capa e destaques da experiencia publica.
+                  Edite título, mensagem, foto de capa e destaques da experiência pública.
                 </p>
               </div>
 
@@ -343,7 +342,7 @@ export function EventPublicPageSettingsPage() {
                 rel="noreferrer"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d6a45a] bg-white px-6 text-sm font-bold text-[#b57b26] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff8ef]"
               >
-                Ver previa publica
+                Ver prévia pública
                 <ExternalIcon className="size-4" />
               </Link>
             </div>
@@ -356,16 +355,16 @@ export function EventPublicPageSettingsPage() {
             >
               <div>
                 <h2 className="text-xl font-black text-[#161314]">
-                  Informacoes principais
+                  Informações principais
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                  Ajuste o titulo, a data e a mensagem principal dos convidados.
+                  Ajuste o título, a data e a mensagem principal dos convidados.
                 </p>
               </div>
 
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-[#2c2927]/80">
-                  Nome dos noivos ou titulo do evento
+                  Nome dos noivos ou título do evento
                 </span>
                 <Input
                   value={form.title}
@@ -407,7 +406,7 @@ export function EventPublicPageSettingsPage() {
                 <label className="block rounded-[18px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 transition hover:bg-white">
                   <span className="text-sm font-black text-[#161314]">Foto de capa</span>
                   <span className="mt-2 block text-xs leading-5 text-[#2c2927]/56">
-                    Apenas uma imagem principal para abrir a pagina publica.
+                    Apenas uma imagem principal para abrir a página pública.
                   </span>
                   <input
                     type="file"
@@ -426,7 +425,7 @@ export function EventPublicPageSettingsPage() {
                     Fotos em destaque
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-[#2c2927]/56">
-                    Escolha ate {MAX_HIGHLIGHT_IMAGES} fotos para complementar a capa.
+                    Escolha até {MAX_HIGHLIGHT_IMAGES} fotos para complementar a capa.
                   </span>
                   <input
                     type="file"
@@ -456,7 +455,7 @@ export function EventPublicPageSettingsPage() {
                       }
                       className="rounded-[12px] border border-[#efb6bb] bg-white px-4 py-2 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
                     >
-                      {coverPreviewUrl ? 'Remover previa' : 'Remover capa atual'}
+                      {coverPreviewUrl ? 'Remover prévia' : 'Remover capa atual'}
                     </button>
                   </div>
                   <img
@@ -471,36 +470,36 @@ export function EventPublicPageSettingsPage() {
               {(highlightPreviewUrls.length > 0 || form.highlightImageUrls.length > 0) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <p className="text-sm font-black text-[#161314]">
-                    {highlightPreviewUrls.length > 0
-                      ? 'Fotos selecionadas'
-                      : 'Fotos atuais'}
+                    {highlightPreviewUrls.length > 0 ? 'Fotos selecionadas' : 'Fotos atuais'}
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
                     {(highlightPreviewUrls.length > 0
                       ? highlightPreviewUrls
                       : form.highlightImageUrls
-                    ).map((image, index) => (
-                      <div
-                        key={`${image}-${index}`}
-                        className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]"
-                      >
-                        <img
-                          src={image}
-                          alt={`Foto em destaque ${index + 1}`}
-                          loading="lazy"
-                          className="h-full w-full object-cover"
-                        />
-                        {highlightPreviewUrls.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => removeHighlightFile(index)}
-                            className="absolute right-2 top-2 rounded-full bg-white/92 px-3 py-1 text-xs font-bold text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
-                          >
-                            Remover
-                          </button>
-                        ) : null}
-                      </div>
-                    ))}
+                    )
+                      .slice(0, MAX_HIGHLIGHT_IMAGES)
+                      .map((image, index) => (
+                        <div
+                          key={`${image}-${index}`}
+                          className="relative aspect-square overflow-hidden rounded-[14px] bg-[#f5ded2]"
+                        >
+                          <img
+                            src={image}
+                            alt={`Foto em destaque ${index + 1}`}
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
+                          {highlightPreviewUrls.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => removeHighlightFile(index)}
+                              className="absolute right-2 top-2 rounded-full bg-white/92 px-3 py-1 text-xs font-bold text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
+                            >
+                              Remover
+                            </button>
+                          ) : null}
+                        </div>
+                      ))}
                   </div>
                   <button
                     type="button"
@@ -526,7 +525,7 @@ export function EventPublicPageSettingsPage() {
 
               {saved ? (
                 <div className="rounded-[16px] border border-[#c8e6c9] bg-[#f1fbf2] px-4 py-3 text-sm font-semibold text-[#3f8b46]">
-                  Personalizacao salva. Abra a previa publica para visualizar.
+                  Personalização salva. Abra a prévia pública para visualizar.
                 </div>
               ) : null}
 
@@ -535,7 +534,7 @@ export function EventPublicPageSettingsPage() {
                 disabled={saving || loadingCustomization}
                 className="h-12 rounded-[14px]"
               >
-                {saving ? 'Salvando...' : 'Salvar personalizacao'}
+                {saving ? 'Salvando...' : 'Salvar personalização'}
               </Button>
             </form>
 
@@ -543,13 +542,13 @@ export function EventPublicPageSettingsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-bold text-[#ef7885]">
-                    Previa dos convidados
+                    Prévia dos convidados
                   </p>
                   <h2 className="mt-2 text-xl font-black text-[#161314]">
-                    Como a pagina vai aparecer
+                    Como a página vai aparecer
                   </h2>
                   <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                    Esta area simula a primeira dobra da pagina publica.
+                    Esta área simula a primeira dobra da página pública.
                   </p>
                 </div>
                 <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff1f2] text-[#ef7885]">
@@ -575,7 +574,7 @@ export function EventPublicPageSettingsPage() {
                     {(coverPreviewUrl || form.coverImageUrl) ? (
                       <img
                         src={coverPreviewUrl ?? form.coverImageUrl ?? ''}
-                        alt="Previa da capa"
+                        alt="Prévia da capa"
                         loading="lazy"
                         className="col-span-2 h-40 w-full rounded-[18px] object-cover"
                       />
@@ -587,7 +586,7 @@ export function EventPublicPageSettingsPage() {
                       ? highlightPreviewUrls
                       : form.highlightImageUrls
                     )
-                      .slice(0, 2)
+                      .slice(0, MAX_HIGHLIGHT_IMAGES)
                       .map((image, index) => (
                         <img
                           key={`${image}-${index}`}

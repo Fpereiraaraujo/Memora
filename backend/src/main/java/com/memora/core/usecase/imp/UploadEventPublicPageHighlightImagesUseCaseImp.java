@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UploadEventPublicPageHighlightImagesUseCaseImp implements UploadEventPublicPageHighlightImagesUseCase {
 
-	private static final int MAX_HIGHLIGHTS = 2;
+	private static final int MAX_HIGHLIGHTS = 3;
 
 	private final EventRepository eventRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
@@ -45,7 +45,7 @@ public class UploadEventPublicPageHighlightImagesUseCaseImp implements UploadEve
 		}
 
 		if (param.files().size() > MAX_HIGHLIGHTS) {
-			throw new IllegalArgumentException("Public page supports at most 2 highlight images");
+			throw new IllegalArgumentException("Public page supports at most 3 highlight images");
 		}
 
 		List<String> objectKeys = param.files().stream()

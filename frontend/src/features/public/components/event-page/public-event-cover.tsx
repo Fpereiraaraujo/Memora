@@ -28,7 +28,10 @@ export function PublicEventCover({
   totalPhotos,
 }: PublicEventCoverProps) {
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10">
+    <section
+      id="topo-publico"
+      className="relative overflow-hidden rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur sm:p-8 lg:p-10"
+    >
       <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[#f4a1aa]/16 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-[#d8a84f]/14 blur-3xl" />
 
@@ -73,7 +76,7 @@ export function PublicEventCover({
 
           <div className="mt-7">
             <span className="inline-flex items-center rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
-              {totalPhotos} foto{totalPhotos === 1 ? '' : 's'} ja compartilhada{totalPhotos === 1 ? '' : 's'}
+              {totalPhotos} foto{totalPhotos === 1 ? '' : 's'} já compartilhada{totalPhotos === 1 ? '' : 's'}
             </span>
           </div>
         </div>
@@ -108,7 +111,6 @@ export function PublicEventCover({
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>

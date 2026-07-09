@@ -3,14 +3,17 @@ interface CoupleHighlightsSectionProps {
 }
 
 export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps) {
-  const visibleImages = images.filter(Boolean).slice(0, 5);
+  const visibleImages = images.filter(Boolean).slice(0, 3);
 
   if (visibleImages.length === 0) {
     return null;
   }
 
   return (
-    <section className="rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-8">
+    <section
+      id="destaques"
+      className="rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-8"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold text-[#ef7885]">
@@ -18,7 +21,7 @@ export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps
           </p>
 
           <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314] sm:text-[44px]">
-            Destaque dos Noivos
+            Destaques dos noivos
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2c2927]/62">
@@ -27,11 +30,11 @@ export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps
         </div>
 
         <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
-          {visibleImages.length}/5 fotos
+          {visibleImages.length}/3 fotos
         </span>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visibleImages.map((image, index) => (
           <div
             key={`${image}-${index}`}

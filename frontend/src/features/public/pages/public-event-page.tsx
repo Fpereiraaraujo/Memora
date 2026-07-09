@@ -19,6 +19,12 @@ import type { EventSummary } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
 const PUBLIC_GALLERY_PAGE_SIZE = 12;
+const PUBLIC_EVENT_NAV_ITEMS = [
+  { label: 'Início', href: '#topo-publico' },
+  { label: 'Destaques', href: '#destaques' },
+  { label: 'Enviar fotos', href: '#upload' },
+  { label: 'Galeria', href: '#galeria' },
+];
 
 function emptyPhotoPage(page: number): PageResponse<Photo> {
   return {
@@ -33,11 +39,11 @@ function emptyPhotoPage(page: number): PageResponse<Photo> {
 
 function PublicEventNotFoundState() {
   return (
-    <PublicShell>
+    <PublicShell navItems={PUBLIC_EVENT_NAV_ITEMS} hideFooter showAuthActions={false}>
       <div className="mx-auto max-w-4xl px-4 py-20">
         <EmptyState
-          title="Evento nao encontrado"
-          description="Nao foi possivel encontrar a pagina publica deste evento."
+          title="Evento não encontrado"
+          description="Não foi possível encontrar a página pública deste evento."
         />
       </div>
     </PublicShell>
@@ -46,7 +52,7 @@ function PublicEventNotFoundState() {
 
 function PublicEventLoadingState() {
   return (
-    <PublicShell>
+    <PublicShell navItems={PUBLIC_EVENT_NAV_ITEMS} hideFooter showAuthActions={false}>
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <div className="h-[520px] animate-pulse rounded-[28px] border border-[#f1ddd1] bg-white/70 shadow-[0_24px_70px_rgba(96,60,36,0.06)]" />
@@ -117,7 +123,7 @@ export function PublicEventPage() {
       return [] as string[];
     }
 
-    return customization.highlightImageUrls.filter(Boolean).slice(0, 5);
+    return customization.highlightImageUrls.filter(Boolean).slice(0, 3);
   }, [customization]);
 
   useEffect(() => {
@@ -292,7 +298,7 @@ export function PublicEventPage() {
       setSuccess(false);
       setSuccessMessage(null);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Nao foi possivel preparar as imagens.');
+      setError(exception instanceof Error ? exception.message : 'Não foi possível preparar as imagens.');
     } finally {
       setProcessingFiles(false);
     }
@@ -322,11 +328,13 @@ export function PublicEventPage() {
       const updatedPhoto = await api.updatePublicPhotoLike(slug, photo.id, { liked: !alreadyLiked });
       mergeUpdatedPhoto(updatedPhoto);
     } catch (exception) {
-      const rollbackIds = alreadyLiked ? [...likedPhotoIds, photo.id] : likedPhotoIds.filter((photoId) => photoId !== photo.id);
+      const rollbackIds = alreadyLiked
+        ? [...likedPhotoIds, photo.id]
+        : likedPhotoIds.filter((photoId) => photoId !== photo.id);
       setLikedPhotoIdsState(rollbackIds);
       setLikedPhotoIds(slug, rollbackIds);
       mergeUpdatedPhoto(photo);
-      setError(exception instanceof Error ? exception.message : 'Nao foi possivel registrar sua curtida.');
+      setError(exception instanceof Error ? exception.message : 'Não foi possível registrar sua curtida.');
     }
   }
 
@@ -334,12 +342,12 @@ export function PublicEventPage() {
     eventSubmit.preventDefault();
 
     if (!slug) {
-      setError('Evento nao encontrado.');
+      setError('Evento não encontrado.');
       return;
     }
 
     if (!confirmed) {
-      setError('Confirme que o conteudo enviado e relacionado a este evento.');
+      setError('Confirme que o conteúdo enviado é relacionado a este evento.');
       return;
     }
 
@@ -387,7 +395,7 @@ export function PublicEventPage() {
       setSuccess(true);
       setSuccessMessage(
         files.length === 0
-          ? 'Recado enviado com sucesso. Obrigado por deixar sua mensagem para os anfitrioes!'
+          ? 'Recado enviado com sucesso. Obrigado por deixar sua mensagem para os anfitriões!'
           : uploadedCount > 1
             ? `${uploadedCount} fotos enviadas com sucesso. Obrigado por compartilhar esse momento!`
             : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
@@ -395,7 +403,7 @@ export function PublicEventPage() {
 
       await Promise.all([refreshFirstGalleryPage(slug), loadTopLiked(slug)]);
     } catch (exception) {
-      setError(exception instanceof Error ? exception.message : 'Nao foi possivel enviar agora. Tente novamente.');
+      setError(exception instanceof Error ? exception.message : 'Não foi possível enviar agora. Tente novamente.');
     } finally {
       setBusy(false);
     }
@@ -414,7 +422,7 @@ export function PublicEventPage() {
   }
 
   return (
-    <PublicShell>
+    <PublicShell navItems={PUBLIC_EVENT_NAV_ITEMS} hideFooter showAuthActions={false}>
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <PublicEventCover

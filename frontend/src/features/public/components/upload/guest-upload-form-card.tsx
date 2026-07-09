@@ -89,7 +89,12 @@ export function GuestUploadFormCard({
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
-                <img src={url} alt={`Pre-visualizacao ${index + 1}`} loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={url}
+                  alt={`Pré-visualização ${index + 1}`}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
 
                 <button
                   type="button"
@@ -117,10 +122,10 @@ export function GuestUploadFormCard({
               ♡
             </div>
 
-            <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher ate 5 fotos</p>
+            <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher até 5 fotos</p>
 
             <p className="mt-2 max-w-sm text-sm leading-6 text-[#2c2927]/58">
-              Aceitamos JPG, PNG e WEBP. Se quiser, voce tambem pode seguir sem anexos e mandar apenas um recado.
+              Aceitamos JPG, PNG e WEBP. Se quiser, você também pode seguir sem anexos e mandar apenas um recado.
             </p>
           </div>
         )}
@@ -159,22 +164,22 @@ export function GuestUploadFormCard({
         </label>
 
         <div className="rounded-[16px] border border-[#f1ddd1] bg-[#fffaf7] px-4 py-3">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Regras rapidas</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Regras rápidas</p>
 
           <p className="mt-2 text-xs leading-5 text-[#2c2927]/62">
-            Fotos podem ser anonimas. Se preencher o nome, escreva tambem um recado.
+            Fotos podem ser anônimas. Se preencher o nome, escreva também um recado.
           </p>
         </div>
       </div>
 
       <label className="mt-5 block space-y-2">
-        <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Recado para os anfitrioes</span>
+        <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Recado para os anfitriões</span>
 
         <Textarea
           value={guestMessage}
           maxLength={MAX_GUEST_MESSAGE_LENGTH}
           onChange={(event) => onGuestMessageChange(event.target.value)}
-          placeholder="Opcional. Ex: Que dia lindo! Felicidades para voces."
+          placeholder="Opcional. Ex: Que dia lindo! Felicidades para vocês."
         />
 
         <span className="block text-right text-xs text-[#2c2927]/42">
@@ -191,7 +196,7 @@ export function GuestUploadFormCard({
         />
 
         <span className="text-sm leading-6 text-[#2c2927]/68">
-          Confirmo que estou enviando conteudo relacionado a este evento e entendo que os anfitrioes podem remover imagens inadequadas.
+          Confirmo que estou enviando conteúdo relacionado a este evento e entendo que os anfitriões podem remover imagens inadequadas.
         </span>
       </label>
 
@@ -208,12 +213,12 @@ export function GuestUploadFormCard({
       ) : null}
 
       <Button type="submit" disabled={!canSubmit} className="mt-6 h-12 w-full rounded-[14px]" loading={busy}>
-        {busy ? 'Preparando envio...' : 'Enviar para os anfitrioes'}
+        {busy ? 'Preparando envio...' : 'Enviar para os anfitriões'}
       </Button>
 
       {!confirmed ? (
         <p className="mt-3 text-center text-xs leading-5 text-[#2c2927]/48">
-          Marque a confirmacao acima para liberar o envio.
+          Marque a confirmação acima para liberar o envio.
         </p>
       ) : null}
     </form>

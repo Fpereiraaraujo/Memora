@@ -53,11 +53,33 @@ export function PublicGallerySection({
     return getPhotoSrc(photo.downloadUrl);
   }, []);
 
-  const viewerOpen = selectedIndex !== null && Boolean(allLoadedPhotos[selectedIndex]);
   const topFivePhotos = useMemo(
     () => topLikedPhotos.filter((photo) => Boolean(photo.downloadUrl) && photo.likesCount > 0).slice(0, 5),
     [topLikedPhotos],
   );
+
+  const viewerPhotos = useMemo(() => {
+    const uniquePhotos = new Map<string, Photo>();
+
+    allLoadedPhotos.forEach((photo) => {
+      uniquePhotos.set(photo.id, photo);
+    });
+
+    topFivePhotos.forEach((photo) => {
+      if (!uniquePhotos.has(photo.id)) {
+        uniquePhotos.set(photo.id, photo);
+      }
+    });
+
+    return Array.from(uniquePhotos.values());
+  }, [allLoadedPhotos, topFivePhotos]);
+
+  const viewerOpen = selectedIndex !== null && Boolean(viewerPhotos[selectedIndex]);
+
+  function openViewer(photo: Photo, fallbackIndex: number) {
+    const photoIndex = viewerPhotos.findIndex((currentPhoto) => currentPhoto.id === photo.id);
+    setSelectedIndex(photoIndex >= 0 ? photoIndex : fallbackIndex);
+  }
 
   return (
     <section
@@ -66,14 +88,14 @@ export function PublicGallerySection({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">Galeria publica</p>
+          <p className="text-sm font-bold text-[#ef7885]">Galeria pública</p>
 
           <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314] sm:text-[44px]">
             Fotos compartilhadas
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2c2927]/62">
-            Toque em uma foto para abrir em tela cheia, curtir e continuar navegando sem ficar preso apenas na pagina atual.
+            Toque em qualquer foto para abrir em tela cheia, curtir e continuar navegando sem ficar preso apenas na página atual.
           </p>
         </div>
 
@@ -107,12 +129,7 @@ export function PublicGallerySection({
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      const photoIndex = allLoadedPhotos.findIndex((currentPhoto) => currentPhoto.id === photo.id);
-                      if (photoIndex >= 0) {
-                        setSelectedIndex(photoIndex);
-                      }
-                    }}
+                    onClick={() => openViewer(photo, index)}
                     className="h-full w-full"
                     aria-label={`Abrir foto mais curtida ${index + 1}`}
                   >
@@ -124,20 +141,20 @@ export function PublicGallerySection({
                     />
                   </button>
 
-                    <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[#c5922e] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
-                      #{index + 1}
-                    </div>
+                  <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[#c5922e] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
+                    #{index + 1}
+                  </div>
 
-                    {isFeatured ? (
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent p-4 text-white">
-                        <p className="text-xs font-black uppercase tracking-[0.16em] text-white/78">
-                          Mais curtida
-                        </p>
-                        <p className="mt-1 text-lg font-black">
-                          {photo.guestName?.trim() || 'Foto favorita do evento'}
-                        </p>
-                      </div>
-                    ) : null}
+                  {isFeatured ? (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent p-4 text-white">
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-white/78">
+                        Mais curtida
+                      </p>
+                      <p className="mt-1 text-lg font-black">
+                        {photo.guestName?.trim() || 'Foto favorita do evento'}
+                      </p>
+                    </div>
+                  ) : null}
 
                   <button
                     type="button"
@@ -164,11 +181,11 @@ export function PublicGallerySection({
       {photos.length === 0 ? (
         <div className="mt-6 rounded-[20px] border border-dashed border-[#efcfc4] bg-[#fffaf7] p-8 text-center">
           <p className="font-display text-3xl font-semibold tracking-[-0.04em] text-[#161314]">
-            Ainda nao existem fotos neste evento.
+            Ainda não existem fotos neste evento.
           </p>
 
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#2c2927]/62">
-            Seja a primeira pessoa a compartilhar uma lembranca deste momento.
+            Seja a primeira pessoa a compartilhar uma lembrança deste momento.
           </p>
 
           <a
@@ -192,10 +209,7 @@ export function PublicGallerySection({
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      const photoIndex = allLoadedPhotos.findIndex((currentPhoto) => currentPhoto.id === photo.id);
-                      setSelectedIndex(photoIndex >= 0 ? photoIndex : index);
-                    }}
+                    onClick={() => openViewer(photo, index)}
                     className="h-full w-full"
                     aria-label={`Abrir foto ${index + 1}`}
                   >
@@ -208,7 +222,7 @@ export function PublicGallerySection({
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center bg-[#fff7f2] text-xs font-bold text-[#2c2927]/48">
-                        Foto indisponivel
+                        Foto indisponível
                       </div>
                     )}
                   </button>
@@ -238,7 +252,7 @@ export function PublicGallerySection({
           {totalPages > 1 ? (
             <div className="mt-7 flex flex-col items-center justify-between gap-4 sm:flex-row">
               <p className="text-sm font-semibold text-[#2c2927]/58">
-                Pagina {currentPage} de {totalPages}
+                Página {currentPage} de {totalPages}
               </p>
 
               <div className="flex gap-3">
@@ -263,7 +277,7 @@ export function PublicGallerySection({
                   }}
                   className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b] disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  Proxima
+                  Próxima
                 </button>
               </div>
             </div>
@@ -272,7 +286,7 @@ export function PublicGallerySection({
       )}
 
       <PublicImageViewer
-        photos={allLoadedPhotos}
+        photos={viewerPhotos}
         currentIndex={selectedIndex ?? 0}
         open={viewerOpen}
         likedPhotoIds={likedPhotoIds}

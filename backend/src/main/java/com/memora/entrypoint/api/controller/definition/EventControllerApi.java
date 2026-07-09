@@ -244,7 +244,7 @@ public interface EventControllerApi {
 	@PostMapping(value = "/api/events/{eventId}/public-page/highlight-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(
 		summary = "Upload event public page highlight images",
-		description = "Uploads up to 2 highlight images used on the public event page.",
+		description = "Uploads up to 3 highlight images used on the public event page.",
 		security = { @SecurityRequirement(name = "bearerAuth") }
 	)
 	ResponseEntity<EventPublicPageImageUploadResponseDto> uploadPublicPageHighlightImages(

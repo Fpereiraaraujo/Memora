@@ -18,7 +18,7 @@ async function loadImageBitmap(file: File) {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
       const element = new Image();
       element.onload = () => resolve(element);
-      element.onerror = () => reject(new Error('Nao foi possivel ler a imagem selecionada.'));
+      element.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
       element.src = imageUrl;
     });
 
@@ -47,7 +47,7 @@ async function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error('Nao foi possivel preparar a imagem para envio.'));
+          reject(new Error('Não foi possível preparar a imagem para envio.'));
           return;
         }
 
@@ -76,7 +76,7 @@ async function compressImageFile(file: File) {
 
   const context = canvas.getContext('2d');
   if (!context) {
-    throw new Error('Nao foi possivel preparar a imagem para envio.');
+    throw new Error('Não foi possível preparar a imagem para envio.');
   }
 
   context.drawImage(source, 0, 0, dimensions.width, dimensions.height);

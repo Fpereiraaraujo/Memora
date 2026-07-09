@@ -3,14 +3,14 @@ import { MAX_GUEST_UPLOAD_FILES } from '@/features/shared/utils/upload-validatio
 const steps = [
   {
     title: 'Envie fotos reais do evento',
-    description: `Escolha ate ${MAX_GUEST_UPLOAD_FILES} fotos do celular. Elas vao para a galeria dos anfitrioes.`,
+    description: `Escolha até ${MAX_GUEST_UPLOAD_FILES} fotos do celular. Elas vão para a galeria dos anfitriões.`,
   },
   {
-    title: 'Recado e opcional',
-    description: 'O recado vai diretamente para os anfitrioes. Ele nao aparece junto da foto na galeria publica.',
+    title: 'Recado é opcional',
+    description: 'O recado vai diretamente para os anfitriões. Ele não aparece junto da foto na galeria pública.',
   },
   {
-    title: 'Ajuste automatico quando precisar',
+    title: 'Ajuste automático quando precisar',
     description: 'Se a imagem estiver pesada, a Memora tenta comprimir antes do envio para caber no limite.',
   },
 ];
@@ -25,7 +25,7 @@ export function GuestUploadRulesCard() {
       </h2>
 
       <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
-        Voce pode enviar apenas fotos, fotos com recado, ou somente um recado carinhoso para os anfitrioes.
+        Você pode enviar apenas fotos, fotos com recado, ou somente um recado carinhoso para os anfitriões.
       </p>
 
       <div className="mt-6 space-y-3">
@@ -50,7 +50,7 @@ export function GuestUploadRulesCard() {
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Importante</p>
 
         <p className="mt-3 text-sm leading-7 text-[#2c2927]/68">
-          Envie apenas fotos relacionadas ao evento. Os anfitrioes poderao remover imagens inadequadas.
+          Envie apenas fotos relacionadas ao evento. Os anfitriões poderão remover imagens inadequadas.
         </p>
       </div>
     </aside>
