@@ -1,6 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
 
-import { MemoraLogo } from '@/components/brand/memora-logo';
 import {
   CalendarIcon,
   DashboardIcon,
@@ -114,15 +113,10 @@ export function EventSidebar({
   const initials = event.title.trim().slice(0, 2).toUpperCase() || 'ME';
   const favoritesEnabled = canUseFavorites(event);
   const messagesEnabled = canUsePrivateMessages(event);
-  const publicCustomizationEnabled = canCustomizePublicPage(event);
 
   return (
     <aside className="rounded-[26px] border border-[#f1ddd1] bg-white/94 p-5 shadow-[0_24px_70px_rgba(96,60,36,0.08)] backdrop-blur">
-      <div className="px-2 pt-1">
-        <MemoraLogo to="/app" className="w-fit max-w-full" iconClassName="h-10 w-auto sm:h-11" />
-      </div>
-
-      <div className="mt-6 h-px bg-[#f2e4da]" />
+      <div className="h-px bg-[#f2e4da]" />
 
       <nav className="mt-4 space-y-1.5">
         <SidebarItem to={overviewPath} label="Painel" icon="panel" end />
@@ -131,8 +125,6 @@ export function EventSidebar({
           to={publicSettingsPath}
           label="Página pública"
           icon="public"
-          disabled={!publicCustomizationEnabled}
-          badge={!publicCustomizationEnabled ? getRequiredPlanLabel('public-page-customization') : undefined}
         />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />

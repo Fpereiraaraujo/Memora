@@ -44,10 +44,6 @@ public class UploadEventPublicPageHighlightImagesUseCaseImp implements UploadEve
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!eventFeatureAccessService.allowsPublicPageCustomization(event)) {
-			throw new IllegalArgumentException("Os destaques da pagina publica estao disponiveis apenas no plano Premium.");
-		}
-
 		if (param.files() == null || param.files().isEmpty()) {
 			throw new IllegalArgumentException("At least one highlight image is required");
 		}

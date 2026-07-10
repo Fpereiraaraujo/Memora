@@ -71,8 +71,8 @@ function CheckoutHeader({
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/68 sm:text-base sm:leading-8">
-            O evento só é liberado quando o pagamento for confirmado pelo backend.
-            Assim o QR Code, a página pública e a galeria ficam protegidos desde o início.
+            O evento é liberado assim que o pagamento for confirmado.
+            Assim, o QR Code, a página pública e a galeria ficam protegidos desde o início.
           </p>
         </div>
 
@@ -183,7 +183,7 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
           </div>
 
           <div className="rounded-[1.5rem] border border-[#f7dec7] bg-[#fff7ef] p-5 text-sm leading-7 text-[#8f6228]">
-            O backend valida plano, preço, ativação do evento e limite de fotos. Nada é liberado só por clique ou redirecionamento.
+            O pagamento é conferido com segurança antes de liberar os recursos do plano.
           </div>
         </div>
       </div>
@@ -319,9 +319,9 @@ function CheckoutHelpCard() {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {[
-          ['1', 'Escolha do plano', 'O backend registra a tentativa com status pendente e valor oficial do plano.'],
-          ['2', 'Confirmação segura', 'O evento só é ativado depois da confirmação server-side do pagamento.'],
-          ['3', 'Evento liberado', 'Com o plano aprovado, QR Code, página pública e limite de fotos entram em vigor.'],
+          ['1', 'Escolha do plano', 'Escolha a opção que combina com o seu casamento.'],
+          ['2', 'Confirmação segura', 'O pagamento é conferido antes de qualquer recurso ser liberado.'],
+          ['3', 'Evento liberado', 'Depois da confirmação, o plano e o limite de fotos entram em vigor.'],
         ].map(([step, title, description]) => (
           <div
             key={step}

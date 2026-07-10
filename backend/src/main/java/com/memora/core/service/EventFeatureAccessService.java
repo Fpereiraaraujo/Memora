@@ -18,7 +18,7 @@ public class EventFeatureAccessService {
 	}
 
 	public boolean allowsPublicPageCustomization(Event event) {
-		return event != null && event.getPlanCode() == EventPlanCode.PREMIUM;
+		return event != null;
 	}
 
 	public int effectivePhotoLimit(Event event) {

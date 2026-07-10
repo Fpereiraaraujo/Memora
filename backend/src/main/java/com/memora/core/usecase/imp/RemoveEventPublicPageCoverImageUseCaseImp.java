@@ -39,10 +39,6 @@ public class RemoveEventPublicPageCoverImageUseCaseImp implements RemoveEventPub
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!eventFeatureAccessService.allowsPublicPageCustomization(event)) {
-			throw new IllegalArgumentException("A capa personalizada da pagina publica esta disponivel apenas no plano Premium.");
-		}
-
 		var current = eventCustomizationRepository.findByEventId(event.getId())
 			.orElseGet(() -> EventPublicPageCustomizationSupport.createEmpty(event.getId()));
 

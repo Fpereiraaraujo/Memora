@@ -53,10 +53,10 @@ export function EventDashboardShell({ sidebar, children }: EventDashboardShellPr
         )}
       />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid min-w-0 gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[336px_minmax(0,1fr)]">
+      <main className="mx-auto max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[292px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
-            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1">
+            <div className="sticky top-20 max-h-[calc(100vh-5rem)] overflow-y-auto pr-1">
               {sidebar}
             </div>
           </aside>

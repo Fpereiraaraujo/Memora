@@ -17,7 +17,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         )}
       />
 
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-[1600px] flex-col px-5 py-6 sm:px-8 lg:px-10">
         <main className="flex flex-1 items-center justify-center py-10">
           {children}
         </main>

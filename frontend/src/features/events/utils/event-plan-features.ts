@@ -22,7 +22,7 @@ export function canUsePrivateMessages(event: Pick<EventSummary, 'planCode'> | nu
 }
 
 export function canCustomizePublicPage(event: Pick<EventSummary, 'planCode'> | null | undefined) {
-  return hasPremiumPlan(event);
+  return true;
 }
 
 export function getRequiredPlanLabel(feature: 'favorites' | 'messages' | 'public-page-customization') {

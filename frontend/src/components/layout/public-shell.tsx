@@ -148,7 +148,7 @@ export function PublicShell({
         <footer id="ajuda" className="px-4 pb-10 pt-16 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-[1520px] flex-col gap-6 rounded-[2rem] border border-[#ecd8ca] bg-white/68 px-6 py-8 shadow-[0_18px_60px_rgba(96,60,36,0.06)] backdrop-blur md:flex-row md:items-center md:justify-between">
             <div>
-              <MemoraLogo className="w-fit" iconClassName="h-10 sm:h-12" />
+              <MemoraLogo className="w-fit" iconClassName="h-9 sm:h-10" />
               <p className="mt-3 max-w-md text-sm leading-7 text-ink-800/65">
                 Uma plataforma para reunir fotos e memórias de eventos especiais em uma galeria privada.
               </p>

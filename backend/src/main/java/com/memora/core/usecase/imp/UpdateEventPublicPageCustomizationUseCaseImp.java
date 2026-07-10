@@ -43,10 +43,6 @@ public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEvent
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!eventFeatureAccessService.allowsPublicPageCustomization(currentEvent)) {
-			throw new IllegalArgumentException("A personalizacao completa da pagina publica esta disponivel apenas no plano Premium.");
-		}
-
 		var event = currentEvent.toBuilder()
 			.title(param.title().trim())
 			.eventDate(param.eventDate())

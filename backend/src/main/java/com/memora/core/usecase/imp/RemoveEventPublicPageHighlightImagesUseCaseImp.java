@@ -39,10 +39,6 @@ public class RemoveEventPublicPageHighlightImagesUseCaseImp implements RemoveEve
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!eventFeatureAccessService.allowsPublicPageCustomization(event)) {
-			throw new IllegalArgumentException("Os destaques da pagina publica estao disponiveis apenas no plano Premium.");
-		}
-
 		var current = eventCustomizationRepository.findByEventId(event.getId())
 			.orElseGet(() -> EventPublicPageCustomizationSupport.createEmpty(event.getId()));
 

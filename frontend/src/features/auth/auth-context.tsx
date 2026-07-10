@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         // Mantém a sessão local quando a API /me falhar por instabilidade de ambiente.
-        // O logout real ainda acontece manualmente, e chamadas autenticadas continuarão protegidas pelo backend.
+        // O logout real ainda acontece manualmente, e as chamadas autenticadas continuam protegidas.
         if (active) {
           if (!cachedUser) {
             clearSession();

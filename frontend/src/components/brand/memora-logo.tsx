@@ -19,7 +19,7 @@ export function MemoraLogo({
 }: MemoraLogoProps) {
   const imageClassName = cn(
     showText
-      ? 'h-11 w-auto max-w-[185px] object-contain sm:h-14 sm:max-w-[320px]'
+      ? 'h-9 w-auto max-w-[180px] object-contain sm:h-10 sm:max-w-[205px]'
       : 'h-10 w-auto object-contain',
     iconClassName,
     textClassName,

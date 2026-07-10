@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { ExternalIcon, ImagesIcon } from '@/features/events/components/event-dashboard/event-icons';
-import { buildEventCheckoutPath, buildEventPublicPageSettingsPath } from '@/features/events/utils/event-routes';
-import { canCustomizePublicPage } from '@/features/events/utils/event-plan-features';
+import { buildEventPublicPageSettingsPath } from '@/features/events/utils/event-routes';
 import type { PublicPageCustomization } from '@/types/customization';
 import type { EventSummary } from '@/types/event';
 
@@ -18,15 +17,14 @@ export function EventPublicPageCard({
   publicLinksEnabled,
 }: EventPublicPageCardProps) {
   const settingsPath = buildEventPublicPageSettingsPath(event.id);
-  const checkoutPath = buildEventCheckoutPath(event.id);
   const previewImage = customization.coverImageUrl ?? customization.highlightImageUrls[0] ?? null;
-  const customizationEnabled = canCustomizePublicPage(event);
+  const customizationEnabled = true;
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#ffe9e2_0%,#fff8f3_52%,#ffffff_100%)] p-0 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
       <div className="grid gap-6 p-6 lg:grid-cols-[260px_1fr_auto] lg:items-center">
         <Link
-          to={customizationEnabled ? settingsPath : checkoutPath}
+          to={settingsPath}
           className="group relative h-44 overflow-hidden rounded-[18px] bg-[linear-gradient(145deg,#fff4ef_0%,#ffe2db_48%,#f8c7bb_100%)] lg:h-40"
         >
           {previewImage ? (
@@ -58,19 +56,19 @@ export function EventPublicPageCard({
           <p className="text-sm font-bold text-[#ef7885]">
             {customizationEnabled
               ? 'Esta é a página que os convidados vão ver'
-              : 'Seu link público já funciona, mas a personalização completa ainda está bloqueada'}
+              : 'Esta é a página que os convidados vão ver'}
           </p>
 
           <h2 className="mt-2 font-display text-[36px] font-semibold leading-none tracking-[-0.04em] text-[#161314]">
             {customizationEnabled
               ? 'Personalize sua página pública'
-              : 'Desbloqueie a versão premium da página pública'}
+              : 'Personalize sua página pública'}
           </h2>
 
           <p className="mt-3 max-w-2xl text-base leading-8 text-[#2c2927]/65">
             {customizationEnabled
               ? 'Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.'
-              : 'No modo gratuito e nos planos iniciais você já pode compartilhar o link e receber fotos. A personalização visual completa da página fica disponível no plano Premium.'}
+              : 'Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.'}
           </p>
         </div>
 
@@ -82,14 +80,7 @@ export function EventPublicPageCard({
             >
               Personalizar página
             </Link>
-          ) : (
-            <Link
-              to={checkoutPath}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-            >
-              Ver planos
-            </Link>
-          )}
+          ) : null}
 
           {publicLinksEnabled ? (
             <Link

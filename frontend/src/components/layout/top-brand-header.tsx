@@ -10,7 +10,7 @@ interface TopBrandHeaderProps {
 export function TopBrandHeader({ logoTo = '/', rightContent }: TopBrandHeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-[#ecd8ca] bg-white/96 backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <MemoraLogo to={logoTo} />
         <div className="flex items-center gap-3">
           {rightContent}

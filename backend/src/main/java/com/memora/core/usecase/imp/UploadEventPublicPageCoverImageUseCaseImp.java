@@ -41,10 +41,6 @@ public class UploadEventPublicPageCoverImageUseCaseImp implements UploadEventPub
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		if (!eventFeatureAccessService.allowsPublicPageCustomization(event)) {
-			throw new IllegalArgumentException("A capa personalizada da pagina publica esta disponivel apenas no plano Premium.");
-		}
-
 		validateImage(param.content(), param.contentType());
 
 		String objectKey = "events/" + event.getSlug() + "/public-page/cover/" + UUID.randomUUID() + extractExtension(param.originalFilename());

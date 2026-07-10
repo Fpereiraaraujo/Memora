@@ -71,7 +71,7 @@ export function PublicEventPage() {
   const { slug } = useParams();
 
   const [event, setEvent] = useState<EventSummary | null>(null);
-  const [backendCustomization, setBackendCustomization] = useState<PublicPageCustomization | null>(null);
+  const [savedCustomization, setSavedCustomization] = useState<PublicPageCustomization | null>(null);
   const [photoPages, setPhotoPages] = useState<Record<number, Photo[]>>({});
   const [topLikedPhotos, setTopLikedPhotos] = useState<Photo[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,8 +93,8 @@ export function PublicEventPage() {
   const [likedPhotoIds, setLikedPhotoIdsState] = useState<string[]>([]);
 
   const customization = useMemo(
-    () => (event ? mergePublicPageCustomization(event, backendCustomization) : null),
-    [backendCustomization, event],
+    () => (event ? mergePublicPageCustomization(event, savedCustomization) : null),
+    [savedCustomization, event],
   );
 
   const currentPhotos = useMemo(() => photoPages[currentPage - 1] ?? [], [currentPage, photoPages]);
@@ -184,7 +184,7 @@ export function PublicEventPage() {
         }
 
         setEvent(eventData);
-        setBackendCustomization(customizationData);
+        setSavedCustomization(customizationData);
         setPhotoPages((current) => ({
           ...current,
           [currentPage - 1]: firstPage.content,
@@ -200,7 +200,7 @@ export function PublicEventPage() {
       } catch {
         if (active) {
           setEvent(buildFallbackPublicEvent(slug));
-          setBackendCustomization(null);
+          setSavedCustomization(null);
           setPhotoPages({});
           setTopLikedPhotos([]);
           setTotalElements(0);
