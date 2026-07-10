@@ -1,6 +1,7 @@
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/components/layout/protected-route';
+import { AdminRoute } from '@/components/layout/admin-route';
 import { PublicShell } from '@/components/layout/public-shell';
 import { Card } from '@/components/ui/card';
 import { AuthProvider, useAuth } from '@/features/auth/auth-context';
@@ -17,15 +18,16 @@ import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
+import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page';
 
 function RootRedirect() {
-  const { token, ready } = useAuth();
+  const { token, ready, user } = useAuth();
 
   if (!ready) {
     return null;
   }
 
-  return <Navigate to={token ? '/app' : '/login'} replace />;
+  return <Navigate to={token ? (user?.role === 'ADMIN' ? '/admin' : '/app') : '/login'} replace />;
 }
 
 
@@ -89,6 +91,16 @@ export default function App() {
         <Route path="/start" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        <Route
+          path="/admin"
+          element={<AdminRoute><AdminDashboardPage /></AdminRoute>}
+        />
+
+        <Route
+          path="/admin/access-denied"
+          element={<AdminDashboardPage accessDenied />}
+        />
 
         <Route
           path="/app"

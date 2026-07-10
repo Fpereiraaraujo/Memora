@@ -89,6 +89,37 @@ class PaymentUseCaseTest {
 	}
 
 	@Test
+	void createCheckoutCancelsPreviousPendingOrderWhenThePlanChanges() {
+		PaymentOrderJpaEntity previousOrder = paymentOrderEntity(PaymentOrderStatus.PENDING);
+		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT)));
+		when(paymentOrderRepository.findAllByEventIdAndStatus(EVENT_ID, PaymentOrderStatus.PENDING))
+			.thenReturn(java.util.List.of(previousOrder));
+		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
+		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
+		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
+		when(paymentGateway.createCheckout(any(CreateCheckoutCommand.class)))
+			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/new", "provider-order-2"));
+		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		var useCase = new CreateEventCheckoutUseCaseImp(
+			eventRepository,
+			planRepository,
+			paymentOrderRepository,
+			paymentGateway,
+			appProperties
+		);
+
+		useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT));
+
+		ArgumentCaptor<PaymentOrderJpaEntity> orderCaptor = ArgumentCaptor.forClass(PaymentOrderJpaEntity.class);
+		verify(paymentOrderRepository, org.mockito.Mockito.times(3)).save(orderCaptor.capture());
+		assertThat(orderCaptor.getAllValues().get(0).getStatus()).isEqualTo(PaymentOrderStatus.CANCELLED);
+		assertThat(orderCaptor.getAllValues().get(1).getStatus()).isEqualTo(PaymentOrderStatus.PENDING);
+		assertThat(orderCaptor.getAllValues().get(2).getStatus()).isEqualTo(PaymentOrderStatus.PENDING);
+	}
+
+	@Test
 	void getCheckoutStatusReturnsLatestPaymentOrder() {
 		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
 		when(paymentOrderRepository.findTopByEventIdOrderByCreatedAtDesc(EVENT_ID)).thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));

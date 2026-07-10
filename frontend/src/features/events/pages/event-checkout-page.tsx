@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
@@ -291,6 +291,9 @@ function PendingPaymentCard({
   );
 }
 
+const CHECKOUT_STATUS_POLL_INTERVAL_MS = 60_000;
+const MAX_CHECKOUT_STATUS_POLLS = 10;
+
 function FailedPaymentCard({
   status,
 }: {
@@ -351,6 +354,7 @@ export function EventCheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanCode, setSelectedPlanCode] = useState<EventPlanCode | null>(null);
+  const pollAttemptsRef = useRef(0);
 
   const hasActivePlan = useMemo(
     () => Boolean(event?.planCode && event?.status === 'ACTIVE'),
@@ -414,7 +418,14 @@ export function EventCheckoutPage() {
       return;
     }
 
+    pollAttemptsRef.current = 0;
     const intervalId = window.setInterval(() => {
+      pollAttemptsRef.current += 1;
+      if (pollAttemptsRef.current > MAX_CHECKOUT_STATUS_POLLS) {
+        window.clearInterval(intervalId);
+        return;
+      }
+
       void api.getEventCheckoutStatus(token, eventId)
         .then((response) => {
           setCheckoutStatus(response);
@@ -425,7 +436,7 @@ export function EventCheckoutPage() {
           return undefined;
         })
         .catch(() => undefined);
-    }, 12000);
+    }, CHECKOUT_STATUS_POLL_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
   }, [checkoutStatus?.status, eventId, hasActivePlan, token]);
@@ -541,6 +552,20 @@ export function EventCheckoutPage() {
               onRefresh={handleRefreshStatus}
               refreshing={busy}
             />
+            <Card className="rounded-[2rem] border-[#f0d8ca] bg-white/78 p-5 shadow-[0_22px_70px_rgba(96,60,36,0.08)] sm:p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">Mudou de ideia?</p>
+              <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.05em] text-ink-950">Escolha outro plano</h2>
+              <p className="mt-3 text-sm leading-7 text-ink-800/64">
+                Ao escolher outra opção, esta tentativa será encerrada e um novo checkout será criado para o plano selecionado.
+              </p>
+              <div className="mt-5">
+                <EventPlanSelector
+                  busy={busy}
+                  selectedPlanCode={selectedPlanCode}
+                  onSelectPlan={handleSelectPlan}
+                />
+              </div>
+            </Card>
             <CheckoutHelpCard />
           </div>
         ) : (

@@ -47,7 +47,7 @@ export function LoginPage() {
       const response = await api.login({ email, password });
 
       login(response);
-      navigate('/app');
+      navigate(response.role === 'ADMIN' ? '/admin' : '/app');
     } catch (exception) {
       setError(
           exception instanceof Error

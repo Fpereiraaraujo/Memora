@@ -46,7 +46,7 @@ memora:
     infinitepay-webhook-token: ${INFINITEPAY_WEBHOOK_TOKEN:memora-infinitepay-local-token}
   infinitepay:
     api-base-url: ${INFINITEPAY_API_BASE_URL:https://api.checkout.infinitepay.io}
-    handle: ${INFINITEPAY_HANDLE:}
+    handle: ${INFINITEPAY_HANDLE:fernando-de-9n6}
     auth-header-name: ${INFINITEPAY_AUTH_HEADER_NAME:}
     auth-header-value: ${INFINITEPAY_AUTH_HEADER_VALUE:}
   upload:

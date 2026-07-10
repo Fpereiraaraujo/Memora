@@ -2,6 +2,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  role?: 'HOST' | 'ADMIN';
+  status?: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 }
 
 export interface RegisterRequest {
@@ -17,4 +19,6 @@ export interface LoginRequest {
 
 export interface LoginResponse extends User {
   token: string;
+  role: 'HOST' | 'ADMIN';
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 }

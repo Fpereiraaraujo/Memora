@@ -6,8 +6,8 @@ import com.memora.core.domain.model.CreateCheckoutCommand;
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.model.PaymentOrder;
-import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.model.PaymentProvider;
+import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.gateway.PaymentGateway;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
@@ -68,6 +68,12 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 			.orElseThrow(() -> new IllegalArgumentException("Plano inválido."));
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		paymentOrderRepository.findAllByEventIdAndStatus(event.getId(), PaymentOrderStatus.PENDING)
+			.forEach(previousOrder -> paymentOrderRepository.save(previousOrder.toBuilder()
+				.status(PaymentOrderStatus.CANCELLED)
+				.updatedAt(now)
+				.build()));
+
 		UUID paymentOrderId = UUID.randomUUID();
 		String externalReference = "MEMORA-" + event.getId() + "-" + paymentOrderId;
 

@@ -21,6 +21,15 @@ import type {
   PhotoStatusUpdateRequest,
 } from '@/types/photo';
 
+export interface AdminDashboardResponse {
+  totalUsers: number;
+  totalEvents: number;
+  totalPhotos: number;
+  totalApprovedPayments: number;
+  totalPendingPayments: number;
+  grossRevenueCents: number;
+}
+
 const http = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -114,6 +123,9 @@ export const api = {
   },
   me(token: string) {
     return request<User>('/api/me', { method: 'GET', token });
+  },
+  getAdminDashboard(token: string) {
+    return request<AdminDashboardResponse>('/api/admin/dashboard', { method: 'GET', token });
   },
   listEvents(token: string) {
     return request<EventSummary[]>('/api/events', { method: 'GET', token });

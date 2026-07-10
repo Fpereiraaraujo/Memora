@@ -82,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: payload.id,
           name: payload.name,
           email: payload.email,
+          role: payload.role,
+          status: payload.status,
         };
 
         setToken(payload.token);
