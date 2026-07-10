@@ -18,9 +18,17 @@ const navigationItems: Array<{
 interface AdminNavigationProps {
   activeSection: AdminSection;
   onSelectSection: (section: AdminSection) => void;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
+  onLogout: () => void;
 }
 
-export function AdminNavigation({ activeSection, onSelectSection }: AdminNavigationProps) {
+export function AdminNavigation({ activeSection, onSelectSection, mobileOpen, onCloseMobile, onLogout }: AdminNavigationProps) {
+  function selectSection(section: AdminSection) {
+    onSelectSection(section);
+    onCloseMobile();
+  }
+
   return (
     <>
       <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-64 shrink-0 flex-col rounded-[2rem] border border-[#f0d8ca] bg-white/80 p-4 shadow-[0_20px_70px_rgba(96,60,36,0.08)] backdrop-blur lg:flex">
@@ -55,22 +63,19 @@ export function AdminNavigation({ activeSection, onSelectSection }: AdminNavigat
         </div>
       </aside>
 
-      <nav className="-mx-5 flex gap-2 overflow-x-auto border-y border-[#f0dfd5] bg-white/80 px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8 lg:hidden" aria-label="Navegação administrativa">
-        {navigationItems.map(({ id, label, Icon }) => {
-          const active = id === activeSection;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onSelectSection(id)}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-sm font-bold transition ${active ? 'bg-[#ef7885] text-white' : 'bg-[#fff7f2] text-[#664f44]'}`}
-            >
-              <Icon className="size-4" />
-              {label}
-            </button>
-          );
-        })}
-      </nav>
+      {mobileOpen ? <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Navegação administrativa">
+        <button type="button" onClick={onCloseMobile} className="absolute inset-0 bg-[#201914]/40 backdrop-blur-[2px]" aria-label="Fechar menu" />
+        <aside className="relative flex h-full w-[min(19rem,86vw)] flex-col bg-[#fffdfb] p-5 shadow-[20px_0_70px_rgba(47,30,22,0.18)]">
+          <div className="flex items-start justify-between border-b border-[#f2e4dc] pb-5"><div><p className="text-xs font-black uppercase tracking-[0.22em] text-[#c5922e]">Portal interno</p><p className="mt-2 font-display text-3xl font-semibold tracking-[-0.05em] text-[#201914]">Memora Admin</p></div><button type="button" onClick={onCloseMobile} className="grid size-10 place-items-center rounded-full border border-[#ead1c4] text-2xl leading-none text-[#624b40]" aria-label="Fechar menu">×</button></div>
+          <nav className="mt-5 space-y-1" aria-label="Navegação administrativa">
+            {navigationItems.map(({ id, label, description, Icon }) => {
+              const active = id === activeSection;
+              return <button key={id} type="button" onClick={() => selectSection(id)} className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${active ? 'bg-[#fff0ee] text-[#d65f68]' : 'text-[#59473e]'}`}><span className={`grid size-10 place-items-center rounded-xl ${active ? 'bg-[#ef7885] text-white' : 'bg-[#fff6f0] text-[#b9852f]'}`}><Icon className="size-4" /></span><span><span className="block text-sm font-bold">{label}</span><span className="mt-0.5 block text-[11px] text-[#7e675c]/72">{description}</span></span></button>;
+            })}
+          </nav>
+          <div className="mt-auto space-y-3"><div className="rounded-2xl bg-[#fff7f1] p-4"><p className="text-xs font-black uppercase tracking-[0.16em] text-[#b9852f]">Acesso protegido</p><p className="mt-2 text-xs leading-5 text-[#725b4e]">Todas as ações ficam registradas para auditoria.</p></div><button type="button" onClick={onLogout} className="w-full rounded-2xl border border-[#ead1c4] px-4 py-3 text-sm font-bold text-[#624b40]">Sair da administração</button></div>
+        </aside>
+      </div> : null}
     </>
   );
 }
