@@ -5,6 +5,7 @@ import com.memora.core.domain.param.UpdateEventParam;
 import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
+import com.memora.shared.EventDatePolicy;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
@@ -23,6 +24,8 @@ public class UpdateEventUseCaseImp implements UpdateEventUseCase {
 	@Override
 	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public Event execute(UpdateEventParam param) {
+		EventDatePolicy.validateNotPast(param.eventDate());
+
 		Event event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));

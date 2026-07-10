@@ -7,6 +7,9 @@ import com.memora.entrypoint.api.dto.PublicGuestUploadResponseDto;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PhotoLikeUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
+import com.memora.entrypoint.api.dto.PublicInvitationResponseDto;
+import com.memora.entrypoint.api.dto.PublicRsvpRequestDto;
+import com.memora.entrypoint.api.dto.PublicRsvpResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.UUID;
@@ -28,6 +32,14 @@ import java.util.UUID;
 @Tag(name = "public-events", description = "Public event access and guest uploads")
 @Validated
 public interface PublicEventControllerApi {
+
+	@GetMapping("/api/public/invitations/{token}")
+	@Operation(summary = "Get public personal invitation")
+	ResponseEntity<PublicInvitationResponseDto> getInvitation(@PathVariable String token);
+
+	@PutMapping("/api/public/invitations/{token}/rsvp")
+	@Operation(summary = "Submit public RSVP")
+	ResponseEntity<PublicRsvpResponseDto> submitRsvp(@PathVariable String token, @Valid @RequestBody PublicRsvpRequestDto request, HttpServletRequest httpServletRequest);
 
 	@GetMapping("/api/public/events/{slug}")
 	@Operation(

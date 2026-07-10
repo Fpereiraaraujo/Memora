@@ -11,6 +11,8 @@ import com.memora.core.domain.param.ListPublicTopLikedPhotosParam;
 import com.memora.core.domain.param.UpdatePublicPhotoLikeParam;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
 import com.memora.core.domain.param.ValidateGuestUploadBatchParam;
+import com.memora.core.domain.param.GetPublicInvitationParam;
+import com.memora.core.domain.param.SubmitGuestRsvpParam;
 import com.memora.core.usecase.GetPublicEventUseCase;
 import com.memora.core.usecase.GetPublicEventCustomizationUseCase;
 import com.memora.core.usecase.ListPublicEventPhotosUseCase;
@@ -19,6 +21,8 @@ import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
 import com.memora.core.usecase.ValidateGuestUploadBatchUseCase;
+import com.memora.core.usecase.GetPublicInvitationUseCase;
+import com.memora.core.usecase.SubmitGuestRsvpUseCase;
 import com.memora.entrypoint.api.controller.definition.PublicEventControllerApi;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PublicEventResponseDto;
@@ -27,10 +31,15 @@ import com.memora.entrypoint.api.dto.PhotoLikeUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadRequestDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadResponseDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
+import com.memora.entrypoint.api.dto.PublicInvitationResponseDto;
+import com.memora.entrypoint.api.dto.PublicRsvpRequestDto;
+import com.memora.entrypoint.api.dto.PublicRsvpResponseDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
 import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.entrypoint.api.mapper.PublicPhotoApiMapper;
+import com.memora.entrypoint.api.mapper.InvitationApiMapper;
+import com.memora.entrypoint.api.mapper.PublicInvitationApiMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import com.memora.shared.PublicUploadRateLimiter;
 import com.memora.shared.PublicPhotoLikeRateLimiter;
+import com.memora.shared.PublicRsvpRateLimiter;
 import com.memora.config.UploadProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +72,10 @@ public class PublicEventController implements PublicEventControllerApi {
 	private final UploadProperties uploadProperties;
 	private final PhotoApiMapper photoApiMapper;
 	private final EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
+	private final GetPublicInvitationUseCase getPublicInvitationUseCase;
+	private final SubmitGuestRsvpUseCase submitGuestRsvpUseCase;
+	private final PublicRsvpRateLimiter publicRsvpRateLimiter;
+	private final PublicInvitationApiMapper publicInvitationApiMapper;
 
 	public PublicEventController(
 		GetPublicEventUseCase getPublicEventUseCase,
@@ -76,7 +90,11 @@ public class PublicEventController implements PublicEventControllerApi {
 		PublicPhotoLikeRateLimiter publicPhotoLikeRateLimiter,
 		UploadProperties uploadProperties,
 		PhotoApiMapper photoApiMapper,
-		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper
+		EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper,
+		GetPublicInvitationUseCase getPublicInvitationUseCase,
+		SubmitGuestRsvpUseCase submitGuestRsvpUseCase,
+		PublicRsvpRateLimiter publicRsvpRateLimiter,
+		PublicInvitationApiMapper publicInvitationApiMapper
 	) {
 		this.getPublicEventUseCase = getPublicEventUseCase;
 		this.getPublicEventCustomizationUseCase = getPublicEventCustomizationUseCase;
@@ -91,6 +109,22 @@ public class PublicEventController implements PublicEventControllerApi {
 		this.uploadProperties = uploadProperties;
 		this.photoApiMapper = photoApiMapper;
 		this.eventPublicPageCustomizationApiMapper = eventPublicPageCustomizationApiMapper;
+		this.getPublicInvitationUseCase = getPublicInvitationUseCase;
+		this.submitGuestRsvpUseCase = submitGuestRsvpUseCase;
+		this.publicRsvpRateLimiter = publicRsvpRateLimiter;
+		this.publicInvitationApiMapper = publicInvitationApiMapper;
+	}
+
+	@Override
+	public ResponseEntity<PublicInvitationResponseDto> getInvitation(String token) {
+		return ResponseEntity.ok(publicInvitationApiMapper.toResponse(getPublicInvitationUseCase.execute(new GetPublicInvitationParam(token))));
+	}
+
+	@Override
+	public ResponseEntity<PublicRsvpResponseDto> submitRsvp(String token, PublicRsvpRequestDto request, HttpServletRequest httpServletRequest) {
+		if (request.attending() == null) throw new IllegalArgumentException("Informe se você poderá comparecer.");
+		publicRsvpRateLimiter.checkLimit(token, resolveClientIp(httpServletRequest));
+		return ResponseEntity.ok(InvitationApiMapper.toRsvpResponse(submitGuestRsvpUseCase.execute(new SubmitGuestRsvpParam(token, request.attending(), request.plusOnes(), request.companionName(), request.mealChoice(), request.dietaryRestrictions(), request.guestMessage()))));
 	}
 
 	@Override

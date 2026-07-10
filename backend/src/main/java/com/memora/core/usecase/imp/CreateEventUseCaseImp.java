@@ -11,6 +11,7 @@ import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.shared.SlugGenerator;
+import com.memora.shared.EventDatePolicy;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +27,8 @@ public class CreateEventUseCaseImp implements CreateEventUseCase {
 
 	@Override
 	public Event execute(CreateEventParam param) {
+		EventDatePolicy.validateNotPast(param.eventDate());
+
 		if (eventRepository.existsByOwnerId(param.ownerId())) {
 			throw new IllegalArgumentException("Sua conta já possui um evento principal.");
 		}

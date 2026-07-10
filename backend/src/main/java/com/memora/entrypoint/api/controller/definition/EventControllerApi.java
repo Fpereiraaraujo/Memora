@@ -11,6 +11,11 @@ import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
 import com.memora.entrypoint.api.dto.EventUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventInvitationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventInvitationResponseDto;
+import com.memora.entrypoint.api.dto.EventGuestCreateRequestDto;
+import com.memora.entrypoint.api.dto.EventGuestResponseDto;
+import com.memora.entrypoint.api.dto.EventRsvpSummaryResponseDto;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
@@ -211,6 +216,26 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventResponseDto> updateStatus(@PathVariable UUID eventId, @Valid @RequestBody EventStatusUpdateRequestDto request, Authentication authentication);
+
+	@GetMapping("/api/events/{eventId}/invitation")
+	@Operation(summary = "Get invitation and RSVP settings", security = { @SecurityRequirement(name = "bearerAuth") })
+	ResponseEntity<EventInvitationResponseDto> getInvitation(@PathVariable UUID eventId, Authentication authentication);
+
+	@PutMapping("/api/events/{eventId}/invitation")
+	@Operation(summary = "Update invitation and RSVP settings", security = { @SecurityRequirement(name = "bearerAuth") })
+	ResponseEntity<EventInvitationResponseDto> updateInvitation(@PathVariable UUID eventId, @Valid @RequestBody EventInvitationUpdateRequestDto request, Authentication authentication);
+
+	@GetMapping("/api/events/{eventId}/guests")
+	@Operation(summary = "List event guests", security = { @SecurityRequirement(name = "bearerAuth") })
+	ResponseEntity<PageResponseDto<EventGuestResponseDto>> listGuests(@PathVariable UUID eventId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "30") int size, Authentication authentication);
+
+	@PostMapping("/api/events/{eventId}/guests")
+	@Operation(summary = "Create event guest", security = { @SecurityRequirement(name = "bearerAuth") })
+	ResponseEntity<EventGuestResponseDto> createGuest(@PathVariable UUID eventId, @Valid @RequestBody EventGuestCreateRequestDto request, Authentication authentication);
+
+	@GetMapping("/api/events/{eventId}/rsvp-summary")
+	@Operation(summary = "Get RSVP summary", security = { @SecurityRequirement(name = "bearerAuth") })
+	ResponseEntity<EventRsvpSummaryResponseDto> rsvpSummary(@PathVariable UUID eventId, Authentication authentication);
 
 	@GetMapping("/api/events/{eventId}/public-page")
 	@Operation(

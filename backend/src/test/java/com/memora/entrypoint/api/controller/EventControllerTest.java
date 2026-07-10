@@ -35,6 +35,11 @@ import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
 import com.memora.core.usecase.UpdatePhotoStatusUseCase;
 import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
 import com.memora.core.usecase.UploadEventPublicPageHighlightImagesUseCase;
+import com.memora.core.usecase.GetEventInvitationUseCase;
+import com.memora.core.usecase.UpdateEventInvitationUseCase;
+import com.memora.core.usecase.ListEventGuestsUseCase;
+import com.memora.core.usecase.CreateEventGuestUseCase;
+import com.memora.core.usecase.GetEventRsvpSummaryUseCase;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
@@ -90,6 +95,11 @@ class EventControllerTest {
 	@Mock private ListEventPhotosPageUseCase listEventPhotosPageUseCase;
 	@Mock private UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase;
 	@Mock private UpdatePhotoStatusUseCase updatePhotoStatusUseCase;
+	@Mock private GetEventInvitationUseCase getEventInvitationUseCase;
+	@Mock private UpdateEventInvitationUseCase updateEventInvitationUseCase;
+	@Mock private ListEventGuestsUseCase listEventGuestsUseCase;
+	@Mock private CreateEventGuestUseCase createEventGuestUseCase;
+	@Mock private GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase;
 	@Mock private EventQrCodeService eventQrCodeService;
 	@Mock private AppProperties appProperties;
 	@Mock private PhotoApiMapper photoApiMapper;
@@ -118,6 +128,11 @@ class EventControllerTest {
 			listEventPhotosPageUseCase,
 			updatePhotoFavoriteUseCase,
 			updatePhotoStatusUseCase,
+			getEventInvitationUseCase,
+			updateEventInvitationUseCase,
+			listEventGuestsUseCase,
+			createEventGuestUseCase,
+			getEventRsvpSummaryUseCase,
 			eventQrCodeService,
 			appProperties,
 			photoApiMapper,

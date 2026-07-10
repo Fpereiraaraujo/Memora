@@ -21,6 +21,11 @@ import com.memora.core.domain.param.UpdateEventStatusParam;
 import com.memora.core.domain.param.UpdateEventParam;
 import com.memora.core.domain.param.UploadEventPublicPageCoverImageParam;
 import com.memora.core.domain.param.UploadEventPublicPageHighlightImagesParam;
+import com.memora.core.domain.param.GetEventInvitationParam;
+import com.memora.core.domain.param.UpdateEventInvitationParam;
+import com.memora.core.domain.param.ListEventGuestsParam;
+import com.memora.core.domain.param.CreateEventGuestParam;
+import com.memora.core.domain.param.GetEventRsvpSummaryParam;
 import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.GetEventUseCase;
@@ -38,6 +43,11 @@ import com.memora.core.usecase.UpdateEventStatusUseCase;
 import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
 import com.memora.core.usecase.UploadEventPublicPageHighlightImagesUseCase;
+import com.memora.core.usecase.GetEventInvitationUseCase;
+import com.memora.core.usecase.UpdateEventInvitationUseCase;
+import com.memora.core.usecase.ListEventGuestsUseCase;
+import com.memora.core.usecase.CreateEventGuestUseCase;
+import com.memora.core.usecase.GetEventRsvpSummaryUseCase;
 import com.memora.config.AppProperties;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
@@ -56,8 +66,14 @@ import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
 import com.memora.entrypoint.api.dto.PhotoStatusUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventInvitationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventInvitationResponseDto;
+import com.memora.entrypoint.api.dto.EventGuestCreateRequestDto;
+import com.memora.entrypoint.api.dto.EventGuestResponseDto;
+import com.memora.entrypoint.api.dto.EventRsvpSummaryResponseDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
 import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
+import com.memora.entrypoint.api.mapper.InvitationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.shared.EventQrCodeService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -94,6 +110,11 @@ public class EventController implements EventControllerApi {
 	private final ListEventPhotosPageUseCase listEventPhotosPageUseCase;
 	private final UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase;
 	private final UpdatePhotoStatusUseCase updatePhotoStatusUseCase;
+	private final GetEventInvitationUseCase getEventInvitationUseCase;
+	private final UpdateEventInvitationUseCase updateEventInvitationUseCase;
+	private final ListEventGuestsUseCase listEventGuestsUseCase;
+	private final CreateEventGuestUseCase createEventGuestUseCase;
+	private final GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase;
 	private final EventQrCodeService eventQrCodeService;
 	private final AppProperties appProperties;
 	private final PhotoApiMapper photoApiMapper;
@@ -117,6 +138,11 @@ public class EventController implements EventControllerApi {
 		ListEventPhotosPageUseCase listEventPhotosPageUseCase,
 		UpdatePhotoFavoriteUseCase updatePhotoFavoriteUseCase,
 		UpdatePhotoStatusUseCase updatePhotoStatusUseCase,
+		GetEventInvitationUseCase getEventInvitationUseCase,
+		UpdateEventInvitationUseCase updateEventInvitationUseCase,
+		ListEventGuestsUseCase listEventGuestsUseCase,
+		CreateEventGuestUseCase createEventGuestUseCase,
+		GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase,
 		EventQrCodeService eventQrCodeService,
 		AppProperties appProperties,
 		PhotoApiMapper photoApiMapper,
@@ -139,6 +165,11 @@ public class EventController implements EventControllerApi {
 		this.listEventPhotosPageUseCase = listEventPhotosPageUseCase;
 		this.updatePhotoFavoriteUseCase = updatePhotoFavoriteUseCase;
 		this.updatePhotoStatusUseCase = updatePhotoStatusUseCase;
+		this.getEventInvitationUseCase = getEventInvitationUseCase;
+		this.updateEventInvitationUseCase = updateEventInvitationUseCase;
+		this.listEventGuestsUseCase = listEventGuestsUseCase;
+		this.createEventGuestUseCase = createEventGuestUseCase;
+		this.getEventRsvpSummaryUseCase = getEventRsvpSummaryUseCase;
 		this.eventQrCodeService = eventQrCodeService;
 		this.appProperties = appProperties;
 		this.photoApiMapper = photoApiMapper;
@@ -247,6 +278,32 @@ public class EventController implements EventControllerApi {
 			request.status()
 		));
 		return ResponseEntity.ok(EventApiMapper.toResponse(event));
+	}
+
+	@Override
+	public ResponseEntity<EventInvitationResponseDto> getInvitation(UUID eventId, Authentication authentication) {
+		return ResponseEntity.ok(InvitationApiMapper.toResponse(getEventInvitationUseCase.execute(new GetEventInvitationParam(resolveUserId(authentication), eventId))));
+	}
+
+	@Override
+	public ResponseEntity<EventInvitationResponseDto> updateInvitation(UUID eventId, EventInvitationUpdateRequestDto request, Authentication authentication) {
+		return ResponseEntity.ok(InvitationApiMapper.toResponse(updateEventInvitationUseCase.execute(new UpdateEventInvitationParam(resolveUserId(authentication), eventId, request.theme(), request.rsvpEnabled(), request.rsvpDeadline(), request.ceremonyTime(), request.receptionTime(), request.dressCode(), request.registryUrl(), request.published()))));
+	}
+
+	@Override
+	public ResponseEntity<PageResponseDto<EventGuestResponseDto>> listGuests(UUID eventId, int page, int size, Authentication authentication) {
+		var result = listEventGuestsUseCase.execute(new ListEventGuestsParam(resolveUserId(authentication), eventId, normalizePage(page), normalizeSize(size)));
+		return ResponseEntity.ok(new PageResponseDto<>(result.content().stream().map(InvitationApiMapper::toResponse).toList(), result.page(), result.size(), result.totalElements(), result.totalPages(), result.last()));
+	}
+
+	@Override
+	public ResponseEntity<EventGuestResponseDto> createGuest(UUID eventId, EventGuestCreateRequestDto request, Authentication authentication) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(InvitationApiMapper.toResponse(createEventGuestUseCase.execute(new CreateEventGuestParam(resolveUserId(authentication), eventId, request.name(), request.phone(), request.email(), request.guestGroup(), request.maxPlusOnes()))));
+	}
+
+	@Override
+	public ResponseEntity<EventRsvpSummaryResponseDto> rsvpSummary(UUID eventId, Authentication authentication) {
+		return ResponseEntity.ok(InvitationApiMapper.toResponse(getEventRsvpSummaryUseCase.execute(new GetEventRsvpSummaryParam(resolveUserId(authentication), eventId))));
 	}
 
 	@Override

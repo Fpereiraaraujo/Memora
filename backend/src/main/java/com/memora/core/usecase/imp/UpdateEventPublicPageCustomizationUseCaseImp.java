@@ -6,6 +6,7 @@ import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
 import com.memora.dataprovider.database.repository.EventRepository;
+import com.memora.shared.EventDatePolicy;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
@@ -29,6 +30,8 @@ public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEvent
 	@Override
 	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public EventPublicPageCustomization execute(UpdateEventPublicPageCustomizationParam param) {
+		EventDatePolicy.validateNotPast(param.eventDate());
+
 		if (param.title() == null || param.title().isBlank()) {
 			throw new IllegalArgumentException("Public page title is required");
 		}

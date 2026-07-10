@@ -23,6 +23,8 @@ import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
 import com.memora.core.usecase.ValidateGuestUploadBatchUseCase;
+import com.memora.core.usecase.GetPublicInvitationUseCase;
+import com.memora.core.usecase.SubmitGuestRsvpUseCase;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.PhotoLikeUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
@@ -31,8 +33,10 @@ import com.memora.entrypoint.api.dto.PublicGuestUploadRequestDto;
 import com.memora.entrypoint.api.dto.PublicGuestUploadResponseDto;
 import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
+import com.memora.entrypoint.api.mapper.PublicInvitationApiMapper;
 import com.memora.shared.PublicPhotoLikeRateLimiter;
 import com.memora.shared.PublicUploadRateLimiter;
+import com.memora.shared.PublicRsvpRateLimiter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -86,6 +90,18 @@ class PublicEventControllerTest {
 	@Mock
 	private EventPublicPageCustomizationApiMapper eventPublicPageCustomizationApiMapper;
 
+	@Mock
+	private GetPublicInvitationUseCase getPublicInvitationUseCase;
+
+	@Mock
+	private SubmitGuestRsvpUseCase submitGuestRsvpUseCase;
+
+	@Mock
+	private PublicRsvpRateLimiter publicRsvpRateLimiter;
+
+	@Mock
+	private PublicInvitationApiMapper publicInvitationApiMapper;
+
 	private PublicEventController controller;
 
 	@BeforeEach
@@ -103,7 +119,11 @@ class PublicEventControllerTest {
 			publicPhotoLikeRateLimiter,
 			new UploadProperties(20_971_520L, List.of("image/jpeg", "image/png"), 10, 30, 5),
 			photoApiMapper,
-			eventPublicPageCustomizationApiMapper
+			eventPublicPageCustomizationApiMapper,
+			getPublicInvitationUseCase,
+			submitGuestRsvpUseCase,
+			publicRsvpRateLimiter,
+			publicInvitationApiMapper
 		);
 	}
 
