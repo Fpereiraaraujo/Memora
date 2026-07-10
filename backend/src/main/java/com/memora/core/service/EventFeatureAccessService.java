@@ -10,11 +10,11 @@ public class EventFeatureAccessService {
 	private static final int FREE_MODE_PHOTO_LIMIT = 5;
 
 	public boolean allowsFavorites(Event event) {
-		return hasAtLeastEventPlan(event);
+		return event != null;
 	}
 
 	public boolean allowsPrivateMessages(Event event) {
-		return hasAtLeastEventPlan(event);
+		return event != null;
 	}
 
 	public boolean allowsPublicPageCustomization(Event event) {

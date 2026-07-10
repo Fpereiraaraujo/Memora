@@ -18,7 +18,6 @@ export function EventPublicPageCard({
 }: EventPublicPageCardProps) {
   const settingsPath = buildEventPublicPageSettingsPath(event.id);
   const previewImage = customization.coverImageUrl ?? customization.highlightImageUrls[0] ?? null;
-  const customizationEnabled = true;
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#ffe9e2_0%,#fff8f3_52%,#ffffff_100%)] p-0 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
@@ -44,7 +43,7 @@ export function EventPublicPageCard({
 
           <div className="absolute inset-x-4 bottom-4 rounded-[16px] border border-white/70 bg-white/82 p-4 shadow-[0_10px_24px_rgba(96,60,36,0.10)] backdrop-blur">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c5922e]">
-              {customizationEnabled ? 'Capa principal' : 'Link público ativo'}
+              Capa principal
             </p>
             <p className="mt-2 font-display text-[22px] font-semibold leading-none tracking-[-0.04em] text-[#201914]">
               {customization.title || event.title}
@@ -54,33 +53,25 @@ export function EventPublicPageCard({
 
         <div>
           <p className="text-sm font-bold text-[#ef7885]">
-            {customizationEnabled
-              ? 'Esta é a página que os convidados vão ver'
-              : 'Esta é a página que os convidados vão ver'}
+            Esta é a página que os convidados vão ver
           </p>
 
           <h2 className="mt-2 font-display text-[36px] font-semibold leading-none tracking-[-0.04em] text-[#161314]">
-            {customizationEnabled
-              ? 'Personalize sua página pública'
-              : 'Personalize sua página pública'}
+            Personalize sua página pública
           </h2>
 
           <p className="mt-3 max-w-2xl text-base leading-8 text-[#2c2927]/65">
-            {customizationEnabled
-              ? 'Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.'
-              : 'Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.'}
+            Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.
           </p>
         </div>
 
         <div className="flex flex-col gap-3 lg:min-w-[210px]">
-          {customizationEnabled ? (
-            <Link
-              to={settingsPath}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
-            >
-              Personalizar página
-            </Link>
-          ) : null}
+          <Link
+            to={settingsPath}
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
+          >
+            Personalizar página
+          </Link>
 
           {publicLinksEnabled ? (
             <Link

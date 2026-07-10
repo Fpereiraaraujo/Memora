@@ -14,11 +14,11 @@ export function hasPremiumPlan(event: Pick<EventSummary, 'planCode'> | null | un
 }
 
 export function canUseFavorites(event: Pick<EventSummary, 'planCode'> | null | undefined) {
-  return hasEventPlan(event);
+  return true;
 }
 
 export function canUsePrivateMessages(event: Pick<EventSummary, 'planCode'> | null | undefined) {
-  return hasEventPlan(event);
+  return true;
 }
 
 export function canCustomizePublicPage(event: Pick<EventSummary, 'planCode'> | null | undefined) {
