@@ -5,6 +5,7 @@ import com.memora.entrypoint.api.dto.AdminActionResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
+import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
@@ -77,6 +78,15 @@ public interface AdminControllerApi {
 	ResponseEntity<AdminActionResponseDto> restoreUser(
 		@PathVariable UUID userId,
 		@Valid @RequestBody AdminActionRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@PatchMapping("/api/admin/users/{userId}/plan")
+	@Operation(summary = "Grant an event plan manually")
+	ResponseEntity<AdminActionResponseDto> grantPlan(
+		@PathVariable UUID userId,
+		@Valid @RequestBody AdminGrantPlanRequestDto request,
 		Authentication authentication,
 		jakarta.servlet.http.HttpServletRequest httpServletRequest
 	);

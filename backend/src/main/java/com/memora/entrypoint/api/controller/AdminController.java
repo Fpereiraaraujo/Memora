@@ -8,6 +8,7 @@ import com.memora.entrypoint.api.dto.AdminActionResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
+import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
@@ -71,6 +72,19 @@ public class AdminController implements AdminControllerApi {
 	public ResponseEntity<AdminActionResponseDto> restoreUser(UUID userId, AdminActionRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
 		return ResponseEntity.ok(adminManagementService.restoreUser(
 			userId,
+			request.reason().trim(),
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<AdminActionResponseDto> grantPlan(UUID userId, AdminGrantPlanRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.grantPlan(
+			userId,
+			request.eventId(),
+			request.planCode(),
 			request.reason().trim(),
 			resolvePrincipal(authentication),
 			httpServletRequest.getRemoteAddr(),

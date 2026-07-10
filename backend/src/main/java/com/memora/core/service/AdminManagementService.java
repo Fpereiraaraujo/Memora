@@ -3,16 +3,20 @@ package com.memora.core.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memora.core.domain.model.EventStatus;
+import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.UserRole;
 import com.memora.core.domain.model.UserStatus;
 import com.memora.dataprovider.database.entity.AdminAuditLogEntity;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.entity.UserEntity;
 import com.memora.dataprovider.database.gateway.AdminQueryGateway;
+import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
+import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.repository.AdminAuditLogRepository;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
+import com.memora.dataprovider.database.repository.PlanRepository;
 import com.memora.dataprovider.database.repository.UserRepository;
 import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
@@ -45,9 +49,11 @@ public class AdminManagementService {
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
+	private final PlanRepository planRepository;
 	private final AdminAuditLogRepository adminAuditLogRepository;
 	private final FileStorageService fileStorageService;
 	private final ObjectMapper objectMapper;
+	private final EventPlanService eventPlanService;
 
 	public AdminManagementService(
 		AdminQueryGateway adminQueryGateway,
@@ -55,18 +61,22 @@ public class AdminManagementService {
 		EventRepository eventRepository,
 		PhotoRepository photoRepository,
 		EventCustomizationRepository eventCustomizationRepository,
+		PlanRepository planRepository,
 		AdminAuditLogRepository adminAuditLogRepository,
 		FileStorageService fileStorageService,
-		ObjectMapper objectMapper
+		ObjectMapper objectMapper,
+		EventPlanService eventPlanService
 	) {
 		this.adminQueryGateway = adminQueryGateway;
 		this.userRepository = userRepository;
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
+		this.planRepository = planRepository;
 		this.adminAuditLogRepository = adminAuditLogRepository;
 		this.fileStorageService = fileStorageService;
 		this.objectMapper = objectMapper;
+		this.eventPlanService = eventPlanService;
 	}
 
 	public AdminDashboardResponseDto getDashboard() {
@@ -254,6 +264,46 @@ public class AdminManagementService {
 		userRepository.save(targetUser);
 		logAudit(admin, "RESTORE_USER", "USER", userId, targetUser.getEmail(), reason, Map.of(), ipAddress, userAgent);
 		return new AdminActionResponseDto("Conta restaurada com sucesso.");
+	}
+
+	@Transactional
+	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
+	public AdminActionResponseDto grantPlan(
+		UUID userId,
+		UUID eventId,
+		EventPlanCode planCode,
+		String reason,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		UserEntity targetUser = validateAdminActionTarget(userId, admin, reason);
+		if (targetUser.getStatus() != UserStatus.ACTIVE) {
+			throw new IllegalArgumentException("A conta precisa estar ativa para receber um plano.");
+		}
+
+		EventJpaEntity event = eventRepository.findByIdAndOwnerId(eventId, userId)
+			.orElseThrow(() -> new NoSuchElementException("Evento não encontrado para este cliente."));
+		var plan = planRepository.findByCodeAndActiveTrue(planCode)
+			.map(PlanDatabaseMapper::toDomain)
+			.orElseThrow(() -> new IllegalArgumentException("Plano inválido ou indisponível."));
+
+		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		var activatedEvent = eventPlanService.applyPlanToEvent(EventDatabaseMapper.toDomain(event), plan, now);
+		eventRepository.save(EventDatabaseMapper.toEntity(activatedEvent));
+
+		logAudit(
+			admin,
+			"GRANT_EVENT_PLAN",
+			"EVENT",
+			eventId,
+			targetUser.getEmail(),
+			reason,
+			Map.of("userId", userId, "eventId", eventId, "planCode", planCode.name(), "grantType", "ADMIN_MANUAL", "amountChargedCents", 0),
+			ipAddress,
+			userAgent
+		);
+		return new AdminActionResponseDto("Plano " + plan.getName() + " liberado para o evento com sucesso.");
 	}
 
 	public PageResponseDto<AdminAuditLogListItemDto> listAuditLogs(

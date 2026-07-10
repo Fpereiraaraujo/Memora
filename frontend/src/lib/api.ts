@@ -48,6 +48,8 @@ export interface AdminEvent { eventId: string; title: string; slug: string; owne
 export interface AdminPayment { paymentOrderId: string; userEmail: string; userName: string; eventTitle: string; planCode: string; provider: string; status: string; amountCents: number; paidAmountCents: number | null; paidAt: string | null; createdAt: string; }
 export interface AdminAuditLog { id: string; createdAt: string; adminUserId: string; adminEmail: string; action: string; targetType: string; targetId: string | null; targetEmail: string | null; reason: string | null; ipAddress: string | null; }
 export interface AdminActionResponse { message: string; }
+export interface AdminUserEvent { eventId: string; title: string; slug: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; }
+export interface AdminUserDetails extends AdminUser { events: AdminUserEvent[]; payments: AdminPayment[]; }
 
 const http = axios.create({
   baseURL: API_BASE_URL,
@@ -149,6 +151,9 @@ export const api = {
   listAdminUsers(token: string, page = 0, search = '') {
     return request<PageResponse<AdminUser>>(`/api/admin/users?page=${page}&size=20${search ? `&search=${encodeURIComponent(search)}` : ''}`, { method: 'GET', token });
   },
+  getAdminUser(token: string, userId: string) {
+    return request<AdminUserDetails>(`/api/admin/users/${userId}`, { method: 'GET', token });
+  },
   listAdminEvents(token: string, page = 0) {
     return request<PageResponse<AdminEvent>>(`/api/admin/events?page=${page}&size=20`, { method: 'GET', token });
   },
@@ -166,6 +171,9 @@ export const api = {
   },
   deleteAdminUser(token: string, userId: string, confirmationEmail: string, reason: string) {
     return request<AdminActionResponse>(`/api/admin/users/${userId}`, { method: 'DELETE', token, data: { confirmationEmail, reason } });
+  },
+  grantAdminPlan(token: string, userId: string, eventId: string, planCode: 'ESSENTIAL' | 'EVENT' | 'PREMIUM', reason: string) {
+    return request<AdminActionResponse>(`/api/admin/users/${userId}/plan`, { method: 'PATCH', token, data: { eventId, planCode, reason } });
   },
   listEvents(token: string) {
     return request<EventSummary[]>('/api/events', { method: 'GET', token });
