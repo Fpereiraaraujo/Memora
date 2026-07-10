@@ -2,7 +2,6 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.param.UpdateEventPublicPageCustomizationParam;
-import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
@@ -11,25 +10,24 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEventPublicPageCustomizationUseCase {
 
 	private final EventRepository eventRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
-	private final EventFeatureAccessService eventFeatureAccessService;
 
 	public UpdateEventPublicPageCustomizationUseCaseImp(
 		EventRepository eventRepository,
-		EventCustomizationRepository eventCustomizationRepository,
-		EventFeatureAccessService eventFeatureAccessService
+		EventCustomizationRepository eventCustomizationRepository
 	) {
 		this.eventRepository = eventRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
-		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override
+	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public EventPublicPageCustomization execute(UpdateEventPublicPageCustomizationParam param) {
 		if (param.title() == null || param.title().isBlank()) {
 			throw new IllegalArgumentException("Public page title is required");

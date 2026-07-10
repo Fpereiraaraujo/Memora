@@ -22,6 +22,7 @@ import com.memora.core.usecase.ListPublicEventPhotosUseCase;
 import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
+import com.memora.core.usecase.ValidateGuestUploadBatchUseCase;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.PhotoLikeUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
@@ -71,6 +72,9 @@ class PublicEventControllerTest {
 	private UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
 
 	@Mock
+	private ValidateGuestUploadBatchUseCase validateGuestUploadBatchUseCase;
+
+	@Mock
 	private PublicUploadRateLimiter publicUploadRateLimiter;
 
 	@Mock
@@ -94,6 +98,7 @@ class PublicEventControllerTest {
 			listPublicTopLikedPhotosUseCase,
 			updatePublicPhotoLikeUseCase,
 			uploadGuestPhotoUseCase,
+			validateGuestUploadBatchUseCase,
 			publicUploadRateLimiter,
 			publicPhotoLikeRateLimiter,
 			new UploadProperties(20_971_520L, List.of("image/jpeg", "image/png"), 10, 30, 5),
@@ -220,7 +225,7 @@ class PublicEventControllerTest {
 
 		assertThatThrownBy(() -> controller.uploadGuestPhoto("isa-fer", uploadRequest, new MockHttpServletRequest()))
 			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("Too many files");
+			.hasMessageContaining("no máximo 5 fotos");
 	}
 
 	private MockMultipartFile file(String name) {

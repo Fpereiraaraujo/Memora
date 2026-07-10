@@ -22,9 +22,12 @@ import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase {
+	private static final Logger LOGGER = LoggerFactory.getLogger(CreateEventCheckoutUseCaseImp.class);
 
 	private final EventRepository eventRepository;
 	private final PlanRepository planRepository;
@@ -82,6 +85,10 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 			.updatedAt(now)
 			.build();
 
+		paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(pendingOrder));
+		LOGGER.info("Checkout order created paymentOrderId={} eventId={} planCode={}",
+			paymentOrderId, event.getId(), plan.getCode());
+
 		String redirectUrl = normalizeBaseUrl(appProperties.publicBaseUrl()) + "/app/events/" + event.getId() + "/checkout";
 		String webhookUrl = normalizeBaseUrl(appProperties.apiBaseUrl())
 			+ "/api/payments/infinitepay/webhook?token=" + appProperties.infinitepayWebhookToken();
@@ -105,9 +112,12 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 			.updatedAt(LocalDateTime.now(ZoneOffset.UTC))
 			.build();
 
-		return PaymentOrderDatabaseMapper.toDomain(
+		PaymentOrder savedOrder = PaymentOrderDatabaseMapper.toDomain(
 			paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(orderWithCheckout))
 		);
+		LOGGER.info("Checkout link created paymentOrderId={} providerReferencePresent={}",
+			paymentOrderId, checkoutResponse != null && checkoutResponse.providerReference() != null);
+		return savedOrder;
 	}
 
 	private String normalizeBaseUrl(String baseUrl) {

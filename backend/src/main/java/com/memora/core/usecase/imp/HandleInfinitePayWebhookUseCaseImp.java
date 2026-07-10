@@ -21,9 +21,13 @@ import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebhookUseCase {
+	private static final Logger LOGGER = LoggerFactory.getLogger(HandleInfinitePayWebhookUseCaseImp.class);
 
 	private final PaymentOrderRepository paymentOrderRepository;
 	private final EventRepository eventRepository;
@@ -47,6 +51,7 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 
 	@Override
 	@Transactional
+	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public PaymentOrder execute(HandleInfinitePayWebhookParam param) {
 		String externalReference = resolveExternalReference(param);
 		if (externalReference == null || externalReference.isBlank()) {
@@ -58,6 +63,7 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 			.orElseThrow(() -> new NoSuchElementException("Ordem de pagamento nao encontrada."));
 
 		if (paymentOrder.getStatus() == PaymentOrderStatus.APPROVED) {
+			LOGGER.info("Ignoring duplicate approved payment webhook paymentOrderId={}", paymentOrder.getId());
 			return paymentOrder;
 		}
 
@@ -70,17 +76,28 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 		));
 
 		if (!verificationResult.verified() || !verificationResult.approved()) {
+			LOGGER.warn("Payment verification not approved paymentOrderId={} verified={} approved={}",
+				paymentOrder.getId(), verificationResult.verified(), verificationResult.approved());
 			return paymentOrder;
+		}
+		if (verificationResult.externalReference() != null
+			&& !externalReference.equals(verificationResult.externalReference())) {
+			throw new SecurityException("A referência confirmada pelo provedor não corresponde à ordem.");
 		}
 
 		int expectedAmount = paymentOrder.getAmountCents();
 		int informedAmount = verificationResult.amountCents() != null ? verificationResult.amountCents() : expectedAmount;
-		if (informedAmount != expectedAmount) {
+		Integer paidAmount = verificationResult.paidAmountCents() != null
+			? verificationResult.paidAmountCents()
+			: param.paidAmount();
+		if (informedAmount != expectedAmount || (paidAmount != null && paidAmount != expectedAmount)) {
 			PaymentOrder failedOrder = paymentOrder.toBuilder()
 				.status(PaymentOrderStatus.FAILED)
 				.updatedAt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 
+			LOGGER.warn("Payment amount mismatch paymentOrderId={} expectedAmount={} informedAmount={} paidAmount={}",
+				paymentOrder.getId(), expectedAmount, informedAmount, paidAmount);
 			return PaymentOrderDatabaseMapper.toDomain(
 				paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(failedOrder))
 			);
@@ -107,13 +124,19 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 		Event event = eventRepository.findById(paymentOrder.getEventId())
 			.map(EventDatabaseMapper::toDomain)
 			.orElseThrow(() -> new NoSuchElementException("Evento nao encontrado."));
+		if (!event.getOwnerId().equals(paymentOrder.getUserId())) {
+			throw new SecurityException("A ordem de pagamento não pertence ao responsável pelo evento.");
+		}
 
 		Event activatedEvent = eventPlanService.applyPlanToEvent(event, plan, now);
 
 		eventRepository.save(EventDatabaseMapper.toEntity(activatedEvent));
-		return PaymentOrderDatabaseMapper.toDomain(
+		PaymentOrder savedOrder = PaymentOrderDatabaseMapper.toDomain(
 			paymentOrderRepository.save(PaymentOrderDatabaseMapper.toEntity(approvedOrder))
 		);
+		LOGGER.info("Payment approved paymentOrderId={} eventId={} planCode={}",
+			paymentOrder.getId(), event.getId(), plan.getCode());
+		return savedOrder;
 	}
 
 	private String resolveExternalReference(HandleInfinitePayWebhookParam param) {

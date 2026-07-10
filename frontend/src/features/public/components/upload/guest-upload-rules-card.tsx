@@ -33,7 +33,9 @@ export function GuestUploadRulesCard({ event }: GuestUploadRulesCardProps) {
       </h2>
 
       <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
-        Este evento está no plano {planLabel}. Se o limite de fotos acabar, os anfitriões podem ampliar o plano e liberar novos envios.
+        {event.status === 'ACTIVE' && event.planCode
+          ? `Este evento está no plano ${planLabel}, com espaço para até ${photoLimit} fotos.`
+          : 'Os anfitriões ainda estão preparando o envio de fotos deste evento.'}
       </p>
 
       <div className="mt-6 space-y-3">

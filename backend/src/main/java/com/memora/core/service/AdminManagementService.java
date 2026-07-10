@@ -35,6 +35,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class AdminManagementService {
@@ -143,6 +144,7 @@ public class AdminManagementService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = { "currentUsers", "publicEvents" }, allEntries = true)
 	public AdminActionResponseDto deleteUser(
 		UUID userId,
 		String confirmationEmail,
@@ -225,6 +227,7 @@ public class AdminManagementService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = { "currentUsers", "publicEvents" }, allEntries = true)
 	public AdminActionResponseDto suspendUser(UUID userId, String reason, AuthenticatedUserPrincipal admin, String ipAddress, String userAgent) {
 		UserEntity targetUser = validateAdminActionTarget(userId, admin, reason);
 		if (targetUser.getStatus() == UserStatus.DELETED) {
@@ -239,6 +242,7 @@ public class AdminManagementService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = { "currentUsers", "publicEvents" }, allEntries = true)
 	public AdminActionResponseDto restoreUser(UUID userId, String reason, AuthenticatedUserPrincipal admin, String ipAddress, String userAgent) {
 		UserEntity targetUser = validateAdminActionTarget(userId, admin, reason);
 		if (targetUser.getStatus() == UserStatus.DELETED) {

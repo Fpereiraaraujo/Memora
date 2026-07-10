@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class UpdateEventUseCaseImp implements UpdateEventUseCase {
@@ -20,6 +21,7 @@ public class UpdateEventUseCaseImp implements UpdateEventUseCase {
 	}
 
 	@Override
+	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public Event execute(UpdateEventParam param) {
 		Event event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.map(EventDatabaseMapper::toDomain)

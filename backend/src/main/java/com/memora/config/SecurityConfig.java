@@ -56,7 +56,7 @@ public class SecurityConfig {
 		configuration.setAllowedOriginPatterns(corsProperties.allowedOriginPatterns());
 		configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(java.util.List.of("*"));
-		configuration.setExposedHeaders(java.util.List.of("Content-Disposition"));
+		configuration.setExposedHeaders(java.util.List.of("Content-Disposition", "X-Request-Id"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class ApprovePaymentOrderUseCaseImp implements ApprovePaymentOrderUseCase {
@@ -39,6 +40,7 @@ public class ApprovePaymentOrderUseCaseImp implements ApprovePaymentOrderUseCase
 
 	@Override
 	@Transactional
+	@CacheEvict(cacheNames = "publicEvents", allEntries = true)
 	public PaymentOrder execute(ApprovePaymentOrderParam param) {
 		PaymentOrder paymentOrder = paymentOrderRepository.findWithLockById(param.paymentOrderId())
 			.map(PaymentOrderDatabaseMapper::toDomain)

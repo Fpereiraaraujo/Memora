@@ -7,10 +7,13 @@ import java.nio.file.StandardOpenOption;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @ConditionalOnProperty(prefix = "memora.storage", name = "provider", havingValue = "local", matchIfMissing = true)
 public class LocalFileStorageService implements FileStorageService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileStorageService.class);
 
 	private final Path basePath;
 	private final String publicBaseUrl;
@@ -34,6 +37,7 @@ public class LocalFileStorageService implements FileStorageService {
 			Files.createDirectories(target.getParent());
 			Files.write(target, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (IOException exception) {
+			LOGGER.error("Local object storage failed objectKey={}", objectKey, exception);
 			throw new IllegalStateException("Failed to store file", exception);
 		}
 	}
@@ -52,6 +56,7 @@ public class LocalFileStorageService implements FileStorageService {
 		try {
 			Files.deleteIfExists(target);
 		} catch (IOException exception) {
+			LOGGER.error("Local object deletion failed objectKey={}", objectKey, exception);
 			throw new IllegalStateException("Failed to delete file", exception);
 		}
 	}

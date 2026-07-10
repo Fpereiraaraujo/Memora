@@ -62,8 +62,8 @@ class UploadGuestPhotoUseCaseTest {
 	}
 
 	@Test
-	void allowsDraftEventToReceivePhotosUntilFreeLimit() {
-		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+	void allowsActivePaidEventToReceiveValidImage() {
+		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.ACTIVE, EventPlanCode.EVENT, 500)));
 		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(4L);
 		when(photoRepository.save(any(PhotoJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -72,14 +72,14 @@ class UploadGuestPhotoUseCaseTest {
 
 		assertThat(photo.getStatus()).isEqualTo(PhotoStatus.AVAILABLE);
 		assertThat(photo.getObjectKey()).startsWith("events/isadora-fernando/photos/");
-		verify(fileStorageService).store(any(String.class), aryEq(new byte[] { 1, 2, 3 }), eq("image/jpeg"));
+		verify(fileStorageService).store(any(String.class), aryEq(jpegBytes()), eq("image/jpeg"));
 	}
 
 	@Test
-	void blocksPhotoUploadWhenFreeLimitIsReached() {
-		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+	void blocksPhotoUploadWhenPlanLimitIsReached() {
+		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.ACTIVE, EventPlanCode.EVENT, 500)));
 		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
-		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(5L);
+		when(photoRepository.countByEventIdAndObjectKeyIsNotNull(EVENT_ID)).thenReturn(500L);
 
 		assertThatThrownBy(() -> useCase.execute(photoParam()))
 			.isInstanceOf(IllegalArgumentException.class)
@@ -99,12 +99,12 @@ class UploadGuestPhotoUseCaseTest {
 		var photo = useCase.execute(photoParam());
 
 		assertThat(photo.getStatus()).isEqualTo(PhotoStatus.AVAILABLE);
-		verify(fileStorageService).store(any(String.class), aryEq(new byte[] { 1, 2, 3 }), eq("image/jpeg"));
+		verify(fileStorageService).store(any(String.class), aryEq(jpegBytes()), eq("image/jpeg"));
 	}
 
 	@Test
 	void allowsMessageOnlyEvenWhenPhotoLimitIsReached() {
-		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.ACTIVE, EventPlanCode.EVENT, 500)));
 		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
 		when(photoRepository.save(any(PhotoJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -117,6 +117,33 @@ class UploadGuestPhotoUseCaseTest {
 		verify(fileStorageService, never()).store(any(), any(), any());
 	}
 
+	@Test
+	void blocksUploadForDraftEventWithoutPlan() {
+		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT, null, null)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
+
+		assertThatThrownBy(() -> useCase.execute(photoParam()))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("confirmação do plano");
+
+		verify(fileStorageService, never()).store(any(), any(), any());
+	}
+
+	@Test
+	void rejectsFileWhoseBytesDoNotMatchDeclaredImageType() {
+		when(eventRepository.findBySlug("isadora-fernando")).thenReturn(Optional.of(eventEntity(EventStatus.ACTIVE, EventPlanCode.EVENT, 500)));
+		when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(ownerEntity()));
+
+		UploadGuestPhotoParam invalidFile = new UploadGuestPhotoParam(
+			"isadora-fernando", null, null, "foto.jpg", "image/jpeg", 4,
+			new byte[] { 1, 2, 3, 4 }, UUID.randomUUID()
+		);
+
+		assertThatThrownBy(() -> useCase.execute(invalidFile))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Formato de arquivo não suportado");
+	}
+
 	private UploadGuestPhotoParam photoParam() {
 		return new UploadGuestPhotoParam(
 			"isadora-fernando",
@@ -124,10 +151,14 @@ class UploadGuestPhotoUseCaseTest {
 			"Felicidades!",
 			"foto.jpg",
 			"image/jpeg",
-			3,
-			new byte[] { 1, 2, 3 },
+			jpegBytes().length,
+			jpegBytes(),
 			UUID.randomUUID()
 		);
+	}
+
+	private byte[] jpegBytes() {
+		return new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00 };
 	}
 
 	private UploadGuestPhotoParam messageOnlyParam() {

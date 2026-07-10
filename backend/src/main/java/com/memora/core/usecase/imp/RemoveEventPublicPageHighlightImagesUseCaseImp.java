@@ -2,7 +2,6 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.param.RemoveEventPublicPageHighlightImagesParam;
-import com.memora.core.service.EventFeatureAccessService;
 import com.memora.core.usecase.RemoveEventPublicPageHighlightImagesUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
@@ -19,18 +18,15 @@ public class RemoveEventPublicPageHighlightImagesUseCaseImp implements RemoveEve
 	private final EventRepository eventRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
 	private final FileStorageService fileStorageService;
-	private final EventFeatureAccessService eventFeatureAccessService;
 
 	public RemoveEventPublicPageHighlightImagesUseCaseImp(
 		EventRepository eventRepository,
 		EventCustomizationRepository eventCustomizationRepository,
-		FileStorageService fileStorageService,
-		EventFeatureAccessService eventFeatureAccessService
+		FileStorageService fileStorageService
 	) {
 		this.eventRepository = eventRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
 		this.fileStorageService = fileStorageService;
-		this.eventFeatureAccessService = eventFeatureAccessService;
 	}
 
 	@Override

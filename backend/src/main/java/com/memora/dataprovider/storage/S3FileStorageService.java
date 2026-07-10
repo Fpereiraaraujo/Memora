@@ -7,10 +7,13 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @ConditionalOnProperty(prefix = "memora.storage", name = "provider", havingValue = "s3")
 public class S3FileStorageService implements FileStorageService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(S3FileStorageService.class);
 
 	private final S3Client s3Client;
 	private final StorageProperties storageProperties;
@@ -28,7 +31,13 @@ public class S3FileStorageService implements FileStorageService {
 			.contentType(contentType)
 			.build();
 
-		s3Client.putObject(request, RequestBody.fromBytes(content));
+		try {
+			s3Client.putObject(request, RequestBody.fromBytes(content));
+		} catch (RuntimeException exception) {
+			LOGGER.error("S3 object upload failed bucket={} objectKey={}",
+				storageProperties.bucketName(), objectKey, exception);
+			throw new IllegalStateException("Não foi possível armazenar a imagem agora.", exception);
+		}
 	}
 
 	@Override
@@ -42,7 +51,13 @@ public class S3FileStorageService implements FileStorageService {
 			.key(objectKey)
 			.build();
 
-		s3Client.deleteObject(request);
+		try {
+			s3Client.deleteObject(request);
+		} catch (RuntimeException exception) {
+			LOGGER.error("S3 object deletion failed bucket={} objectKey={}",
+				storageProperties.bucketName(), objectKey, exception);
+			throw new IllegalStateException("Não foi possível remover a imagem agora.", exception);
+		}
 	}
 
 	@Override

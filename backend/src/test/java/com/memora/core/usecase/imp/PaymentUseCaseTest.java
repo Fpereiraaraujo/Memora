@@ -154,6 +154,29 @@ class PaymentUseCaseTest {
 	}
 
 	@Test
+	void handleWebhookRejectsPaymentWithDifferentPaidAmount() {
+		when(paymentOrderRepository.findWithLockByExternalReference("MEMORA-ORDER-1"))
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));
+		when(paymentGateway.verifyPayment(any(PaymentVerificationCommand.class)))
+			.thenReturn(new PaymentVerificationResult(true, true, "MEMORA-ORDER-1", "provider-payment-1", 6990, 100, "approved"));
+		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		var useCase = new HandleInfinitePayWebhookUseCaseImp(
+			paymentOrderRepository,
+			eventRepository,
+			planRepository,
+			paymentGateway,
+			eventPlanService
+		);
+
+		PaymentOrder paymentOrder = useCase.execute(webhookParam());
+
+		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.FAILED);
+		verify(eventRepository, never()).save(any());
+		verify(planRepository, never()).findByCodeAndActiveTrue(any());
+	}
+
+	@Test
 	void approvePaymentOrderAppliesPlanInsideTransactionFlow() {
 		when(paymentOrderRepository.findWithLockById(PAYMENT_ORDER_ID))
 			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));

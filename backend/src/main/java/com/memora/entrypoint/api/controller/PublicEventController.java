@@ -10,6 +10,7 @@ import com.memora.core.domain.param.ListPublicEventPhotosPageParam;
 import com.memora.core.domain.param.ListPublicTopLikedPhotosParam;
 import com.memora.core.domain.param.UpdatePublicPhotoLikeParam;
 import com.memora.core.domain.param.UploadGuestPhotoParam;
+import com.memora.core.domain.param.ValidateGuestUploadBatchParam;
 import com.memora.core.usecase.GetPublicEventUseCase;
 import com.memora.core.usecase.GetPublicEventCustomizationUseCase;
 import com.memora.core.usecase.ListPublicEventPhotosUseCase;
@@ -17,6 +18,7 @@ import com.memora.core.usecase.ListPublicEventPhotosPageUseCase;
 import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.core.usecase.UploadGuestPhotoUseCase;
+import com.memora.core.usecase.ValidateGuestUploadBatchUseCase;
 import com.memora.entrypoint.api.controller.definition.PublicEventControllerApi;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PublicEventResponseDto;
@@ -40,9 +42,12 @@ import com.memora.config.UploadProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 public class PublicEventController implements PublicEventControllerApi {
+	private static final Logger LOGGER = LoggerFactory.getLogger(PublicEventController.class);
 
 	private final GetPublicEventUseCase getPublicEventUseCase;
 	private final GetPublicEventCustomizationUseCase getPublicEventCustomizationUseCase;
@@ -51,6 +56,7 @@ public class PublicEventController implements PublicEventControllerApi {
 	private final ListPublicTopLikedPhotosUseCase listPublicTopLikedPhotosUseCase;
 	private final UpdatePublicPhotoLikeUseCase updatePublicPhotoLikeUseCase;
 	private final UploadGuestPhotoUseCase uploadGuestPhotoUseCase;
+	private final ValidateGuestUploadBatchUseCase validateGuestUploadBatchUseCase;
 	private final PublicUploadRateLimiter publicUploadRateLimiter;
 	private final PublicPhotoLikeRateLimiter publicPhotoLikeRateLimiter;
 	private final UploadProperties uploadProperties;
@@ -65,6 +71,7 @@ public class PublicEventController implements PublicEventControllerApi {
 		ListPublicTopLikedPhotosUseCase listPublicTopLikedPhotosUseCase,
 		UpdatePublicPhotoLikeUseCase updatePublicPhotoLikeUseCase,
 		UploadGuestPhotoUseCase uploadGuestPhotoUseCase,
+		ValidateGuestUploadBatchUseCase validateGuestUploadBatchUseCase,
 		PublicUploadRateLimiter publicUploadRateLimiter,
 		PublicPhotoLikeRateLimiter publicPhotoLikeRateLimiter,
 		UploadProperties uploadProperties,
@@ -78,6 +85,7 @@ public class PublicEventController implements PublicEventControllerApi {
 		this.listPublicTopLikedPhotosUseCase = listPublicTopLikedPhotosUseCase;
 		this.updatePublicPhotoLikeUseCase = updatePublicPhotoLikeUseCase;
 		this.uploadGuestPhotoUseCase = uploadGuestPhotoUseCase;
+		this.validateGuestUploadBatchUseCase = validateGuestUploadBatchUseCase;
 		this.publicUploadRateLimiter = publicUploadRateLimiter;
 		this.publicPhotoLikeRateLimiter = publicPhotoLikeRateLimiter;
 		this.uploadProperties = uploadProperties;
@@ -165,14 +173,23 @@ public class PublicEventController implements PublicEventControllerApi {
 		}
 
 		if (files.size() > uploadProperties.maxFilesPerRequest()) {
-			throw new IllegalArgumentException("Too many files in a single upload request");
+			throw new IllegalArgumentException("Envie no máximo 5 fotos por vez.");
 		}
+
+		long totalSizeBytes = files.stream().mapToLong(MultipartFile::getSize).sum();
+		validateGuestUploadBatchUseCase.execute(new ValidateGuestUploadBatchParam(
+			slug,
+			files.size(),
+			totalSizeBytes
+		));
 
 		publicUploadRateLimiter.checkLimit(slug, resolveClientIp(httpServletRequest));
 
 		List<Photo> uploadedPhotos = files.isEmpty()
 			? List.of(uploadMessageOnly(slug, request, uploadGroupId))
 			: files.stream().map(file -> uploadPhoto(slug, request, file, uploadGroupId)).toList();
+		LOGGER.info("Public guest upload completed slug={} fileCount={} messageOnly={} uploadGroupId={}",
+			slug, files.size(), files.isEmpty(), uploadGroupId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(PublicPhotoApiMapper.toBatchResponse(uploadedPhotos));
 	}
 

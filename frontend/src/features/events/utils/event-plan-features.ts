@@ -1,17 +1,4 @@
-import type { EventPlanCode, EventSummary } from '@/types/event';
-
-function getPlanCode(event: Pick<EventSummary, 'planCode'> | null | undefined): EventPlanCode | null {
-  return event?.planCode ?? null;
-}
-
-export function hasEventPlan(event: Pick<EventSummary, 'planCode'> | null | undefined) {
-  const planCode = getPlanCode(event);
-  return planCode === 'EVENT' || planCode === 'PREMIUM';
-}
-
-export function hasPremiumPlan(event: Pick<EventSummary, 'planCode'> | null | undefined) {
-  return getPlanCode(event) === 'PREMIUM';
-}
+import type { EventSummary } from '@/types/event';
 
 export function canUseFavorites(event: Pick<EventSummary, 'planCode'> | null | undefined) {
   return true;

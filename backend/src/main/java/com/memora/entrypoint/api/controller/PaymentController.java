@@ -8,6 +8,8 @@ import com.memora.core.domain.param.HandleInfinitePayWebhookParam;
 import com.memora.config.AppProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @RestController
 public class PaymentController implements PaymentControllerApi {
@@ -32,7 +34,7 @@ public class PaymentController implements PaymentControllerApi {
 			throw new IllegalStateException("InfinitePay webhook token is not configured");
 		}
 
-		if (!appProperties.infinitepayWebhookToken().equals(token)) {
+		if (!tokensMatch(appProperties.infinitepayWebhookToken(), token)) {
 			throw new SecurityException("Invalid webhook token");
 		}
 
@@ -49,5 +51,16 @@ public class PaymentController implements PaymentControllerApi {
 		));
 
 		return ResponseEntity.ok(new InfinitePayWebhookResponseDto(true, "Webhook processed"));
+	}
+
+	private boolean tokensMatch(String expected, String received) {
+		if (received == null) {
+			return false;
+		}
+
+		return MessageDigest.isEqual(
+			expected.getBytes(StandardCharsets.UTF_8),
+			received.getBytes(StandardCharsets.UTF_8)
+		);
 	}
 }
