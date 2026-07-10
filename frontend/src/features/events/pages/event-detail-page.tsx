@@ -5,6 +5,7 @@ import { EventFeatureLockCard } from '@/features/events/components/event-dashboa
 import { EventFavoritesSection } from '@/features/events/components/event-dashboard/event-favorites-section';
 import { EventGalleryPreview } from '@/features/events/components/event-dashboard/event-gallery-preview';
 import { EventHeader } from '@/features/events/components/event-dashboard/event-header';
+import { EventInvitationCard } from '@/features/events/components/event-dashboard/event-invitation-card';
 import { EventMessagesCard } from '@/features/events/components/event-dashboard/event-messages-card';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { EventPublicPageCard } from '@/features/events/components/event-dashboard/event-public-page-card';
@@ -48,6 +49,8 @@ export function EventDetailPage() {
             customization={dashboard.publicPageCustomization}
             publicLinksEnabled={dashboard.publicLinksEnabled}
           />
+
+          <EventInvitationCard event={dashboard.event} />
 
           <EventStatsSection
             photosCount={dashboard.mediaPhotos.length}

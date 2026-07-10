@@ -18,6 +18,7 @@ import {
   buildEventMessagesPath,
   buildEventOverviewPath,
   buildEventPublicPageSettingsPath,
+  buildEventInvitationPath,
   buildEventQrPath,
 } from '@/features/events/utils/event-routes';
 import {
@@ -39,7 +40,7 @@ interface EventSidebarProps {
 interface SidebarItemProps {
   to: string;
   label: string;
-  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message' | 'public';
+  icon: 'panel' | 'events' | 'qr' | 'gallery' | 'heart' | 'download' | 'message' | 'public' | 'invitation';
   end?: boolean;
   disabled?: boolean;
   badge?: string;
@@ -55,6 +56,7 @@ function SidebarIcon({ icon }: { icon: SidebarItemProps['icon'] }) {
   if (icon === 'heart') return <HeartIcon className={className} />;
   if (icon === 'message') return <MessageIcon className={className} />;
   if (icon === 'public') return <ExternalIcon className={className} />;
+  if (icon === 'invitation') return <MessageIcon className={className} />;
   return <DownloadIcon className={className} />;
 }
 
@@ -105,6 +107,7 @@ export function EventSidebar({
 }: EventSidebarProps) {
   const overviewPath = buildEventOverviewPath(event.id);
   const publicSettingsPath = buildEventPublicPageSettingsPath(event.id);
+  const invitationPath = buildEventInvitationPath(event.id);
   const qrPath = buildEventQrPath(event.id);
   const galleryPath = buildEventGalleryPath(event.id);
   const favoritesPath = buildEventFavoritesPath(event.id);
@@ -126,6 +129,7 @@ export function EventSidebar({
           label="Página pública"
           icon="public"
         />
+        <SidebarItem to={invitationPath} label="Convite e RSVP" icon="invitation" />
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem

@@ -1,0 +1,6 @@
+import type { EventRsvpSummary } from '@/types/invitation';
+
+export function RsvpSummaryCard({ summary }: { summary: EventRsvpSummary }) {
+  const cards = [['Confirmados', summary.confirmedGuests, '#eaf8ed', '#3f8b46'], ['Pendentes', summary.pendingGuests, '#fff4df', '#b37816'], ['Não vão', summary.declinedGuests, '#fff0f0', '#d65f68']];
+  return <section className="rounded-[28px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fff8f4,#fff)] p-5 shadow-[0_20px_62px_rgba(96,60,36,0.06)] sm:p-7"><p className="text-xs font-black uppercase tracking-[0.22em] text-[#c5922e]">RSVP em tempo real</p><div className="mt-4 flex items-end justify-between gap-4"><div><h2 className="font-display text-3xl font-semibold tracking-[-0.05em] text-[#161314]">{summary.confirmedPeople} pessoas esperadas</h2><p className="mt-2 text-sm text-[#80685c]">{summary.totalGuests} convites cadastrados</p></div></div><div className="mt-6 grid grid-cols-3 gap-2">{cards.map(([label, value, background, color]) => <div key={String(label)} className="rounded-2xl p-3" style={{ backgroundColor: String(background) }}><p className="text-xl font-black" style={{ color: String(color) }}>{value}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#725b4e]">{label}</p></div>)}</div></section>;
+}

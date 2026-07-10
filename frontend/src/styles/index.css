@@ -134,6 +134,259 @@ canvas {
   }
 }
 
+@layer components {
+  .invitation-letter {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--letter-accent) 26%, white);
+    border-radius: 2rem;
+    background:
+      repeating-linear-gradient(0deg, rgba(92, 65, 46, 0.014) 0, rgba(92, 65, 46, 0.014) 1px, transparent 1px, transparent 5px),
+      radial-gradient(circle at 10% 8%, var(--letter-accent-soft), transparent 24%),
+      radial-gradient(circle at 92% 92%, color-mix(in srgb, var(--letter-gold) 15%, transparent), transparent 25%),
+      var(--letter-paper);
+    box-shadow: 0 28px 80px var(--letter-shadow), inset 0 0 0 7px rgba(255, 255, 255, 0.42);
+  }
+
+  .invitation-letter::before,
+  .invitation-letter::after {
+    position: absolute;
+    width: 13rem;
+    height: 13rem;
+    border: 1px solid color-mix(in srgb, var(--letter-accent) 24%, transparent);
+    border-radius: 999px;
+    content: '';
+    opacity: 0.72;
+    pointer-events: none;
+  }
+
+  .invitation-letter::before {
+    top: -9rem;
+    left: -7rem;
+    box-shadow: 1.3rem 1rem 0 -0.05rem color-mix(in srgb, var(--letter-accent-soft) 70%, transparent);
+  }
+
+  .invitation-letter::after {
+    right: -8rem;
+    bottom: -10rem;
+    box-shadow: -1.2rem -1rem 0 -0.05rem color-mix(in srgb, var(--letter-accent-soft) 70%, transparent);
+  }
+
+  .invitation-letter__topline {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--letter-gold) 65%, transparent), transparent);
+  }
+
+  .invitation-letter__seal {
+    position: absolute;
+    z-index: 1;
+    top: 1.3rem;
+    left: 50%;
+    display: grid;
+    width: 3.6rem;
+    height: 3.6rem;
+    place-items: center;
+    transform: translateX(-50%) rotate(-8deg);
+    border: 5px solid color-mix(in srgb, var(--letter-paper) 88%, white);
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--letter-gold), color-mix(in srgb, var(--letter-accent) 76%, var(--letter-gold)));
+    box-shadow: 0 12px 22px var(--letter-shadow);
+    color: white;
+    font-size: 1.7rem;
+  }
+
+  .invitation-letter__eyebrow {
+    color: var(--letter-gold);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .invitation-letter__divider {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: min(100%, 13rem);
+    margin: 1.9rem auto;
+    color: var(--letter-gold);
+  }
+
+  .invitation-letter__divider::before,
+  .invitation-letter__divider::after {
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--letter-gold) 60%, transparent);
+    content: '';
+  }
+
+  .invitation-letter__detail {
+    border: 1px solid color-mix(in srgb, var(--letter-accent) 20%, white);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--letter-accent-soft) 44%, white);
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .invitation-letter__detail p {
+    margin: 0;
+    color: var(--letter-gold);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .invitation-letter__detail strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--letter-ink);
+    font-size: 0.95rem;
+  }
+
+  .invitation-letter__signature {
+    position: relative;
+    z-index: 1;
+    padding: 1rem 1.5rem 1.4rem;
+    color: color-mix(in srgb, var(--letter-ink) 48%, white);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    text-align: center;
+  }
+
+  .invitation-photo-reveal {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 30rem);
+    height: clamp(12rem, 44vw, 17rem);
+    margin-right: auto;
+    margin-left: auto;
+    overflow: hidden;
+    border: 7px solid rgba(255, 255, 255, 0.82);
+    border-radius: 7rem 7rem 1.75rem 1.75rem;
+    box-shadow: 0 20px 40px var(--letter-shadow);
+    animation: invitation-photo-reveal 1100ms 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .invitation-photo-reveal::after {
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--letter-gold) 54%, transparent);
+    border-radius: inherit;
+    content: '';
+    pointer-events: none;
+  }
+
+  .invitation-photo-placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    background: radial-gradient(circle at 72% 14%, var(--letter-accent-soft), transparent 31%), linear-gradient(145deg, #fffdf8, color-mix(in srgb, var(--letter-accent-soft) 70%, white));
+    color: var(--letter-gold);
+  }
+
+  .invitation-photo-placeholder span {
+    font-size: 3.3rem;
+  }
+
+  .invitation-photo-placeholder p {
+    margin: 0;
+    color: var(--letter-ink);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.5rem;
+    font-style: italic;
+  }
+
+  .invitation-action-dock {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+    margin: 0 1rem 1rem;
+    padding: 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--letter-accent) 18%, white);
+    border-radius: 1.35rem;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 14px 34px rgba(96, 60, 36, 0.08);
+    backdrop-filter: blur(12px);
+  }
+
+  .invitation-action {
+    display: grid;
+    min-width: 0;
+    place-items: center;
+    gap: 0.4rem;
+    border: 0;
+    border-radius: 1rem;
+    background: transparent;
+    padding: 0.6rem 0.15rem;
+    color: var(--letter-ink);
+    transition: transform 180ms ease, background-color 180ms ease;
+  }
+
+  .invitation-action:hover,
+  .invitation-action:focus-visible {
+    background: var(--letter-accent-soft);
+    outline: none;
+    transform: translateY(-0.15rem);
+  }
+
+  .invitation-action span {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--letter-accent) 65%, white);
+    border-radius: 999px;
+    color: var(--letter-accent);
+  }
+
+  .invitation-action svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .invitation-action small {
+    overflow: hidden;
+    max-width: 100%;
+    color: var(--letter-ink);
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    text-overflow: ellipsis;
+  }
+
+  .invitation-action--disabled,
+  .invitation-action:disabled {
+    opacity: 0.36;
+    pointer-events: none;
+  }
+
+  .letter-arrive {
+    animation: letter-arrive 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes letter-arrive {
+  from { opacity: 0; transform: translateY(1rem) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes invitation-photo-reveal {
+  from { clip-path: inset(0 50% 0 50% round 7rem 7rem 1.75rem 1.75rem); opacity: 0.2; transform: scale(1.08); }
+  to { clip-path: inset(0 0 0 0 round 7rem 7rem 1.75rem 1.75rem); opacity: 1; transform: scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

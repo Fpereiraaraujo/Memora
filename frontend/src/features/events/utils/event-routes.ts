@@ -29,3 +29,7 @@ export function buildEventMessagesPath(eventId: string) {
 export function buildEventPublicPageSettingsPath(eventId: string) {
   return `/app/events/${eventId}/public-page`;
 }
+
+export function buildEventInvitationPath(eventId: string) {
+  return `/app/events/${eventId}/invitation`;
+}

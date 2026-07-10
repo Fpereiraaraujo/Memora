@@ -20,6 +20,14 @@ import type {
   PhotoLikeUpdateRequest,
   PhotoStatusUpdateRequest,
 } from '@/types/photo';
+import type {
+  EventGuest,
+  EventInvitationSettings,
+  EventRsvpSummary,
+  GuestCreateRequest,
+  PublicInvitation,
+  PublicRsvpRequest,
+} from '@/types/invitation';
 
 export interface AdminDashboardResponse {
   totalUsers: number;
@@ -206,6 +214,27 @@ export const api = {
   },
   getEvent(token: string, eventId: string) {
     return request<EventSummary>(`/api/events/${eventId}`, { method: 'GET', token });
+  },
+  getEventInvitation(token: string, eventId: string) {
+    return request<EventInvitationSettings>(`/api/events/${eventId}/invitation`, { method: 'GET', token });
+  },
+  updateEventInvitation(token: string, eventId: string, requestBody: Omit<EventInvitationSettings, 'publishedAt' | 'updatedAt'> & { published: boolean }) {
+    return request<EventInvitationSettings>(`/api/events/${eventId}/invitation`, { method: 'PUT', token, data: requestBody });
+  },
+  listEventGuests(token: string, eventId: string, page = 0, size = 30) {
+    return request<PageResponse<EventGuest>>(`/api/events/${eventId}/guests?page=${page}&size=${size}`, { method: 'GET', token });
+  },
+  createEventGuest(token: string, eventId: string, requestBody: GuestCreateRequest) {
+    return request<EventGuest>(`/api/events/${eventId}/guests`, { method: 'POST', token, data: requestBody });
+  },
+  getEventRsvpSummary(token: string, eventId: string) {
+    return request<EventRsvpSummary>(`/api/events/${eventId}/rsvp-summary`, { method: 'GET', token });
+  },
+  getPublicInvitation(token: string) {
+    return request<PublicInvitation>(`/api/public/invitations/${encodeURIComponent(token)}`, { method: 'GET' });
+  },
+  submitPublicRsvp(token: string, requestBody: PublicRsvpRequest) {
+    return request<{ status: string; plusOnes: number; respondedAt: string }>(`/api/public/invitations/${encodeURIComponent(token)}/rsvp`, { method: 'PUT', data: requestBody });
   },
   getEventPublicPageCustomization(token: string, eventId: string) {
     return request<PublicPageCustomization>(`/api/events/${eventId}/public-page`, { method: 'GET', token });

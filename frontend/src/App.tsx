@@ -16,8 +16,10 @@ import { EventCheckoutPage } from '@/features/events/pages/event-checkout-page';
 import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
 import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
+import { EventInvitationPage } from '@/features/events/pages/event-invitation-page';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
+import { PublicInvitationPage } from '@/features/public/pages/public-invitation-page';
 import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page';
 
 function RootRedirect() {
@@ -149,6 +151,15 @@ export default function App() {
         />
 
         <Route
+          path="/app/events/:eventId/invitation"
+          element={
+            <ProtectedRoute>
+              <EventInvitationPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/app/event/:eventId/public-page"
           element={
             <ProtectedRoute>
@@ -203,6 +214,7 @@ export default function App() {
         />
 
         <Route path="/e/:slug/upload" element={<PublicUploadRedirect />} />
+        <Route path="/i/:token" element={<PublicInvitationPage />} />
         <Route path="/e/:slug" element={<PublicEventPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
