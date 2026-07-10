@@ -28,7 +28,26 @@ export interface AdminDashboardResponse {
   totalApprovedPayments: number;
   totalPendingPayments: number;
   grossRevenueCents: number;
+  totalActiveUsers: number;
+  totalSuspendedUsers: number;
+  totalDeletedUsers: number;
+  totalActiveEvents: number;
+  totalDraftEvents: number;
+  totalPaymentOrders: number;
+  usersCreatedToday: number;
+  usersCreatedThisMonth: number;
+  paymentsApprovedThisMonth: number;
+  photosUploadedThisMonth: number;
+  revenueByPlan: AdminPlanMetric[];
+  eventsByPlan: AdminPlanMetric[];
 }
+
+export interface AdminPlanMetric { planCode: string; total: number; }
+export interface AdminUser { id: string; name: string; email: string; role: string; status: string; createdAt: string; lastLoginAt: string | null; totalEvents: number; activePlanCode: string | null; totalPhotos: number; totalApprovedPayments: number; totalRevenueCents: number; }
+export interface AdminEvent { eventId: string; title: string; slug: string; ownerName: string; ownerEmail: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; paidAt: string | null; createdAt: string; }
+export interface AdminPayment { paymentOrderId: string; userEmail: string; userName: string; eventTitle: string; planCode: string; provider: string; status: string; amountCents: number; paidAmountCents: number | null; paidAt: string | null; createdAt: string; }
+export interface AdminAuditLog { id: string; createdAt: string; adminUserId: string; adminEmail: string; action: string; targetType: string; targetId: string | null; targetEmail: string | null; reason: string | null; ipAddress: string | null; }
+export interface AdminActionResponse { message: string; }
 
 const http = axios.create({
   baseURL: API_BASE_URL,
@@ -126,6 +145,27 @@ export const api = {
   },
   getAdminDashboard(token: string) {
     return request<AdminDashboardResponse>('/api/admin/dashboard', { method: 'GET', token });
+  },
+  listAdminUsers(token: string, page = 0, search = '') {
+    return request<PageResponse<AdminUser>>(`/api/admin/users?page=${page}&size=20${search ? `&search=${encodeURIComponent(search)}` : ''}`, { method: 'GET', token });
+  },
+  listAdminEvents(token: string, page = 0) {
+    return request<PageResponse<AdminEvent>>(`/api/admin/events?page=${page}&size=20`, { method: 'GET', token });
+  },
+  listAdminPayments(token: string, page = 0) {
+    return request<PageResponse<AdminPayment>>(`/api/admin/payments?page=${page}&size=20`, { method: 'GET', token });
+  },
+  listAdminAuditLogs(token: string, page = 0) {
+    return request<PageResponse<AdminAuditLog>>(`/api/admin/audit-logs?page=${page}&size=20`, { method: 'GET', token });
+  },
+  suspendAdminUser(token: string, userId: string, reason: string) {
+    return request<AdminActionResponse>(`/api/admin/users/${userId}/suspend`, { method: 'PATCH', token, data: { reason } });
+  },
+  restoreAdminUser(token: string, userId: string, reason: string) {
+    return request<AdminActionResponse>(`/api/admin/users/${userId}/restore`, { method: 'PATCH', token, data: { reason } });
+  },
+  deleteAdminUser(token: string, userId: string, confirmationEmail: string, reason: string) {
+    return request<AdminActionResponse>(`/api/admin/users/${userId}`, { method: 'DELETE', token, data: { confirmationEmail, reason } });
   },
   listEvents(token: string) {
     return request<EventSummary[]>('/api/events', { method: 'GET', token });

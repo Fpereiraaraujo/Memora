@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (cachedUser && active) {
         setUser(cachedUser);
-        setReady(true);
       }
 
       try {

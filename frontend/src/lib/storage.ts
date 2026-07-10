@@ -33,6 +33,10 @@ export function getStoredUser(): User | null {
       id: String(parsed.id),
       name: String(parsed.name),
       email: String(parsed.email),
+      role: parsed.role === 'ADMIN' || parsed.role === 'HOST' ? parsed.role : undefined,
+      status: parsed.status === 'ACTIVE' || parsed.status === 'SUSPENDED' || parsed.status === 'DELETED'
+        ? parsed.status
+        : undefined,
     };
   } catch {
     return null;
