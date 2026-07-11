@@ -8,7 +8,7 @@ export interface EventCheckoutRequest {
 export interface EventCheckoutResponse {
   paymentOrderId: string;
   planCode: EventPlanCode;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | 'MANUAL_REVIEW';
   originalAmountCents: number;
   discountAmountCents: number;
   finalAmountCents: number;
@@ -31,7 +31,7 @@ export interface EventCheckoutPreviewResponse {
 
 export interface EventCheckoutStatusResponse {
   paymentOrderId: string | null;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | 'MANUAL_REVIEW' | null;
   planCode: EventPlanCode | null;
   eventStatus: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED';
   paidAt: string | null;

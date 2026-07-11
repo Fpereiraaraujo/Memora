@@ -121,6 +121,7 @@ Exemplos:
 - `ResolvedEventCheckout`
 - `Coupon`
 - `Influencer`
+- `ReferralCommission`
 - `PaymentOrder`
 - `PublicInvitation`
 - `EventPublicPageCustomization`
@@ -200,6 +201,7 @@ Exemplos reais:
 - `CheckoutPricingService`
 - `EventCheckoutPricingResolverService`
 - `CouponValidationService`
+- `ApprovedPaymentFinalizationService`
 - `AdminManagementService`
 
 Importante:
@@ -242,6 +244,7 @@ Exemplos:
 - `UserEntity`
 - `CouponJpaEntity`
 - `InfluencerJpaEntity`
+- `ReferralCommissionJpaEntity`
 - `PlanJpaEntity`
 - `PaymentOrderJpaEntity`
 - `EventInvitationJpaEntity`
@@ -259,6 +262,7 @@ Exemplos:
 - `UserRepository`
 - `CouponRepository`
 - `InfluencerRepository`
+- `ReferralCommissionRepository`
 - `PlanRepository`
 - `PaymentOrderRepository`
 - `EventGuestRepository`
@@ -275,6 +279,7 @@ Exemplos:
 - `PlanDatabaseMapper`
 - `CouponDatabaseMapper`
 - `InfluencerDatabaseMapper`
+- `ReferralCommissionDatabaseMapper`
 - `UserDatabaseMapper`
 
 #### `dataprovider.database.gateway`

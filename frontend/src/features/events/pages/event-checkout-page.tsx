@@ -304,6 +304,7 @@ function FailedPaymentCard({
 }) {
   const messageMap: Record<string, string> = {
     FAILED: 'Não foi possível confirmar o pagamento desta tentativa.',
+    MANUAL_REVIEW: 'Encontramos uma divergência nesta cobrança e o pagamento foi enviado para revisão manual.',
     REJECTED: 'O pagamento foi recusado. Você pode escolher o plano novamente.',
     CANCELLED: 'O checkout foi cancelado. Se quiser, escolha um plano novamente.',
     EXPIRED: 'O checkout expirou. Gere uma nova tentativa para seguir.',

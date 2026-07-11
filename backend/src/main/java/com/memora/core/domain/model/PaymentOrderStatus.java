@@ -6,5 +6,6 @@ public enum PaymentOrderStatus {
 	REJECTED,
 	CANCELLED,
 	EXPIRED,
-	FAILED
+	FAILED,
+	MANUAL_REVIEW
 }
