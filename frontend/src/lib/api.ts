@@ -60,6 +60,14 @@ export interface AdminActionResponse { message: string; }
 export interface AdminUserEvent { eventId: string; title: string; slug: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; }
 export interface AdminUserDetails extends AdminUser { events: AdminUserEvent[]; payments: AdminPayment[]; }
 export interface AdminAffiliateSummary { activeInfluencers: number; activeCoupons: number; couponSales: number; pendingCommissionCents: number; }
+export interface AdminAffiliateMetricsSummary {
+  revenueViaCouponsCents: number;
+  totalSalesViaCoupons: number;
+  pendingCommissionCents: number;
+  topInfluencerId: string | null;
+  topInfluencerName: string | null;
+  topInfluencerSales: number;
+}
 export interface AdminInfluencer {
   id: string;
   name: string;
@@ -102,6 +110,79 @@ export interface AdminCouponUpsertRequest {
   expiresAt?: string | null;
   maxUses?: number | null;
   status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
+}
+export interface AdminAffiliateMetricsFilter {
+  influencerId?: string | null;
+  couponId?: string | null;
+  commissionStatus?: string | null;
+  dateFrom?: string | null;
+  dateTo?: string | null;
+}
+export interface AdminAffiliateInfluencerMetric {
+  influencerId: string;
+  name: string;
+  instagramHandle: string | null;
+  primaryCouponCode: string | null;
+  clicks: number | null;
+  approvedSales: number;
+  netRevenueCents: number;
+  pendingCommissionCents: number;
+  paidCommissionCents: number;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+export interface AdminAffiliateCouponMetric {
+  couponId: string;
+  code: string;
+  influencerName: string | null;
+  currentUses: number;
+  approvedSales: number;
+  discountTotalCents: number;
+  netRevenueCents: number;
+  commissionGeneratedCents: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
+}
+export interface AdminAffiliateSale {
+  paymentOrderId: string;
+  eventId: string;
+  eventTitle: string;
+  userName: string;
+  userEmail: string;
+  couponCode: string | null;
+  planCode: string;
+  grossAmountCents: number;
+  discountAmountCents: number;
+  netAmountCents: number;
+  paidAt: string | null;
+  status: string;
+}
+export interface AdminReferralCommission {
+  id: string;
+  couponId: string;
+  couponCode: string;
+  paymentOrderId: string;
+  eventTitle: string;
+  userName: string;
+  userEmail: string;
+  netAmountCents: number;
+  commissionAmountCents: number;
+  status: 'PENDING' | 'APPROVED' | 'PAYABLE' | 'PAID' | 'CANCELLED' | 'REFUNDED';
+  createdAt: string;
+  paidAt: string | null;
+}
+export interface AdminInfluencerPerformance {
+  id: string;
+  name: string;
+  instagramHandle: string | null;
+  email: string | null;
+  pixKey: string | null;
+  status: 'ACTIVE' | 'INACTIVE';
+  approvedSales: number;
+  netRevenueCents: number;
+  pendingCommissionCents: number;
+  paidCommissionCents: number;
+  coupons: AdminCoupon[];
+  sales: AdminAffiliateSale[];
+  commissions: AdminReferralCommission[];
 }
 
 const http = axios.create({
@@ -169,6 +250,17 @@ function authHeaders(token?: string | null) {
   return token ? { Authorization: `Bearer ${token}` } : undefined;
 }
 
+function buildQuery(params: Record<string, string | number | null | undefined> | AdminAffiliateMetricsFilter) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && `${value}`.trim() !== '') {
+      search.set(key, String(value));
+    }
+  });
+  const query = search.toString();
+  return query ? `?${query}` : '';
+}
+
 async function request<T>(path: string, options: {
   method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   token?: string | null;
@@ -219,8 +311,20 @@ export const api = {
   getAdminAffiliateSummary(token: string) {
     return request<AdminAffiliateSummary>('/api/admin/affiliate-summary', { method: 'GET', token });
   },
+  getAdminAffiliateMetricsSummary(token: string, filters: AdminAffiliateMetricsFilter = {}) {
+    return request<AdminAffiliateMetricsSummary>(`/api/admin/affiliate-metrics/summary${buildQuery(filters)}`, { method: 'GET', token });
+  },
+  listAdminAffiliateInfluencerMetrics(token: string, filters: AdminAffiliateMetricsFilter = {}) {
+    return request<AdminAffiliateInfluencerMetric[]>(`/api/admin/affiliate-metrics/influencers${buildQuery(filters)}`, { method: 'GET', token });
+  },
+  listAdminAffiliateCouponMetrics(token: string, filters: AdminAffiliateMetricsFilter = {}) {
+    return request<AdminAffiliateCouponMetric[]>(`/api/admin/affiliate-metrics/coupons${buildQuery(filters)}`, { method: 'GET', token });
+  },
   listAdminInfluencers(token: string) {
     return request<AdminInfluencer[]>('/api/admin/influencers', { method: 'GET', token });
+  },
+  getAdminInfluencerPerformance(token: string, influencerId: string, filters: AdminAffiliateMetricsFilter = {}) {
+    return request<AdminInfluencerPerformance>(`/api/admin/influencers/${influencerId}/performance${buildQuery(filters)}`, { method: 'GET', token });
   },
   createAdminInfluencer(token: string, requestBody: AdminInfluencerUpsertRequest) {
     return request<AdminInfluencer>('/api/admin/influencers', { method: 'POST', token, data: requestBody });
@@ -239,6 +343,9 @@ export const api = {
   },
   updateAdminCouponStatus(token: string, couponId: string, status: AdminCoupon['status']) {
     return request<AdminCoupon>(`/api/admin/coupons/${couponId}/status`, { method: 'PATCH', token, data: { status } });
+  },
+  markAdminReferralCommissionPaid(token: string, referralCommissionId: string, reason: string) {
+    return request<AdminActionResponse>(`/api/admin/referral-commissions/${referralCommissionId}/mark-paid`, { method: 'PATCH', token, data: { reason } });
   },
   suspendAdminUser(token: string, userId: string, reason: string) {
     return request<AdminActionResponse>(`/api/admin/users/${userId}/suspend`, { method: 'PATCH', token, data: { reason } });

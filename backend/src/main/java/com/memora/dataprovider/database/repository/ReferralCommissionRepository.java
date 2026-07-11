@@ -1,13 +1,18 @@
 package com.memora.dataprovider.database.repository;
 
 import com.memora.dataprovider.database.entity.ReferralCommissionJpaEntity;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReferralCommissionRepository extends JpaRepository<ReferralCommissionJpaEntity, UUID> {
 	Optional<ReferralCommissionJpaEntity> findByPaymentOrderId(UUID paymentOrderId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	Optional<ReferralCommissionJpaEntity> findWithLockById(UUID id);
 
 	@Query("""
 		select coalesce(sum(rc.commissionAmountCents), 0)

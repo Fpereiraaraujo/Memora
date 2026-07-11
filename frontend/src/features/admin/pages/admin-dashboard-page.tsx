@@ -10,13 +10,19 @@ import { AdminPartnerships } from '@/features/admin/components/admin-partnership
 import { useAuth } from '@/features/auth/auth-context';
 import {
   api,
+  type AdminAffiliateCouponMetric,
+  type AdminAffiliateInfluencerMetric,
+  type AdminAffiliateMetricsFilter,
+  type AdminAffiliateMetricsSummary,
   type AdminAffiliateSummary,
+  type AdminActionResponse,
   type AdminAuditLog,
   type AdminCoupon,
   type AdminCouponUpsertRequest,
   type AdminDashboardResponse,
   type AdminEvent,
   type AdminInfluencer,
+  type AdminInfluencerPerformance,
   type AdminInfluencerUpsertRequest,
   type AdminPayment,
   type AdminUser,
@@ -71,10 +77,23 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
   const [affiliateSummary, setAffiliateSummary] = useState<AdminAffiliateSummary | null>(null);
   const [influencers, setInfluencers] = useState<AdminInfluencer[]>([]);
   const [coupons, setCoupons] = useState<AdminCoupon[]>([]);
+  const [affiliateMetricsFilters, setAffiliateMetricsFilters] = useState<AdminAffiliateMetricsFilter>({
+    influencerId: null,
+    couponId: null,
+    commissionStatus: null,
+    dateFrom: null,
+    dateTo: null,
+  });
+  const [affiliateMetricsSummary, setAffiliateMetricsSummary] = useState<AdminAffiliateMetricsSummary | null>(null);
+  const [affiliateInfluencerMetrics, setAffiliateInfluencerMetrics] = useState<AdminAffiliateInfluencerMetric[]>([]);
+  const [affiliateCouponMetrics, setAffiliateCouponMetrics] = useState<AdminAffiliateCouponMetric[]>([]);
+  const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
+  const [selectedInfluencerPerformance, setSelectedInfluencerPerformance] = useState<AdminInfluencerPerformance | null>(null);
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
   const [loading, setLoading] = useState(false);
   const [partnershipActionBusy, setPartnershipActionBusy] = useState(false);
+  const [partnershipInsightsBusy, setPartnershipInsightsBusy] = useState(false);
   const [grantCustomer, setGrantCustomer] = useState<AdminUserDetails | null>(null);
   const [grantBusy, setGrantBusy] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -125,6 +144,35 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     return () => { active = false; };
   }, [accessDenied, deferredSearch, section, token]);
 
+  useEffect(() => {
+    if (accessDenied || !token || section !== 'partnerships') return;
+    let active = true;
+    setPartnershipInsightsBusy(true);
+
+    const performanceRequest = selectedInfluencerId
+      ? api.getAdminInfluencerPerformance(token, selectedInfluencerId, affiliateMetricsFilters)
+      : Promise.resolve<AdminInfluencerPerformance | null>(null);
+
+    Promise.all([
+      api.getAdminAffiliateMetricsSummary(token, affiliateMetricsFilters),
+      api.listAdminAffiliateInfluencerMetrics(token, affiliateMetricsFilters),
+      api.listAdminAffiliateCouponMetrics(token, affiliateMetricsFilters),
+      performanceRequest,
+    ]).then(([summaryResponse, influencerMetricsResponse, couponMetricsResponse, performanceResponse]) => {
+      if (!active) return;
+      setAffiliateMetricsSummary(summaryResponse);
+      setAffiliateInfluencerMetrics(influencerMetricsResponse);
+      setAffiliateCouponMetrics(couponMetricsResponse);
+      setSelectedInfluencerPerformance(performanceResponse);
+    }).catch((exception) => {
+      if (active) setError(exception instanceof Error ? exception.message : 'Nao foi possivel carregar as metricas de parcerias.');
+    }).finally(() => {
+      if (active) setPartnershipInsightsBusy(false);
+    });
+
+    return () => { active = false; };
+  }, [accessDenied, affiliateMetricsFilters, section, selectedInfluencerId, token]);
+
   async function refreshPartnerships() {
     if (!token) return;
     const [summaryResponse, influencersResponse, couponsResponse] = await Promise.all([
@@ -135,6 +183,23 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     setAffiliateSummary(summaryResponse);
     setInfluencers(influencersResponse);
     setCoupons(couponsResponse);
+  }
+
+  async function refreshPartnershipInsights() {
+    if (!token) return;
+    const performanceRequest = selectedInfluencerId
+      ? api.getAdminInfluencerPerformance(token, selectedInfluencerId, affiliateMetricsFilters)
+      : Promise.resolve<AdminInfluencerPerformance | null>(null);
+    const [summaryResponse, influencerMetricsResponse, couponMetricsResponse, performanceResponse] = await Promise.all([
+      api.getAdminAffiliateMetricsSummary(token, affiliateMetricsFilters),
+      api.listAdminAffiliateInfluencerMetrics(token, affiliateMetricsFilters),
+      api.listAdminAffiliateCouponMetrics(token, affiliateMetricsFilters),
+      performanceRequest,
+    ]);
+    setAffiliateMetricsSummary(summaryResponse);
+    setAffiliateInfluencerMetrics(influencerMetricsResponse);
+    setAffiliateCouponMetrics(couponMetricsResponse);
+    setSelectedInfluencerPerformance(performanceResponse);
   }
 
   async function updateUser(user: AdminUser, action: 'suspend' | 'restore' | 'delete') {
@@ -192,6 +257,7 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     try {
       await api.createAdminInfluencer(token, request);
       await refreshPartnerships();
+      await refreshPartnershipInsights();
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Nao foi possivel criar a influencer.');
       throw exception;
@@ -207,6 +273,7 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     try {
       await api.updateAdminInfluencer(token, influencerId, request);
       await refreshPartnerships();
+      await refreshPartnershipInsights();
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Nao foi possivel atualizar a influencer.');
       throw exception;
@@ -222,6 +289,7 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     try {
       await api.createAdminCoupon(token, request);
       await refreshPartnerships();
+      await refreshPartnershipInsights();
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Nao foi possivel criar o cupom.');
       throw exception;
@@ -237,6 +305,7 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     try {
       await api.updateAdminCoupon(token, couponId, request);
       await refreshPartnerships();
+      await refreshPartnershipInsights();
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Nao foi possivel atualizar o cupom.');
       throw exception;
@@ -252,8 +321,27 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     try {
       await api.updateAdminCouponStatus(token, couponId, status);
       await refreshPartnerships();
+      await refreshPartnershipInsights();
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Nao foi possivel atualizar o status do cupom.');
+      throw exception;
+    } finally {
+      setPartnershipActionBusy(false);
+    }
+  }
+
+  async function markReferralCommissionPaid(referralCommissionId: string, reason: string): Promise<AdminActionResponse> {
+    if (!token) {
+      throw new Error('Sessao administrativa indisponivel.');
+    }
+    setPartnershipActionBusy(true);
+    setError(null);
+    try {
+      const response = await api.markAdminReferralCommissionPaid(token, referralCommissionId, reason);
+      await refreshPartnershipInsights();
+      return response;
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : 'Nao foi possivel marcar a comissao como paga.');
       throw exception;
     } finally {
       setPartnershipActionBusy(false);
@@ -293,6 +381,16 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
               influencers={influencers}
               coupons={coupons}
               busy={partnershipActionBusy}
+              metricsBusy={partnershipInsightsBusy}
+              metricsFilters={affiliateMetricsFilters}
+              metricsSummary={affiliateMetricsSummary}
+              influencerMetrics={affiliateInfluencerMetrics}
+              couponMetrics={affiliateCouponMetrics}
+              selectedInfluencerId={selectedInfluencerId}
+              selectedInfluencerPerformance={selectedInfluencerPerformance}
+              onSelectInfluencer={setSelectedInfluencerId}
+              onChangeMetricsFilters={setAffiliateMetricsFilters}
+              onMarkReferralCommissionPaid={markReferralCommissionPaid}
               onCreateInfluencer={createInfluencer}
               onUpdateInfluencer={updateInfluencer}
               onCreateCoupon={createCoupon}

@@ -1,8 +1,12 @@
 package com.memora.dataprovider.database.gateway;
 
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateCouponMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateInfluencerMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateMetricsSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerPerformanceResponseDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserDetailsResponseDto;
@@ -68,5 +72,36 @@ public interface AdminQueryGateway {
 		UUID targetId,
 		LocalDate dateFrom,
 		LocalDate dateTo
+	);
+
+	AdminAffiliateMetricsSummaryResponseDto getAffiliateMetricsSummary(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId
+	);
+
+	List<AdminAffiliateInfluencerMetricDto> listAffiliateInfluencerMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	);
+
+	List<AdminAffiliateCouponMetricDto> listAffiliateCouponMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	);
+
+	AdminInfluencerPerformanceResponseDto getInfluencerPerformance(
+		UUID influencerId,
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID couponId,
+		String commissionStatus
 	);
 }

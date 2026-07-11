@@ -5,6 +5,9 @@ import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.controller.definition.AdminControllerApi;
 import com.memora.entrypoint.api.dto.AdminActionRequestDto;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateCouponMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateInfluencerMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateMetricsSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
 import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
@@ -15,6 +18,7 @@ import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
 import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerPerformanceResponseDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
@@ -125,8 +129,28 @@ public class AdminController implements AdminControllerApi {
 	}
 
 	@Override
+	public ResponseEntity<AdminAffiliateMetricsSummaryResponseDto> affiliateMetricsSummary(UUID influencerId, UUID couponId, LocalDate dateFrom, LocalDate dateTo) {
+		return ResponseEntity.ok(adminManagementService.getAffiliateMetricsSummary(dateFrom, dateTo, influencerId, couponId));
+	}
+
+	@Override
+	public ResponseEntity<List<AdminAffiliateInfluencerMetricDto>> affiliateInfluencerMetrics(UUID influencerId, UUID couponId, String commissionStatus, LocalDate dateFrom, LocalDate dateTo) {
+		return ResponseEntity.ok(adminManagementService.listAffiliateInfluencerMetrics(dateFrom, dateTo, influencerId, couponId, commissionStatus));
+	}
+
+	@Override
+	public ResponseEntity<List<AdminAffiliateCouponMetricDto>> affiliateCouponMetrics(UUID influencerId, UUID couponId, String commissionStatus, LocalDate dateFrom, LocalDate dateTo) {
+		return ResponseEntity.ok(adminManagementService.listAffiliateCouponMetrics(dateFrom, dateTo, influencerId, couponId, commissionStatus));
+	}
+
+	@Override
 	public ResponseEntity<List<AdminInfluencerListItemDto>> influencers() {
 		return ResponseEntity.ok(adminManagementService.listInfluencers());
+	}
+
+	@Override
+	public ResponseEntity<AdminInfluencerPerformanceResponseDto> influencerPerformance(UUID influencerId, UUID couponId, String commissionStatus, LocalDate dateFrom, LocalDate dateTo) {
+		return ResponseEntity.ok(adminManagementService.getInfluencerPerformance(influencerId, dateFrom, dateTo, couponId, commissionStatus));
 	}
 
 	@Override
@@ -181,6 +205,17 @@ public class AdminController implements AdminControllerApi {
 		return ResponseEntity.ok(adminManagementService.updateCouponStatus(
 			couponId,
 			request.status(),
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<AdminActionResponseDto> markReferralCommissionPaid(UUID referralCommissionId, AdminActionRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.markReferralCommissionPaid(
+			referralCommissionId,
+			request.reason().trim(),
 			resolvePrincipal(authentication),
 			httpServletRequest.getRemoteAddr(),
 			httpServletRequest.getHeader("User-Agent")

@@ -12,6 +12,7 @@ import com.memora.dataprovider.database.entity.AdminAuditLogEntity;
 import com.memora.dataprovider.database.entity.CouponJpaEntity;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.entity.InfluencerJpaEntity;
+import com.memora.dataprovider.database.entity.ReferralCommissionJpaEntity;
 import com.memora.dataprovider.database.entity.UserEntity;
 import com.memora.dataprovider.database.gateway.AdminQueryGateway;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
@@ -29,6 +30,9 @@ import com.memora.dataprovider.database.repository.UserRepository;
 import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateCouponMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateInfluencerMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateMetricsSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
 import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
@@ -38,6 +42,7 @@ import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerPerformanceResponseDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminUserDetailsResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserEventDto;
@@ -353,6 +358,46 @@ public class AdminManagementService {
 		);
 	}
 
+	public AdminAffiliateMetricsSummaryResponseDto getAffiliateMetricsSummary(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId
+	) {
+		return adminQueryGateway.getAffiliateMetricsSummary(dateFrom, dateTo, influencerId, couponId);
+	}
+
+	public List<AdminAffiliateInfluencerMetricDto> listAffiliateInfluencerMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	) {
+		return adminQueryGateway.listAffiliateInfluencerMetrics(dateFrom, dateTo, influencerId, couponId, commissionStatus);
+	}
+
+	public List<AdminAffiliateCouponMetricDto> listAffiliateCouponMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	) {
+		return adminQueryGateway.listAffiliateCouponMetrics(dateFrom, dateTo, influencerId, couponId, commissionStatus);
+	}
+
+	public AdminInfluencerPerformanceResponseDto getInfluencerPerformance(
+		UUID influencerId,
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID couponId,
+		String commissionStatus
+	) {
+		findInfluencer(influencerId);
+		return adminQueryGateway.getInfluencerPerformance(influencerId, dateFrom, dateTo, couponId, commissionStatus);
+	}
+
 	public List<AdminInfluencerListItemDto> listInfluencers() {
 		return influencerRepository.findAllByOrderByCreatedAtDesc()
 			.stream()
@@ -490,6 +535,54 @@ public class AdminManagementService {
 		return toCouponListItem(saved, influencerName(saved.getInfluencerId()));
 	}
 
+	@Transactional
+	public AdminActionResponseDto markReferralCommissionPaid(
+		UUID referralCommissionId,
+		String reason,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		if (reason == null || reason.isBlank()) {
+			throw new IllegalArgumentException("Informe o motivo da acao.");
+		}
+
+		ReferralCommissionJpaEntity commission = referralCommissionRepository.findWithLockById(referralCommissionId)
+			.orElseThrow(() -> new NoSuchElementException("Comissao nao encontrada."));
+		if (commission.getStatus() == com.memora.core.domain.model.ReferralCommissionStatus.PAID) {
+			throw new IllegalArgumentException("Comissao ja foi marcada como paga.");
+		}
+		if (commission.getStatus() != com.memora.core.domain.model.ReferralCommissionStatus.APPROVED
+			&& commission.getStatus() != com.memora.core.domain.model.ReferralCommissionStatus.PAYABLE) {
+			throw new IllegalArgumentException("Apenas comissoes aprovadas ou payable podem ser marcadas como pagas.");
+		}
+
+		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		commission.setStatus(com.memora.core.domain.model.ReferralCommissionStatus.PAID);
+		commission.setPaidAt(now);
+		commission.setUpdatedAt(now);
+		referralCommissionRepository.save(commission);
+
+		logAudit(
+			admin,
+			"MARK_REFERRAL_COMMISSION_PAID",
+			"REFERRAL_COMMISSION",
+			commission.getId(),
+			null,
+			reason.trim(),
+			Map.of(
+				"influencerId", commission.getInfluencerId(),
+				"couponId", commission.getCouponId(),
+				"paymentOrderId", commission.getPaymentOrderId(),
+				"commissionAmountCents", commission.getCommissionAmountCents()
+			),
+			ipAddress,
+			userAgent
+		);
+		return new AdminActionResponseDto("Comissao marcada como paga com sucesso.");
+	}
+
 	public boolean isUserActive(UUID userId) {
 		return userRepository.findById(userId)
 			.map(user -> user.getStatus() == UserStatus.ACTIVE)
@@ -520,6 +613,11 @@ public class AdminManagementService {
 			throw new SecurityException("Acesso negado.");
 		}
 		return adminUser;
+	}
+
+	private InfluencerJpaEntity findInfluencer(UUID influencerId) {
+		return influencerRepository.findById(influencerId)
+			.orElseThrow(() -> new NoSuchElementException("Influencer nao encontrada."));
 	}
 
 	private void logAudit(

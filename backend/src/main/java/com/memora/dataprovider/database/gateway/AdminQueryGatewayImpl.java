@@ -1,13 +1,23 @@
 package com.memora.dataprovider.database.gateway;
 
 import com.memora.core.domain.model.EventStatus;
+import com.memora.core.domain.model.CouponStatus;
+import com.memora.core.domain.model.InfluencerStatus;
+import com.memora.core.domain.model.ReferralCommissionStatus;
 import com.memora.core.domain.model.UserRole;
 import com.memora.core.domain.model.UserStatus;
+import com.memora.entrypoint.api.dto.AdminAffiliateCouponMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateInfluencerMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateMetricsSummaryResponseDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateSaleListItemDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
+import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerPerformanceResponseDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminPlanMetricDto;
+import com.memora.entrypoint.api.dto.AdminReferralCommissionListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserEventDto;
 import com.memora.entrypoint.api.dto.AdminUserListItemDto;
@@ -458,6 +468,415 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 		return toPage(content, normalizedPage, normalizedSize, total);
 	}
 
+	@Override
+	public AdminAffiliateMetricsSummaryResponseDto getAffiliateMetricsSummary(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId
+	) {
+		MapSqlParameterSource summaryParams = new MapSqlParameterSource();
+		String salesWhere = buildAffiliateSalesFilters(dateFrom, dateTo, influencerId, couponId, summaryParams, "po");
+		Map<String, Object> summary = jdbcTemplate.queryForMap("""
+			select
+				coalesce(sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents)), 0) as revenue_via_coupons_cents,
+				count(*) as total_sales_via_coupons
+			from payment_orders po
+			where po.status = 'APPROVED'
+			  and po.coupon_id is not null
+			""" + salesWhere, summaryParams);
+
+		MapSqlParameterSource pendingParams = new MapSqlParameterSource();
+		String pendingWhere = buildCommissionBaseFilters(dateFrom, dateTo, influencerId, couponId, pendingParams, "rc");
+		Long pendingCommission = jdbcTemplate.queryForObject("""
+			select coalesce(sum(rc.commission_amount_cents), 0)
+			from referral_commissions rc
+			where rc.status in ('APPROVED', 'PAYABLE')
+			""" + pendingWhere, pendingParams, Long.class);
+
+		MapSqlParameterSource topParams = new MapSqlParameterSource();
+		String topWhere = buildAffiliateSalesFilters(dateFrom, dateTo, influencerId, couponId, topParams, "po");
+		List<AdminAffiliateMetricsSummaryResponseDto> topInfluencer = jdbcTemplate.query("""
+			select
+				i.id as influencer_id,
+				i.name as influencer_name,
+				count(*) as total_sales
+			from payment_orders po
+			join influencers i on i.id = po.influencer_id
+			where po.status = 'APPROVED'
+			  and po.coupon_id is not null
+			""" + topWhere + """
+			group by i.id, i.name
+			order by total_sales desc, i.name asc
+			limit 1
+			""", topParams, (rs, rowNum) -> new AdminAffiliateMetricsSummaryResponseDto(
+			0L,
+			0L,
+			0L,
+			rs.getObject("influencer_id", UUID.class),
+			rs.getString("influencer_name"),
+			rs.getLong("total_sales")
+		));
+
+		AdminAffiliateMetricsSummaryResponseDto winner = topInfluencer.isEmpty()
+			? new AdminAffiliateMetricsSummaryResponseDto(0L, 0L, 0L, null, null, 0L)
+			: topInfluencer.getFirst();
+
+		return new AdminAffiliateMetricsSummaryResponseDto(
+			asLong(summary.get("revenue_via_coupons_cents")),
+			asLong(summary.get("total_sales_via_coupons")),
+			pendingCommission == null ? 0L : pendingCommission,
+			winner.topInfluencerId(),
+			winner.topInfluencerName(),
+			winner.topInfluencerSales()
+		);
+	}
+
+	@Override
+	public List<AdminAffiliateInfluencerMetricDto> listAffiliateInfluencerMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	) {
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("dateFrom", startOfDay(dateFrom));
+		params.addValue("dateTo", endExclusive(dateTo));
+		params.addValue("couponId", couponId);
+		params.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
+		String influencerFilter = influencerId == null ? "" : " where i.id = :influencerId";
+		if (influencerId != null) {
+			params.addValue("influencerId", influencerId);
+		}
+
+		return jdbcTemplate.query("""
+			with sales_metrics as (
+				select
+					po.influencer_id,
+					count(*) as approved_sales,
+					coalesce(sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents)), 0) as net_revenue_cents
+				from payment_orders po
+				where po.status = 'APPROVED'
+				  and po.influencer_id is not null
+				  and (:dateFrom is null or po.paid_at >= :dateFrom)
+				  and (:dateTo is null or po.paid_at < :dateTo)
+				  and (:couponId is null or po.coupon_id = :couponId)
+				group by po.influencer_id
+			),
+			commission_metrics as (
+				select
+					rc.influencer_id,
+					coalesce(sum(case when rc.status in ('APPROVED', 'PAYABLE') then rc.commission_amount_cents else 0 end), 0) as pending_commission_cents,
+					coalesce(sum(case when rc.status = 'PAID' then rc.commission_amount_cents else 0 end), 0) as paid_commission_cents
+				from referral_commissions rc
+				where (:dateFrom is null or rc.created_at >= :dateFrom)
+				  and (:dateTo is null or rc.created_at < :dateTo)
+				  and (:couponId is null or rc.coupon_id = :couponId)
+				  and (:commissionStatus is null or rc.status = :commissionStatus)
+				group by rc.influencer_id
+			)
+			select
+				i.id as influencer_id,
+				i.name,
+				i.instagram_handle,
+				(
+					select c.code
+					from coupons c
+					where c.influencer_id = i.id
+					order by c.current_uses desc, c.created_at asc
+					limit 1
+				) as primary_coupon_code,
+				coalesce(sm.approved_sales, 0) as approved_sales,
+				coalesce(sm.net_revenue_cents, 0) as net_revenue_cents,
+				coalesce(cm.pending_commission_cents, 0) as pending_commission_cents,
+				coalesce(cm.paid_commission_cents, 0) as paid_commission_cents,
+				i.status
+			from influencers i
+			left join sales_metrics sm on sm.influencer_id = i.id
+			left join commission_metrics cm on cm.influencer_id = i.id
+			""" + influencerFilter + """
+			order by approved_sales desc, i.created_at desc
+			""", params, (rs, rowNum) -> new AdminAffiliateInfluencerMetricDto(
+			rs.getObject("influencer_id", UUID.class),
+			rs.getString("name"),
+			rs.getString("instagram_handle"),
+			rs.getString("primary_coupon_code"),
+			null,
+			rs.getLong("approved_sales"),
+			rs.getLong("net_revenue_cents"),
+			rs.getLong("pending_commission_cents"),
+			rs.getLong("paid_commission_cents"),
+			InfluencerStatus.valueOf(rs.getString("status"))
+		));
+	}
+
+	@Override
+	public List<AdminAffiliateCouponMetricDto> listAffiliateCouponMetrics(
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID influencerId,
+		UUID couponId,
+		String commissionStatus
+	) {
+		MapSqlParameterSource params = new MapSqlParameterSource()
+			.addValue("dateFrom", startOfDay(dateFrom))
+			.addValue("dateTo", endExclusive(dateTo))
+			.addValue("influencerId", influencerId)
+			.addValue("couponId", couponId)
+			.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
+
+		return jdbcTemplate.query("""
+			with sales_metrics as (
+				select
+					po.coupon_id,
+					count(*) as approved_sales,
+					coalesce(sum(po.discount_amount_cents), 0) as discount_total_cents,
+					coalesce(sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents)), 0) as net_revenue_cents
+				from payment_orders po
+				where po.status = 'APPROVED'
+				  and po.coupon_id is not null
+				  and (:dateFrom is null or po.paid_at >= :dateFrom)
+				  and (:dateTo is null or po.paid_at < :dateTo)
+				  and (:influencerId is null or po.influencer_id = :influencerId)
+				  and (:couponId is null or po.coupon_id = :couponId)
+				group by po.coupon_id
+			),
+			commission_metrics as (
+				select
+					rc.coupon_id,
+					coalesce(sum(rc.commission_amount_cents), 0) as commission_generated_cents
+				from referral_commissions rc
+				where (:dateFrom is null or rc.created_at >= :dateFrom)
+				  and (:dateTo is null or rc.created_at < :dateTo)
+				  and (:influencerId is null or rc.influencer_id = :influencerId)
+				  and (:couponId is null or rc.coupon_id = :couponId)
+				  and (:commissionStatus is null or rc.status = :commissionStatus)
+				group by rc.coupon_id
+			)
+			select
+				c.id as coupon_id,
+				c.code,
+				i.name as influencer_name,
+				c.current_uses,
+				coalesce(sm.approved_sales, 0) as approved_sales,
+				coalesce(sm.discount_total_cents, 0) as discount_total_cents,
+				coalesce(sm.net_revenue_cents, 0) as net_revenue_cents,
+				coalesce(cm.commission_generated_cents, 0) as commission_generated_cents,
+				c.status
+			from coupons c
+			left join influencers i on i.id = c.influencer_id
+			left join sales_metrics sm on sm.coupon_id = c.id
+			left join commission_metrics cm on cm.coupon_id = c.id
+			where (:influencerId is null or c.influencer_id = :influencerId)
+			  and (:couponId is null or c.id = :couponId)
+			order by approved_sales desc, c.created_at desc
+			""", params, (rs, rowNum) -> new AdminAffiliateCouponMetricDto(
+			rs.getObject("coupon_id", UUID.class),
+			rs.getString("code"),
+			rs.getString("influencer_name"),
+			rs.getInt("current_uses"),
+			rs.getLong("approved_sales"),
+			rs.getLong("discount_total_cents"),
+			rs.getLong("net_revenue_cents"),
+			rs.getLong("commission_generated_cents"),
+			CouponStatus.valueOf(rs.getString("status"))
+		));
+	}
+
+	@Override
+	public AdminInfluencerPerformanceResponseDto getInfluencerPerformance(
+		UUID influencerId,
+		LocalDate dateFrom,
+		LocalDate dateTo,
+		UUID couponId,
+		String commissionStatus
+	) {
+		MapSqlParameterSource baseParams = new MapSqlParameterSource()
+			.addValue("influencerId", influencerId)
+			.addValue("dateFrom", startOfDay(dateFrom))
+			.addValue("dateTo", endExclusive(dateTo))
+			.addValue("couponId", couponId)
+			.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
+
+		Map<String, Object> summary = jdbcTemplate.queryForMap("""
+			select
+				i.id,
+				i.name,
+				i.instagram_handle,
+				i.email,
+				i.pix_key,
+				i.status,
+				coalesce((
+					select count(*)
+					from payment_orders po
+					where po.status = 'APPROVED'
+					  and po.influencer_id = i.id
+					  and (:dateFrom is null or po.paid_at >= :dateFrom)
+					  and (:dateTo is null or po.paid_at < :dateTo)
+					  and (:couponId is null or po.coupon_id = :couponId)
+				), 0) as approved_sales,
+				coalesce((
+					select sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents))
+					from payment_orders po
+					where po.status = 'APPROVED'
+					  and po.influencer_id = i.id
+					  and (:dateFrom is null or po.paid_at >= :dateFrom)
+					  and (:dateTo is null or po.paid_at < :dateTo)
+					  and (:couponId is null or po.coupon_id = :couponId)
+				), 0) as net_revenue_cents,
+				coalesce((
+					select sum(case when rc.status in ('APPROVED', 'PAYABLE') then rc.commission_amount_cents else 0 end)
+					from referral_commissions rc
+					where rc.influencer_id = i.id
+					  and (:dateFrom is null or rc.created_at >= :dateFrom)
+					  and (:dateTo is null or rc.created_at < :dateTo)
+					  and (:couponId is null or rc.coupon_id = :couponId)
+					  and (:commissionStatus is null or rc.status = :commissionStatus)
+				), 0) as pending_commission_cents,
+				coalesce((
+					select sum(case when rc.status = 'PAID' then rc.commission_amount_cents else 0 end)
+					from referral_commissions rc
+					where rc.influencer_id = i.id
+					  and (:dateFrom is null or rc.created_at >= :dateFrom)
+					  and (:dateTo is null or rc.created_at < :dateTo)
+					  and (:couponId is null or rc.coupon_id = :couponId)
+					  and (:commissionStatus is null or rc.status = :commissionStatus)
+				), 0) as paid_commission_cents
+			from influencers i
+			where i.id = :influencerId
+			""", baseParams);
+
+		List<AdminCouponListItemDto> coupons = jdbcTemplate.query("""
+			select
+				c.id,
+				c.code,
+				c.influencer_id,
+				i.name as influencer_name,
+				c.discount_percent,
+				c.commission_percent,
+				c.status,
+				c.starts_at,
+				c.expires_at,
+				c.max_uses,
+				c.current_uses,
+				c.created_at,
+				c.updated_at
+			from coupons c
+			left join influencers i on i.id = c.influencer_id
+			where c.influencer_id = :influencerId
+			  and (:couponId is null or c.id = :couponId)
+			order by c.created_at desc
+			""", baseParams, (rs, rowNum) -> new AdminCouponListItemDto(
+			rs.getObject("id", UUID.class),
+			rs.getString("code"),
+			rs.getObject("influencer_id", UUID.class),
+			rs.getString("influencer_name"),
+			rs.getInt("discount_percent"),
+			asInteger(rs.getObject("commission_percent")),
+			CouponStatus.valueOf(rs.getString("status")),
+			asLocalDateTime(rs.getObject("starts_at")),
+			asLocalDateTime(rs.getObject("expires_at")),
+			asInteger(rs.getObject("max_uses")),
+			rs.getInt("current_uses"),
+			asLocalDateTime(rs.getObject("created_at")),
+			asLocalDateTime(rs.getObject("updated_at"))
+		));
+
+		List<AdminAffiliateSaleListItemDto> sales = jdbcTemplate.query("""
+			select
+				po.id as payment_order_id,
+				e.id as event_id,
+				e.title as event_title,
+				u.name as user_name,
+				u.email as user_email,
+				po.coupon_code,
+				po.plan_code,
+				po.original_amount_cents,
+				po.discount_amount_cents,
+				coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents) as net_amount_cents,
+				po.paid_at,
+				po.status
+			from payment_orders po
+			join events e on e.id = po.event_id
+			join users u on u.id = po.user_id
+			where po.influencer_id = :influencerId
+			  and po.status = 'APPROVED'
+			  and (:dateFrom is null or po.paid_at >= :dateFrom)
+			  and (:dateTo is null or po.paid_at < :dateTo)
+			  and (:couponId is null or po.coupon_id = :couponId)
+			order by po.paid_at desc nulls last, po.created_at desc
+			""", baseParams, (rs, rowNum) -> new AdminAffiliateSaleListItemDto(
+			rs.getObject("payment_order_id", UUID.class),
+			rs.getObject("event_id", UUID.class),
+			rs.getString("event_title"),
+			rs.getString("user_name"),
+			rs.getString("user_email"),
+			rs.getString("coupon_code"),
+			rs.getString("plan_code"),
+			rs.getInt("original_amount_cents"),
+			rs.getInt("discount_amount_cents"),
+			rs.getInt("net_amount_cents"),
+			asLocalDateTime(rs.getObject("paid_at")),
+			rs.getString("status")
+		));
+
+		List<AdminReferralCommissionListItemDto> commissions = jdbcTemplate.query("""
+			select
+				rc.id,
+				rc.coupon_id,
+				c.code as coupon_code,
+				rc.payment_order_id,
+				e.title as event_title,
+				u.name as user_name,
+				u.email as user_email,
+				rc.net_amount_cents,
+				rc.commission_amount_cents,
+				rc.status,
+				rc.created_at,
+				rc.paid_at
+			from referral_commissions rc
+			join coupons c on c.id = rc.coupon_id
+			join events e on e.id = rc.event_id
+			join users u on u.id = rc.user_id
+			where rc.influencer_id = :influencerId
+			  and (:dateFrom is null or rc.created_at >= :dateFrom)
+			  and (:dateTo is null or rc.created_at < :dateTo)
+			  and (:couponId is null or rc.coupon_id = :couponId)
+			  and (:commissionStatus is null or rc.status = :commissionStatus)
+			order by rc.created_at desc
+			""", baseParams, (rs, rowNum) -> new AdminReferralCommissionListItemDto(
+			rs.getObject("id", UUID.class),
+			rs.getObject("coupon_id", UUID.class),
+			rs.getString("coupon_code"),
+			rs.getObject("payment_order_id", UUID.class),
+			rs.getString("event_title"),
+			rs.getString("user_name"),
+			rs.getString("user_email"),
+			rs.getInt("net_amount_cents"),
+			rs.getInt("commission_amount_cents"),
+			ReferralCommissionStatus.valueOf(rs.getString("status")),
+			asLocalDateTime(rs.getObject("created_at")),
+			asLocalDateTime(rs.getObject("paid_at"))
+		));
+
+		return new AdminInfluencerPerformanceResponseDto(
+			(UUID) summary.get("id"),
+			(String) summary.get("name"),
+			(String) summary.get("instagram_handle"),
+			(String) summary.get("email"),
+			(String) summary.get("pix_key"),
+			InfluencerStatus.valueOf((String) summary.get("status")),
+			asLong(summary.get("approved_sales")),
+			asLong(summary.get("net_revenue_cents")),
+			asLong(summary.get("pending_commission_cents")),
+			asLong(summary.get("paid_commission_cents")),
+			coupons,
+			sales,
+			commissions
+		);
+	}
+
 	private <T> PageResponseDto<T> toPage(List<T> content, int page, int size, long total) {
 		int totalPages = total == 0 ? 1 : (int) Math.ceil((double) total / size);
 		return new PageResponseDto<>(content, page, size, total, totalPages, page >= totalPages - 1);
@@ -569,6 +988,63 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			params.addValue("dateTo", dateTo.plusDays(1).atStartOfDay());
 		}
 		return where.toString();
+	}
+
+	private String buildAffiliateSalesFilters(LocalDate dateFrom, LocalDate dateTo, UUID influencerId, UUID couponId, MapSqlParameterSource params, String alias) {
+		StringBuilder where = new StringBuilder();
+		if (dateFrom != null) {
+			where.append(" and ").append(alias).append(".paid_at >= :dateFrom");
+			params.addValue("dateFrom", dateFrom.atStartOfDay());
+		}
+		if (dateTo != null) {
+			where.append(" and ").append(alias).append(".paid_at < :dateTo");
+			params.addValue("dateTo", dateTo.plusDays(1).atStartOfDay());
+		}
+		if (influencerId != null) {
+			where.append(" and ").append(alias).append(".influencer_id = :influencerId");
+			params.addValue("influencerId", influencerId);
+		}
+		if (couponId != null) {
+			where.append(" and ").append(alias).append(".coupon_id = :couponId");
+			params.addValue("couponId", couponId);
+		}
+		return where.toString();
+	}
+
+	private String buildCommissionBaseFilters(LocalDate dateFrom, LocalDate dateTo, UUID influencerId, UUID couponId, MapSqlParameterSource params, String alias) {
+		StringBuilder where = new StringBuilder();
+		if (dateFrom != null) {
+			where.append(" and ").append(alias).append(".created_at >= :dateFrom");
+			params.addValue("dateFrom", dateFrom.atStartOfDay());
+		}
+		if (dateTo != null) {
+			where.append(" and ").append(alias).append(".created_at < :dateTo");
+			params.addValue("dateTo", dateTo.plusDays(1).atStartOfDay());
+		}
+		if (influencerId != null) {
+			where.append(" and ").append(alias).append(".influencer_id = :influencerId");
+			params.addValue("influencerId", influencerId);
+		}
+		if (couponId != null) {
+			where.append(" and ").append(alias).append(".coupon_id = :couponId");
+			params.addValue("couponId", couponId);
+		}
+		return where.toString();
+	}
+
+	private LocalDateTime startOfDay(LocalDate value) {
+		return value == null ? null : value.atStartOfDay();
+	}
+
+	private LocalDateTime endExclusive(LocalDate value) {
+		return value == null ? null : value.plusDays(1).atStartOfDay();
+	}
+
+	private String normalizeNullableUpper(String value) {
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+		return value.trim().toUpperCase();
 	}
 
 	private long asLong(Object value) {

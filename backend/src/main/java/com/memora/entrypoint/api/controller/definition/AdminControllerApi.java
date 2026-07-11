@@ -2,6 +2,9 @@ package com.memora.entrypoint.api.controller.definition;
 
 import com.memora.entrypoint.api.dto.AdminActionRequestDto;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateCouponMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateInfluencerMetricDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateMetricsSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
 import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
@@ -11,6 +14,7 @@ import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
 import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerPerformanceResponseDto;
 import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
@@ -144,9 +148,48 @@ public interface AdminControllerApi {
 	@Operation(summary = "Get affiliate admin summary")
 	ResponseEntity<AdminAffiliateSummaryResponseDto> affiliateSummary();
 
+	@GetMapping("/api/admin/affiliate-metrics/summary")
+	@Operation(summary = "Get affiliate metrics summary")
+	ResponseEntity<AdminAffiliateMetricsSummaryResponseDto> affiliateMetricsSummary(
+		@RequestParam(required = false) UUID influencerId,
+		@RequestParam(required = false) UUID couponId,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateFrom,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateTo
+	);
+
+	@GetMapping("/api/admin/affiliate-metrics/influencers")
+	@Operation(summary = "List affiliate metrics by influencer")
+	ResponseEntity<java.util.List<AdminAffiliateInfluencerMetricDto>> affiliateInfluencerMetrics(
+		@RequestParam(required = false) UUID influencerId,
+		@RequestParam(required = false) UUID couponId,
+		@RequestParam(required = false) String commissionStatus,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateFrom,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateTo
+	);
+
+	@GetMapping("/api/admin/affiliate-metrics/coupons")
+	@Operation(summary = "List affiliate metrics by coupon")
+	ResponseEntity<java.util.List<AdminAffiliateCouponMetricDto>> affiliateCouponMetrics(
+		@RequestParam(required = false) UUID influencerId,
+		@RequestParam(required = false) UUID couponId,
+		@RequestParam(required = false) String commissionStatus,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateFrom,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateTo
+	);
+
 	@GetMapping("/api/admin/influencers")
 	@Operation(summary = "List influencers for admin")
 	ResponseEntity<java.util.List<AdminInfluencerListItemDto>> influencers();
+
+	@GetMapping("/api/admin/influencers/{influencerId}/performance")
+	@Operation(summary = "Get influencer affiliate performance")
+	ResponseEntity<AdminInfluencerPerformanceResponseDto> influencerPerformance(
+		@PathVariable UUID influencerId,
+		@RequestParam(required = false) UUID couponId,
+		@RequestParam(required = false) String commissionStatus,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateFrom,
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateTo
+	);
 
 	@PostMapping("/api/admin/influencers")
 	@Operation(summary = "Create influencer for admin")
@@ -191,6 +234,15 @@ public interface AdminControllerApi {
 	ResponseEntity<AdminCouponListItemDto> updateCouponStatus(
 		@PathVariable UUID couponId,
 		@Valid @RequestBody AdminCouponStatusUpdateRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@PatchMapping("/api/admin/referral-commissions/{referralCommissionId}/mark-paid")
+	@Operation(summary = "Mark referral commission as paid")
+	ResponseEntity<AdminActionResponseDto> markReferralCommissionPaid(
+		@PathVariable UUID referralCommissionId,
+		@Valid @RequestBody AdminActionRequestDto request,
 		Authentication authentication,
 		jakarta.servlet.http.HttpServletRequest httpServletRequest
 	);
