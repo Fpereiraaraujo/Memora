@@ -3,48 +3,196 @@ import type { PublicInvitation } from '@/types/invitation';
 interface InvitationQuickActionsProps {
   invitation: PublicInvitation;
   onConfirm: () => void;
+  onOpenInfo: () => void;
 }
 
-function calendarUrl(invitation: PublicInvitation) {
-  if (!invitation.eventDate) return null;
-  const date = invitation.eventDate.replace(/-/g, '');
-  const time = (invitation.ceremonyTime ?? '12:00').replace(':', '').padEnd(4, '0');
-  const startsAt = `${date}T${time}00`;
-  const details = encodeURIComponent(invitation.welcomeMessage);
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(invitation.eventTitle)}&dates=${startsAt}/${startsAt}&details=${details}&location=${encodeURIComponent(invitation.location ?? '')}`;
+type ActionIconName = 'check' | 'pin' | 'gift' | 'more';
+
+function ActionIcon({ name }: { name: ActionIconName }) {
+  if (name === 'check') {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="m5.5 12.4 4 4L18.8 7" />
+      </svg>
+    );
+  }
+
+  if (name === 'pin') {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" />
+        <circle
+          cx="12"
+          cy="10"
+          r="2.15"
+        />
+      </svg>
+    );
+  }
+
+  if (name === 'gift') {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M4 10h16v10H4z" />
+        <path d="M3 6h18v4H3z" />
+        <path d="M12 6v14" />
+        <path d="M12 6H8.7A2.7 2.7 0 1 1 11 2.7 5.4 5.4 0 0 1 12 6Z" />
+        <path d="M12 6h3.3A2.7 2.7 0 1 0 13 2.7 5.4 5.4 0 0 0 12 6Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle
+        cx="6"
+        cy="12"
+        r="1"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="1"
+      />
+      <circle
+        cx="18"
+        cy="12"
+        r="1"
+      />
+    </svg>
+  );
 }
 
-function ActionIcon({ name }: { name: 'check' | 'pin' | 'gift' | 'calendar' }) {
-  const paths = {
-    check: <><path d="m5 12 4.1 4.1L19 6.5" /><path d="M12 22a10 10 0 1 0-10-10" /></>,
-    pin: <><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></>,
-    gift: <><path d="M4 10h16v10H4zM3 6h18v4H3zM12 6v14M12 6H8.5A2.5 2.5 0 1 1 11 3.5V6Zm0 0h3.5A2.5 2.5 0 1 0 13 3.5V6Z" /></>,
-    calendar: <><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 10h16M8 14h.01M12 14h.01M16 14h.01" /></>,
-  };
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
-}
+export function InvitationQuickActions({
+  invitation,
+  onConfirm,
+  onOpenInfo,
+}: InvitationQuickActionsProps) {
+  const mapUrl = invitation.location
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        invitation.location,
+      )}`
+    : null;
 
-export function InvitationQuickActions({ invitation, onConfirm }: InvitationQuickActionsProps) {
-  const mapUrl = invitation.location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(invitation.location)}` : null;
-  const addToCalendarUrl = calendarUrl(invitation);
   const actions = [
-    { label: 'Confirmar', icon: 'check' as const, onClick: onConfirm, available: invitation.rsvpEnabled },
-    { label: 'Localização', icon: 'pin' as const, href: mapUrl, available: Boolean(mapUrl) },
-    { label: 'Presentes', icon: 'gift' as const, href: invitation.registryUrl, available: Boolean(invitation.registryUrl) },
-    { label: 'Calendário', icon: 'calendar' as const, href: addToCalendarUrl, available: Boolean(addToCalendarUrl) },
+    {
+      label: 'Confirmar\npresença',
+      icon: 'check' as const,
+      available: invitation.rsvpEnabled,
+      onClick: onConfirm,
+    },
+    {
+      label: 'Localização',
+      icon: 'pin' as const,
+      available: Boolean(mapUrl),
+      href: mapUrl,
+    },
+    {
+      label: 'Lista de\npresentes',
+      icon: 'gift' as const,
+      available: Boolean(invitation.registryUrl),
+      href: invitation.registryUrl,
+    },
+    {
+      label: 'Mais\ninformações',
+      icon: 'more' as const,
+      available: true,
+      onClick: onOpenInfo,
+    },
   ];
 
   return (
-    <nav className="invitation-action-dock" aria-label="Ações do convite">
-      {actions.map((action) => action.href ? (
-        <a key={action.label} href={action.href} target="_blank" rel="noreferrer" className={`invitation-action ${action.available ? '' : 'invitation-action--disabled'}`} aria-disabled={!action.available}>
-          <span><ActionIcon name={action.icon} /></span><small>{action.label}</small>
-        </a>
-      ) : (
-        <button key={action.label} type="button" onClick={action.available ? action.onClick : undefined} disabled={!action.available} className="invitation-action">
-          <span><ActionIcon name={action.icon} /></span><small>{action.label}</small>
-        </button>
-      ))}
-    </nav>
+    <section className="memora-invite-actions">
+      <button
+        type="button"
+        className="memora-invite-actions__down"
+        aria-label="Ver opções do convite"
+        onClick={() =>
+          document
+            .getElementById('memora-invitation-actions')
+            ?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+            })
+        }
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="m7 10 5 5 5-5" />
+        </svg>
+      </button>
+
+      <div
+        id="memora-invitation-actions"
+        className="memora-invite-actions__grid"
+      >
+        {actions.map((action) => {
+          const content = (
+            <>
+              <span className="memora-invite-actions__icon">
+                <ActionIcon name={action.icon} />
+              </span>
+
+              <span className="memora-invite-actions__label">
+                {action.label}
+              </span>
+            </>
+          );
+
+          if (action.href && action.available) {
+            return (
+              <a
+                key={action.label}
+                href={action.href}
+                target="_blank"
+                rel="noreferrer"
+                className="memora-invite-actions__item"
+              >
+                {content}
+              </a>
+            );
+          }
+
+          return (
+            <button
+              key={action.label}
+              type="button"
+              className="memora-invite-actions__item"
+              disabled={!action.available}
+              onClick={action.available ? action.onClick : undefined}
+            >
+              {content}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="memora-invite-actions__message">
+        Preparamos este convite
+        <br />
+        especialmente para você.
+      </p>
+
+      <div
+        className="memora-invite-actions__heart"
+        aria-hidden="true"
+      >
+        ♡
+      </div>
+    </section>
   );
 }

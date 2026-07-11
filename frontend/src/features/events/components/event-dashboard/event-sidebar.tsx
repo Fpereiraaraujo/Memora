@@ -27,6 +27,7 @@ import {
   canUsePrivateMessages,
   getRequiredPlanLabel,
 } from '@/features/events/utils/event-plan-features';
+import { invitationFeatureEnabled } from '@/features/events/utils/event-feature-toggles';
 import type { EventSummary } from '@/types/event';
 
 interface EventSidebarProps {
@@ -129,7 +130,9 @@ export function EventSidebar({
           label="Página pública"
           icon="public"
         />
-        <SidebarItem to={invitationPath} label="Convite e RSVP" icon="invitation" />
+        {invitationFeatureEnabled ? (
+          <SidebarItem to={invitationPath} label="Convite e RSVP" icon="invitation" />
+        ) : null}
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem

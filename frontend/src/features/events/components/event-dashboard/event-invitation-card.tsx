@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom';
 
+import { invitationFeatureEnabled } from '@/features/events/utils/event-feature-toggles';
 import { buildEventInvitationPath } from '@/features/events/utils/event-routes';
 import type { EventSummary } from '@/types/event';
 
 export function EventInvitationCard({ event }: { event: EventSummary }) {
+  if (!invitationFeatureEnabled) {
+    return null;
+  }
+
   return (
     <section className="rounded-[28px] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fff7f4,#fff)] p-6 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-7">
       <p className="text-xs font-black uppercase tracking-[0.22em] text-[#c5922e]">Convite e RSVP</p>

@@ -12,6 +12,7 @@ import { EventPublicPageCard } from '@/features/events/components/event-dashboar
 import { EventQrCard } from '@/features/events/components/event-dashboard/event-qr-card';
 import { EventStatsSection } from '@/features/events/components/event-dashboard/event-stats-section';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
+import { invitationFeatureEnabled } from '@/features/events/utils/event-feature-toggles';
 import { canUseFavorites, canUsePrivateMessages } from '@/features/events/utils/event-plan-features';
 import {
   buildEventGalleryPath,
@@ -50,7 +51,7 @@ export function EventDetailPage() {
             publicLinksEnabled={dashboard.publicLinksEnabled}
           />
 
-          <EventInvitationCard event={dashboard.event} />
+          {invitationFeatureEnabled ? <EventInvitationCard event={dashboard.event} /> : null}
 
           <EventStatsSection
             photosCount={dashboard.mediaPhotos.length}

@@ -1,54 +1,216 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { MemoraLogo } from '@/components/brand/memora-logo';
-import { FloralStage } from '@/components/theme/floral-stage';
-import { PublicInvitationDetails } from '@/features/public/components/invitation/public-invitation-details';
-import { PublicRsvpForm } from '@/features/public/components/invitation/public-rsvp-form';
 import { InvitationLetterFrame } from '@/features/public/components/invitation/invitation-letter-frame';
 import { InvitationQuickActions } from '@/features/public/components/invitation/invitation-quick-actions';
+import { PublicInvitationDetails } from '@/features/public/components/invitation/public-invitation-details';
+import { PublicRsvpForm } from '@/features/public/components/invitation/public-rsvp-form';
 import { api } from '@/lib/api';
 import type { PublicInvitation } from '@/types/invitation';
 
+import '@/styles/public-invitation.css';
+
+type InvitePanel = 'rsvp' | 'info' | null;
+
 export function PublicInvitationPage() {
   const { token } = useParams();
+
   const [invitation, setInvitation] = useState<PublicInvitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openPanel, setOpenPanel] = useState<InvitePanel>(null);
 
   useEffect(() => {
     let active = true;
 
     async function loadInvitation() {
       if (!token) {
+        setError('Este convite não está disponível.');
         setLoading(false);
         return;
       }
 
       try {
         const response = await api.getPublicInvitation(token);
-        if (active) setInvitation(response);
+
+        if (active) {
+          setInvitation(response);
+          setError(null);
+        }
       } catch (exception) {
-        if (active) setError(exception instanceof Error ? exception.message : 'Este convite não está disponível.');
+        if (active) {
+          setError(
+            exception instanceof Error
+              ? exception.message
+              : 'Este convite não está disponível.',
+          );
+        }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
     void loadInvitation();
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, [token]);
 
+  useEffect(() => {
+    document.documentElement.classList.add('memora-invitation-html');
+    document.body.classList.add('memora-invitation-body');
+
+    return () => {
+      document.documentElement.classList.remove('memora-invitation-html');
+      document.body.classList.remove('memora-invitation-body');
+    };
+  }, []);
+
+  const informationItems = useMemo(() => {
+    if (!invitation) {
+      return [];
+    }
+
+    return [
+      invitation.welcomeMessage
+        ? {
+            label: 'Mensagem dos anfitriões',
+            value: invitation.welcomeMessage,
+          }
+        : null,
+
+      invitation.dressCode
+        ? {
+            label: 'Dress code',
+            value: invitation.dressCode,
+          }
+        : null,
+
+      invitation.receptionTime
+        ? {
+            label: 'Recepção',
+            value: `Às ${invitation.receptionTime.slice(0, 5)}`,
+          }
+        : null,
+    ].filter(Boolean) as Array<{
+      label: string;
+      value: string;
+    }>;
+  }, [invitation]);
+
   return (
-    <FloralStage className="min-h-screen bg-[#fffdfb] text-[#201914]">
-      <header className="border-b border-[#f1ded4] bg-white/90 px-5 py-5 backdrop-blur sm:px-8">
-        <div className="mx-auto flex max-w-4xl items-center justify-between"><MemoraLogo /><span className="rounded-full bg-[#fff4e8] px-3 py-2 text-xs font-bold text-[#b5791a]">Convite individual</span></div>
-      </header>
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
-        {loading ? <div className="h-[580px] animate-pulse rounded-[32px] border border-[#f1ddd1] bg-white" /> : null}
-        {!loading && error ? <section className="rounded-[28px] border border-[#f3d1d3] bg-white p-8 text-center"><p className="text-sm font-bold text-[#c35360]">Convite indisponível</p><h1 className="mt-3 font-display text-4xl">Não encontramos este convite</h1><p className="mt-4 text-sm leading-7 text-[#80685c]">Confira o link recebido ou peça um novo convite aos anfitriões.</p></section> : null}
-        {invitation ? <InvitationLetterFrame theme={invitation.theme}><PublicInvitationDetails invitation={invitation} /><InvitationQuickActions invitation={invitation} onConfirm={() => document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />{invitation.rsvpEnabled ? <section id="rsvp"><PublicRsvpForm invitation={invitation} token={token ?? ''} /></section> : <section className="border-t border-[var(--letter-accent)]/20 p-6 text-center text-sm leading-7 text-[var(--letter-ink)]/64 sm:p-10">Os anfitriões ainda não abriram as confirmações de presença.</section>}</InvitationLetterFrame> : null}
-      </main>
-    </FloralStage>
+    <main className="memora-invite-page">
+      <div className="memora-invite-page__ambient memora-invite-page__ambient--left" />
+      <div className="memora-invite-page__ambient memora-invite-page__ambient--right" />
+
+      {loading ? (
+        <div
+          className="memora-invite-loading"
+          aria-label="Carregando convite"
+        >
+          <div className="memora-invite-loading__island" />
+          <div className="memora-invite-loading__photo" />
+          <div className="memora-invite-loading__line memora-invite-loading__line--large" />
+          <div className="memora-invite-loading__line" />
+          <div className="memora-invite-loading__actions" />
+        </div>
+      ) : null}
+
+      {!loading && error ? (
+        <section className="memora-invite-error">
+          <p className="memora-invite-error__eyebrow">
+            Convite indisponível
+          </p>
+
+          <h1>Não encontramos este convite</h1>
+
+          <p>
+            Confira o endereço recebido ou solicite um novo convite aos
+            anfitriões.
+          </p>
+        </section>
+      ) : null}
+
+      {invitation ? (
+        <>
+          <InvitationLetterFrame theme={invitation.theme}>
+            <PublicInvitationDetails invitation={invitation} />
+
+            <InvitationQuickActions
+              invitation={invitation}
+              onConfirm={() => setOpenPanel('rsvp')}
+              onOpenInfo={() => setOpenPanel('info')}
+            />
+          </InvitationLetterFrame>
+
+          {openPanel ? (
+            <div
+              className="memora-invite-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label={
+                openPanel === 'rsvp'
+                  ? 'Confirmar presença'
+                  : 'Mais informações'
+              }
+            >
+              <button
+                type="button"
+                className="memora-invite-dialog__backdrop"
+                aria-label="Fechar painel"
+                onClick={() => setOpenPanel(null)}
+              />
+
+              <section className="memora-invite-dialog__sheet">
+                <div className="memora-invite-dialog__handle" />
+
+                <button
+                  type="button"
+                  className="memora-invite-dialog__close"
+                  aria-label="Fechar"
+                  onClick={() => setOpenPanel(null)}
+                >
+                  ×
+                </button>
+
+                {openPanel === 'rsvp' && invitation.rsvpEnabled ? (
+                  <PublicRsvpForm
+                    invitation={invitation}
+                    token={token ?? ''}
+                  />
+                ) : null}
+
+                {openPanel === 'info' ? (
+                  <article className="invitation-rsvp-card">
+                    <p className="invitation-rsvp-card__eyebrow">
+                      Mais informações
+                    </p>
+
+                    <h2 className="invitation-rsvp-card__title">
+                      Tudo em um só lugar
+                    </h2>
+
+                    <div className="mt-5 space-y-4">
+                      {informationItems.map((item) => (
+                        <div
+                          key={item.label}
+                          className="invitation-info-card__item"
+                        >
+                          <strong>{item.label}</strong>
+                          <p>{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ) : null}
+              </section>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </main>
   );
 }

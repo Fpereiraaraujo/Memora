@@ -2,45 +2,81 @@ import type { CSSProperties, ReactNode } from 'react';
 
 import type { InvitationTheme } from '@/types/invitation';
 
-const paletteByTheme: Record<InvitationTheme, CSSProperties> = {
-  ROMANCE: {
-    '--letter-paper': '#fffdf9',
-    '--letter-ink': '#3a2523',
-    '--letter-accent': '#d97987',
-    '--letter-accent-soft': '#fde8e6',
-    '--letter-gold': '#bf8b35',
-    '--letter-shadow': 'rgba(120, 67, 56, 0.18)',
-  } as CSSProperties,
-  GARDEN: {
-    '--letter-paper': '#fefff9',
-    '--letter-ink': '#294034',
-    '--letter-accent': '#6f9678',
-    '--letter-accent-soft': '#e7f0e1',
-    '--letter-gold': '#af853d',
-    '--letter-shadow': 'rgba(62, 94, 66, 0.18)',
-  } as CSSProperties,
-  MODERN: {
-    '--letter-paper': '#fcfbfa',
-    '--letter-ink': '#302c2a',
-    '--letter-accent': '#7e6258',
-    '--letter-accent-soft': '#eee8e3',
-    '--letter-gold': '#a37b47',
-    '--letter-shadow': 'rgba(77, 62, 53, 0.16)',
-  } as CSSProperties,
-};
-
 interface InvitationLetterFrameProps {
   theme: InvitationTheme;
   children: ReactNode;
 }
 
-export function InvitationLetterFrame({ theme, children }: InvitationLetterFrameProps) {
+const paletteByTheme: Record<InvitationTheme, CSSProperties> = {
+  ROMANCE: {
+    '--invite-accent': '#ee8e98',
+    '--invite-accent-soft': '#f5b8b5',
+    '--invite-gold': '#d5a44e',
+    '--invite-green': '#9ca98a',
+  } as CSSProperties,
+
+  GARDEN: {
+    '--invite-accent': '#d28e88',
+    '--invite-accent-soft': '#e9b9ac',
+    '--invite-gold': '#c59c4d',
+    '--invite-green': '#879a7e',
+  } as CSSProperties,
+
+  MODERN: {
+    '--invite-accent': '#df858f',
+    '--invite-accent-soft': '#ebb1af',
+    '--invite-gold': '#c99a4b',
+    '--invite-green': '#9aa58e',
+  } as CSSProperties,
+};
+
+export function InvitationLetterFrame({
+  theme,
+  children,
+}: InvitationLetterFrameProps) {
   return (
-    <article className={`invitation-letter invitation-letter--${theme.toLowerCase()} letter-arrive`} style={paletteByTheme[theme]}>
-      <div className="invitation-letter__topline" aria-hidden="true" />
-      <div className="invitation-letter__seal" aria-hidden="true"><span>♡</span></div>
-      {children}
-      <div className="invitation-letter__signature" aria-hidden="true">Memora</div>
+    <article
+      className="memora-invite-phone"
+      style={paletteByTheme[theme]}
+    >
+      <div className="memora-invite-phone__hardware">
+        <span className="memora-invite-phone__speaker" />
+        <span className="memora-invite-phone__camera" />
+      </div>
+
+      <div className="memora-invite-phone__status">
+        <span>9:41</span>
+
+        <div className="memora-invite-phone__system-icons">
+          <svg
+            viewBox="0 0 18 12"
+            aria-hidden="true"
+          >
+            <path d="M1 10h2V8H1v2Zm4 0h2V6H5v4Zm4 0h2V4H9v6Zm4 0h2V1h-2v9Z" />
+          </svg>
+
+          <svg
+            viewBox="0 0 18 12"
+            aria-hidden="true"
+          >
+            <path
+              d="M1.5 4.4a10.8 10.8 0 0 1 15 0M4 7a7.3 7.3 0 0 1 10 0M7 9.5a3.1 3.1 0 0 1 4 0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <span className="memora-invite-phone__battery">
+            <span />
+          </span>
+        </div>
+      </div>
+
+      <div className="memora-invite-phone__screen">
+        {children}
+      </div>
     </article>
   );
 }

@@ -17,6 +17,7 @@ import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
 import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
 import { EventInvitationPage } from '@/features/events/pages/event-invitation-page';
+import { invitationFeatureEnabled } from '@/features/events/utils/event-feature-toggles';
 import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
 import { PublicInvitationPage } from '@/features/public/pages/public-invitation-page';
@@ -47,6 +48,11 @@ function LegacyEventRedirect() {
 function LegacyEventPublicPageRedirect() {
   const { eventId } = useParams();
   return <Navigate to={`/app/events/${eventId ?? ''}/public-page`} replace />;
+}
+
+function EventInvitationStandbyRedirect() {
+  const { eventId } = useParams();
+  return <Navigate to={`/app/events/${eventId ?? ''}`} replace />;
 }
 
 function NotFoundPage() {
@@ -154,7 +160,7 @@ export default function App() {
           path="/app/events/:eventId/invitation"
           element={
             <ProtectedRoute>
-              <EventInvitationPage />
+              {invitationFeatureEnabled ? <EventInvitationPage /> : <EventInvitationStandbyRedirect />}
             </ProtectedRoute>
           }
         />
