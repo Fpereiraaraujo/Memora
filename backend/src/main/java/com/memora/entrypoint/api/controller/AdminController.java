@@ -6,15 +6,22 @@ import com.memora.entrypoint.api.controller.definition.AdminControllerApi;
 import com.memora.entrypoint.api.dto.AdminActionRequestDto;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
+import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
+import com.memora.entrypoint.api.dto.AdminCouponStatusUpdateRequestDto;
+import com.memora.entrypoint.api.dto.AdminCouponUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
 import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserDetailsResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserListItemDto;
 import com.memora.entrypoint.api.dto.PageResponseDto;
+import java.util.List;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -110,6 +117,74 @@ public class AdminController implements AdminControllerApi {
 	@Override
 	public ResponseEntity<PageResponseDto<AdminAuditLogListItemDto>> auditLogs(int page, int size, UUID adminUserId, String action, String targetType, UUID targetId, LocalDate dateFrom, LocalDate dateTo) {
 		return ResponseEntity.ok(adminManagementService.listAuditLogs(page, size, adminUserId, action, targetType, targetId, dateFrom, dateTo));
+	}
+
+	@Override
+	public ResponseEntity<AdminAffiliateSummaryResponseDto> affiliateSummary() {
+		return ResponseEntity.ok(adminManagementService.getAffiliateSummary());
+	}
+
+	@Override
+	public ResponseEntity<List<AdminInfluencerListItemDto>> influencers() {
+		return ResponseEntity.ok(adminManagementService.listInfluencers());
+	}
+
+	@Override
+	public ResponseEntity<AdminInfluencerListItemDto> createInfluencer(AdminInfluencerUpsertRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.createInfluencer(
+			request,
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<AdminInfluencerListItemDto> updateInfluencer(UUID influencerId, AdminInfluencerUpsertRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.updateInfluencer(
+			influencerId,
+			request,
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<List<AdminCouponListItemDto>> coupons() {
+		return ResponseEntity.ok(adminManagementService.listCoupons());
+	}
+
+	@Override
+	public ResponseEntity<AdminCouponListItemDto> createCoupon(AdminCouponUpsertRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.createCoupon(
+			request,
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<AdminCouponListItemDto> updateCoupon(UUID couponId, AdminCouponUpsertRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.updateCoupon(
+			couponId,
+			request,
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
+	}
+
+	@Override
+	public ResponseEntity<AdminCouponListItemDto> updateCouponStatus(UUID couponId, AdminCouponStatusUpdateRequestDto request, Authentication authentication, jakarta.servlet.http.HttpServletRequest httpServletRequest) {
+		return ResponseEntity.ok(adminManagementService.updateCouponStatus(
+			couponId,
+			request.status(),
+			resolvePrincipal(authentication),
+			httpServletRequest.getRemoteAddr(),
+			httpServletRequest.getHeader("User-Agent")
+		));
 	}
 
 	private AuthenticatedUserPrincipal resolvePrincipal(Authentication authentication) {

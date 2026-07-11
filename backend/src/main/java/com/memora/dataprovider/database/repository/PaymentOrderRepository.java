@@ -15,6 +15,7 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrderJpaEnt
 	Optional<PaymentOrderJpaEntity> findTopByEventIdOrderByCreatedAtDesc(UUID eventId);
 
 	List<PaymentOrderJpaEntity> findAllByEventIdAndStatus(UUID eventId, PaymentOrderStatus status);
+	long countByStatusAndCouponIdIsNotNull(PaymentOrderStatus status);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<PaymentOrderJpaEntity> findWithLockById(UUID id);

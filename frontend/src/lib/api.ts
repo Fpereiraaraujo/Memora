@@ -59,6 +59,50 @@ export interface AdminAuditLog { id: string; createdAt: string; adminUserId: str
 export interface AdminActionResponse { message: string; }
 export interface AdminUserEvent { eventId: string; title: string; slug: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; }
 export interface AdminUserDetails extends AdminUser { events: AdminUserEvent[]; payments: AdminPayment[]; }
+export interface AdminAffiliateSummary { activeInfluencers: number; activeCoupons: number; couponSales: number; pendingCommissionCents: number; }
+export interface AdminInfluencer {
+  id: string;
+  name: string;
+  instagramHandle: string | null;
+  email: string | null;
+  pixKey: string | null;
+  status: 'ACTIVE' | 'INACTIVE';
+  couponsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface AdminCoupon {
+  id: string;
+  code: string;
+  influencerId: string | null;
+  influencerName: string | null;
+  discountPercent: number;
+  commissionPercent: number | null;
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
+  startsAt: string | null;
+  expiresAt: string | null;
+  maxUses: number | null;
+  currentUses: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface AdminInfluencerUpsertRequest {
+  name: string;
+  instagramHandle?: string | null;
+  email?: string | null;
+  pixKey?: string | null;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+export interface AdminCouponUpsertRequest {
+  code: string;
+  influencerId?: string | null;
+  discountPercent: number;
+  commissionPercent?: number | null;
+  startsAt?: string | null;
+  expiresAt?: string | null;
+  maxUses?: number | null;
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
+}
 
 const http = axios.create({
   baseURL: API_BASE_URL,
@@ -171,6 +215,30 @@ export const api = {
   },
   listAdminAuditLogs(token: string, page = 0) {
     return request<PageResponse<AdminAuditLog>>(`/api/admin/audit-logs?page=${page}&size=20`, { method: 'GET', token });
+  },
+  getAdminAffiliateSummary(token: string) {
+    return request<AdminAffiliateSummary>('/api/admin/affiliate-summary', { method: 'GET', token });
+  },
+  listAdminInfluencers(token: string) {
+    return request<AdminInfluencer[]>('/api/admin/influencers', { method: 'GET', token });
+  },
+  createAdminInfluencer(token: string, requestBody: AdminInfluencerUpsertRequest) {
+    return request<AdminInfluencer>('/api/admin/influencers', { method: 'POST', token, data: requestBody });
+  },
+  updateAdminInfluencer(token: string, influencerId: string, requestBody: AdminInfluencerUpsertRequest) {
+    return request<AdminInfluencer>(`/api/admin/influencers/${influencerId}`, { method: 'PATCH', token, data: requestBody });
+  },
+  listAdminCoupons(token: string) {
+    return request<AdminCoupon[]>('/api/admin/coupons', { method: 'GET', token });
+  },
+  createAdminCoupon(token: string, requestBody: AdminCouponUpsertRequest) {
+    return request<AdminCoupon>('/api/admin/coupons', { method: 'POST', token, data: requestBody });
+  },
+  updateAdminCoupon(token: string, couponId: string, requestBody: AdminCouponUpsertRequest) {
+    return request<AdminCoupon>(`/api/admin/coupons/${couponId}`, { method: 'PATCH', token, data: requestBody });
+  },
+  updateAdminCouponStatus(token: string, couponId: string, status: AdminCoupon['status']) {
+    return request<AdminCoupon>(`/api/admin/coupons/${couponId}/status`, { method: 'PATCH', token, data: { status } });
   },
   suspendAdminUser(token: string, userId: string, reason: string) {
     return request<AdminActionResponse>(`/api/admin/users/${userId}/suspend`, { method: 'PATCH', token, data: { reason } });

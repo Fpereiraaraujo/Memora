@@ -4,28 +4,41 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventPlanCode;
+import com.memora.core.domain.model.CouponStatus;
+import com.memora.core.domain.model.InfluencerStatus;
 import com.memora.core.domain.model.UserRole;
 import com.memora.core.domain.model.UserStatus;
 import com.memora.dataprovider.database.entity.AdminAuditLogEntity;
+import com.memora.dataprovider.database.entity.CouponJpaEntity;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
+import com.memora.dataprovider.database.entity.InfluencerJpaEntity;
 import com.memora.dataprovider.database.entity.UserEntity;
 import com.memora.dataprovider.database.gateway.AdminQueryGateway;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
 import com.memora.dataprovider.database.repository.AdminAuditLogRepository;
+import com.memora.dataprovider.database.repository.CouponRepository;
 import com.memora.dataprovider.database.repository.EventCustomizationRepository;
 import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PhotoRepository;
 import com.memora.dataprovider.database.repository.PlanRepository;
+import com.memora.dataprovider.database.repository.InfluencerRepository;
+import com.memora.dataprovider.database.repository.PaymentOrderRepository;
+import com.memora.dataprovider.database.repository.ReferralCommissionRepository;
 import com.memora.dataprovider.database.repository.UserRepository;
 import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
+import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
+import com.memora.entrypoint.api.dto.AdminCouponUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminUserDetailsResponseDto;
 import com.memora.entrypoint.api.dto.AdminUserEventDto;
 import com.memora.entrypoint.api.dto.AdminUserListItemDto;
@@ -50,6 +63,10 @@ public class AdminManagementService {
 	private final PhotoRepository photoRepository;
 	private final EventCustomizationRepository eventCustomizationRepository;
 	private final PlanRepository planRepository;
+	private final InfluencerRepository influencerRepository;
+	private final CouponRepository couponRepository;
+	private final PaymentOrderRepository paymentOrderRepository;
+	private final ReferralCommissionRepository referralCommissionRepository;
 	private final AdminAuditLogRepository adminAuditLogRepository;
 	private final FileStorageService fileStorageService;
 	private final ObjectMapper objectMapper;
@@ -62,6 +79,10 @@ public class AdminManagementService {
 		PhotoRepository photoRepository,
 		EventCustomizationRepository eventCustomizationRepository,
 		PlanRepository planRepository,
+		InfluencerRepository influencerRepository,
+		CouponRepository couponRepository,
+		PaymentOrderRepository paymentOrderRepository,
+		ReferralCommissionRepository referralCommissionRepository,
 		AdminAuditLogRepository adminAuditLogRepository,
 		FileStorageService fileStorageService,
 		ObjectMapper objectMapper,
@@ -73,6 +94,10 @@ public class AdminManagementService {
 		this.photoRepository = photoRepository;
 		this.eventCustomizationRepository = eventCustomizationRepository;
 		this.planRepository = planRepository;
+		this.influencerRepository = influencerRepository;
+		this.couponRepository = couponRepository;
+		this.paymentOrderRepository = paymentOrderRepository;
+		this.referralCommissionRepository = referralCommissionRepository;
 		this.adminAuditLogRepository = adminAuditLogRepository;
 		this.fileStorageService = fileStorageService;
 		this.objectMapper = objectMapper;
@@ -319,6 +344,152 @@ public class AdminManagementService {
 		return adminQueryGateway.listAuditLogs(page, size, adminUserId, action, targetType, targetId, dateFrom, dateTo);
 	}
 
+	public AdminAffiliateSummaryResponseDto getAffiliateSummary() {
+		return new AdminAffiliateSummaryResponseDto(
+			influencerRepository.countByStatus(InfluencerStatus.ACTIVE),
+			couponRepository.countByStatus(CouponStatus.ACTIVE),
+			paymentOrderRepository.countByStatusAndCouponIdIsNotNull(com.memora.core.domain.model.PaymentOrderStatus.APPROVED),
+			referralCommissionRepository.sumPendingCommissionCents()
+		);
+	}
+
+	public List<AdminInfluencerListItemDto> listInfluencers() {
+		return influencerRepository.findAllByOrderByCreatedAtDesc()
+			.stream()
+			.map(this::toInfluencerListItem)
+			.toList();
+	}
+
+	@Transactional
+	public AdminInfluencerListItemDto createInfluencer(
+		AdminInfluencerUpsertRequestDto request,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		InfluencerJpaEntity influencer = influencerRepository.save(InfluencerJpaEntity.builder()
+			.id(UUID.randomUUID())
+			.name(request.name().trim())
+			.instagramHandle(normalizeNullable(request.instagramHandle()))
+			.email(normalizeNullable(request.email()))
+			.pixKey(normalizeNullable(request.pixKey()))
+			.status(request.status())
+			.createdAt(now)
+			.updatedAt(now)
+			.build());
+		logAudit(admin, "CREATE_INFLUENCER", "INFLUENCER", influencer.getId(), influencer.getEmail(), null, Map.of("name", influencer.getName()), ipAddress, userAgent);
+		return toInfluencerListItem(influencer);
+	}
+
+	@Transactional
+	public AdminInfluencerListItemDto updateInfluencer(
+		UUID influencerId,
+		AdminInfluencerUpsertRequestDto request,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		InfluencerJpaEntity influencer = influencerRepository.findById(influencerId)
+			.orElseThrow(() -> new NoSuchElementException("Influencer nao encontrada."));
+		influencer.setName(request.name().trim());
+		influencer.setInstagramHandle(normalizeNullable(request.instagramHandle()));
+		influencer.setEmail(normalizeNullable(request.email()));
+		influencer.setPixKey(normalizeNullable(request.pixKey()));
+		influencer.setStatus(request.status());
+		influencer.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+		InfluencerJpaEntity saved = influencerRepository.save(influencer);
+		logAudit(admin, "UPDATE_INFLUENCER", "INFLUENCER", saved.getId(), saved.getEmail(), null, Map.of("name", saved.getName()), ipAddress, userAgent);
+		return toInfluencerListItem(saved);
+	}
+
+	public List<AdminCouponListItemDto> listCoupons() {
+		Map<UUID, String> influencerNames = influencerRepository.findAllByOrderByCreatedAtDesc()
+			.stream()
+			.collect(java.util.stream.Collectors.toMap(InfluencerJpaEntity::getId, InfluencerJpaEntity::getName));
+		return couponRepository.findAllByOrderByCreatedAtDesc()
+			.stream()
+			.map(coupon -> toCouponListItem(coupon, influencerNames.get(coupon.getInfluencerId())))
+			.toList();
+	}
+
+	@Transactional
+	public AdminCouponListItemDto createCoupon(
+		AdminCouponUpsertRequestDto request,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		validateCouponRequest(request, null);
+		UUID influencerId = validateInfluencerReference(request.influencerId());
+		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		String normalizedCode = request.code().trim().toUpperCase();
+		CouponJpaEntity coupon = couponRepository.save(CouponJpaEntity.builder()
+			.id(UUID.randomUUID())
+			.code(normalizedCode)
+			.influencerId(influencerId)
+			.discountPercent(request.discountPercent())
+			.commissionPercent(request.commissionPercent())
+			.status(request.status())
+			.startsAt(request.startsAt())
+			.expiresAt(request.expiresAt())
+			.maxUses(request.maxUses())
+			.currentUses(0)
+			.createdAt(now)
+			.updatedAt(now)
+			.build());
+		logAudit(admin, "CREATE_COUPON", "COUPON", coupon.getId(), coupon.getCode(), null, Map.of("code", coupon.getCode()), ipAddress, userAgent);
+		return toCouponListItem(coupon, influencerName(influencerId));
+	}
+
+	@Transactional
+	public AdminCouponListItemDto updateCoupon(
+		UUID couponId,
+		AdminCouponUpsertRequestDto request,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		CouponJpaEntity coupon = couponRepository.findById(couponId)
+			.orElseThrow(() -> new NoSuchElementException("Cupom nao encontrado."));
+		validateCouponRequest(request, couponId);
+		UUID influencerId = validateInfluencerReference(request.influencerId());
+		coupon.setCode(request.code().trim().toUpperCase());
+		coupon.setInfluencerId(influencerId);
+		coupon.setDiscountPercent(request.discountPercent());
+		coupon.setCommissionPercent(request.commissionPercent());
+		coupon.setStatus(request.status());
+		coupon.setStartsAt(request.startsAt());
+		coupon.setExpiresAt(request.expiresAt());
+		coupon.setMaxUses(request.maxUses());
+		coupon.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+		CouponJpaEntity saved = couponRepository.save(coupon);
+		logAudit(admin, "UPDATE_COUPON", "COUPON", saved.getId(), saved.getCode(), null, Map.of("code", saved.getCode()), ipAddress, userAgent);
+		return toCouponListItem(saved, influencerName(influencerId));
+	}
+
+	@Transactional
+	public AdminCouponListItemDto updateCouponStatus(
+		UUID couponId,
+		CouponStatus status,
+		AuthenticatedUserPrincipal admin,
+		String ipAddress,
+		String userAgent
+	) {
+		findAdminUser(admin.userId());
+		CouponJpaEntity coupon = couponRepository.findById(couponId)
+			.orElseThrow(() -> new NoSuchElementException("Cupom nao encontrado."));
+		coupon.setStatus(status);
+		coupon.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+		CouponJpaEntity saved = couponRepository.save(coupon);
+		logAudit(admin, "UPDATE_COUPON_STATUS", "COUPON", saved.getId(), saved.getCode(), null, Map.of("status", status.name()), ipAddress, userAgent);
+		return toCouponListItem(saved, influencerName(saved.getInfluencerId()));
+	}
+
 	public boolean isUserActive(UUID userId) {
 		return userRepository.findById(userId)
 			.map(user -> user.getStatus() == UserStatus.ACTIVE)
@@ -409,5 +580,77 @@ public class AdminManagementService {
 
 	private long asLong(Object value) {
 		return value == null ? 0L : ((Number) value).longValue();
+	}
+
+	private void validateCouponRequest(AdminCouponUpsertRequestDto request, UUID currentCouponId) {
+		if (request.expiresAt() != null && request.startsAt() != null && request.expiresAt().isBefore(request.startsAt())) {
+			throw new IllegalArgumentException("A data de expiração deve ser posterior à data de início.");
+		}
+		String normalizedCode = request.code().trim().toUpperCase();
+		boolean duplicated = currentCouponId == null
+			? couponRepository.findByCode(normalizedCode).isPresent()
+			: couponRepository.existsByCodeAndIdNot(normalizedCode, currentCouponId);
+		if (duplicated) {
+			throw new IllegalArgumentException("Já existe um cupom com este código.");
+		}
+	}
+
+	private UUID validateInfluencerReference(UUID influencerId) {
+		if (influencerId == null) {
+			return null;
+		}
+		if (!influencerRepository.existsById(influencerId)) {
+			throw new IllegalArgumentException("Influencer selecionada não existe.");
+		}
+		return influencerId;
+	}
+
+	private String influencerName(UUID influencerId) {
+		if (influencerId == null) {
+			return null;
+		}
+		return influencerRepository.findById(influencerId)
+			.map(InfluencerJpaEntity::getName)
+			.orElse(null);
+	}
+
+	private AdminInfluencerListItemDto toInfluencerListItem(InfluencerJpaEntity influencer) {
+		return new AdminInfluencerListItemDto(
+			influencer.getId(),
+			influencer.getName(),
+			influencer.getInstagramHandle(),
+			influencer.getEmail(),
+			influencer.getPixKey(),
+			influencer.getStatus(),
+			couponRepository.countByInfluencerId(influencer.getId()),
+			influencer.getCreatedAt(),
+			influencer.getUpdatedAt()
+		);
+	}
+
+	private AdminCouponListItemDto toCouponListItem(CouponJpaEntity coupon, String influencerName) {
+		return new AdminCouponListItemDto(
+			coupon.getId(),
+			coupon.getCode(),
+			coupon.getInfluencerId(),
+			influencerName,
+			coupon.getDiscountPercent(),
+			coupon.getCommissionPercent(),
+			coupon.getStatus(),
+			coupon.getStartsAt(),
+			coupon.getExpiresAt(),
+			coupon.getMaxUses(),
+			coupon.getCurrentUses(),
+			coupon.getCreatedAt(),
+			coupon.getUpdatedAt()
+		);
+	}
+
+	private String normalizeNullable(String value) {
+		if (value == null) {
+			return null;
+		}
+		String normalizedValue = value.trim();
+		return normalizedValue.isBlank() ? null : normalizedValue;
 	}
 }

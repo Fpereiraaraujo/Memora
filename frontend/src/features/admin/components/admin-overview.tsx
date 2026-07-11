@@ -1,8 +1,9 @@
+import type { AdminSection } from '@/features/admin/components/admin-navigation';
 import type { AdminDashboardResponse } from '@/lib/api';
 
 interface AdminOverviewProps {
   dashboard: AdminDashboardResponse;
-  onSelectSection: (section: 'users' | 'events' | 'payments') => void;
+  onSelectSection: (section: AdminSection) => void;
 }
 
 function formatMoney(cents: number) {

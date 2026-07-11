@@ -3,9 +3,15 @@ package com.memora.entrypoint.api.controller.definition;
 import com.memora.entrypoint.api.dto.AdminActionRequestDto;
 import com.memora.entrypoint.api.dto.AdminActionResponseDto;
 import com.memora.entrypoint.api.dto.AdminAuditLogListItemDto;
+import com.memora.entrypoint.api.dto.AdminAffiliateSummaryResponseDto;
+import com.memora.entrypoint.api.dto.AdminCouponListItemDto;
+import com.memora.entrypoint.api.dto.AdminCouponStatusUpdateRequestDto;
+import com.memora.entrypoint.api.dto.AdminCouponUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminDashboardResponseDto;
 import com.memora.entrypoint.api.dto.AdminDeleteUserRequestDto;
 import com.memora.entrypoint.api.dto.AdminGrantPlanRequestDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerListItemDto;
+import com.memora.entrypoint.api.dto.AdminInfluencerUpsertRequestDto;
 import com.memora.entrypoint.api.dto.AdminEventListItemDto;
 import com.memora.entrypoint.api.dto.AdminPaymentListItemDto;
 import com.memora.entrypoint.api.dto.AdminRevenueSummaryResponseDto;
@@ -26,6 +32,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -131,5 +138,60 @@ public interface AdminControllerApi {
 		@RequestParam(required = false) UUID targetId,
 		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateFrom,
 		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate dateTo
+	);
+
+	@GetMapping("/api/admin/affiliate-summary")
+	@Operation(summary = "Get affiliate admin summary")
+	ResponseEntity<AdminAffiliateSummaryResponseDto> affiliateSummary();
+
+	@GetMapping("/api/admin/influencers")
+	@Operation(summary = "List influencers for admin")
+	ResponseEntity<java.util.List<AdminInfluencerListItemDto>> influencers();
+
+	@PostMapping("/api/admin/influencers")
+	@Operation(summary = "Create influencer for admin")
+	ResponseEntity<AdminInfluencerListItemDto> createInfluencer(
+		@Valid @RequestBody AdminInfluencerUpsertRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@PatchMapping("/api/admin/influencers/{influencerId}")
+	@Operation(summary = "Update influencer for admin")
+	ResponseEntity<AdminInfluencerListItemDto> updateInfluencer(
+		@PathVariable UUID influencerId,
+		@Valid @RequestBody AdminInfluencerUpsertRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@GetMapping("/api/admin/coupons")
+	@Operation(summary = "List coupons for admin")
+	ResponseEntity<java.util.List<AdminCouponListItemDto>> coupons();
+
+	@PostMapping("/api/admin/coupons")
+	@Operation(summary = "Create coupon for admin")
+	ResponseEntity<AdminCouponListItemDto> createCoupon(
+		@Valid @RequestBody AdminCouponUpsertRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@PatchMapping("/api/admin/coupons/{couponId}")
+	@Operation(summary = "Update coupon for admin")
+	ResponseEntity<AdminCouponListItemDto> updateCoupon(
+		@PathVariable UUID couponId,
+		@Valid @RequestBody AdminCouponUpsertRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
+	);
+
+	@PatchMapping("/api/admin/coupons/{couponId}/status")
+	@Operation(summary = "Update coupon status for admin")
+	ResponseEntity<AdminCouponListItemDto> updateCouponStatus(
+		@PathVariable UUID couponId,
+		@Valid @RequestBody AdminCouponStatusUpdateRequestDto request,
+		Authentication authentication,
+		jakarta.servlet.http.HttpServletRequest httpServletRequest
 	);
 }

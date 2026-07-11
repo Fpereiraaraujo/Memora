@@ -1,6 +1,6 @@
 import { DashboardIcon, CalendarIcon, ImagesIcon, UsersIcon, DownloadIcon } from '@/features/events/components/event-dashboard/event-icons';
 
-export type AdminSection = 'overview' | 'users' | 'events' | 'payments' | 'audit';
+export type AdminSection = 'overview' | 'users' | 'events' | 'payments' | 'partnerships' | 'audit';
 
 const navigationItems: Array<{
   id: AdminSection;
@@ -12,6 +12,7 @@ const navigationItems: Array<{
   { id: 'users', label: 'Clientes', description: 'Contas e acesso', Icon: UsersIcon },
   { id: 'events', label: 'Eventos', description: 'Planos e uso', Icon: CalendarIcon },
   { id: 'payments', label: 'Pagamentos', description: 'Receita e status', Icon: DownloadIcon },
+  { id: 'partnerships', label: 'Parcerias', description: 'Influencers e cupons', Icon: ImagesIcon },
   { id: 'audit', label: 'Auditoria', description: 'Ações sensíveis', Icon: ImagesIcon },
 ];
 
