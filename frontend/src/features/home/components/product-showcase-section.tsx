@@ -5,28 +5,54 @@ const features = [
   {
     title: 'Upload por QR Code',
     description: 'Convidados escaneiam e enviam fotos em segundos, direto do celular.',
-    icon: '⌘',
+    icon: 'Q',
     tone: 'bg-[#fff0f1] text-[#ef7885]',
   },
   {
     title: 'Galeria privada',
     description: 'Os noivos acompanham tudo em um painel simples, bonito e organizado.',
-    icon: '⬡',
+    icon: 'G',
     tone: 'bg-[#fff8ef] text-[#d39a35]',
   },
   {
-    title: 'Página dos convidados',
-    description: 'Uma página pública elegante com upload, fotos em destaque e galeria.',
-    icon: '◎',
+    title: 'Pagina dos convidados',
+    description: 'Uma pagina elegante com upload, fotos em destaque e galeria do evento.',
+    icon: 'P',
     tone: 'bg-[#fff0f1] text-[#ef8a8f]',
   },
   {
-    title: 'Memórias para baixar',
-    description: 'As fotos ficam disponíveis pelo tempo do plano para abrir, favoritar e baixar.',
-    icon: '☁',
+    title: 'Memorias para baixar',
+    description: 'As fotos ficam disponiveis pelo tempo do plano para abrir, favoritar e baixar.',
+    icon: 'M',
     tone: 'bg-[#fff8ef] text-[#d39a35]',
   },
 ];
+
+const marketingPlans = EVENT_PLANS.map((plan) => {
+  if (plan.code === 'ESSENTIAL') {
+    return {
+      ...plan,
+      marketingName: 'Essencial',
+      marketingDescription: 'Ideal para eventos menores e para quem quer comecar com simplicidade.',
+    };
+  }
+
+  if (plan.code === 'EVENT') {
+    return {
+      ...plan,
+      marketingName: 'Celebracao',
+      marketingDescription:
+        'O plano mais escolhido para casamentos, com mais espaco para fotos, recados e organizacao.',
+    };
+  }
+
+  return {
+    ...plan,
+    marketingName: 'Premium',
+    marketingDescription:
+      'Para quem quer a experiencia completa, com mais personalizacao e mais tempo para guardar as memorias.',
+  };
+});
 
 function FeatureCard({
   title,
@@ -41,17 +67,13 @@ function FeatureCard({
 }) {
   return (
     <article className="rounded-[1.55rem] bg-white/92 p-5 shadow-[0_12px_30px_rgba(96,60,36,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(96,60,36,0.1)] active:scale-[0.99]">
-      <div className={`mb-4 grid size-12 place-items-center rounded-2xl text-lg transition duration-300 ${tone}`}>
+      <div className={`mb-4 grid size-12 place-items-center rounded-2xl text-lg font-black transition duration-300 ${tone}`}>
         {icon}
       </div>
 
-      <h3 className="text-lg font-bold text-ink-900">
-        {title}
-      </h3>
+      <h3 className="text-lg font-bold text-ink-900">{title}</h3>
 
-      <p className="mt-2 text-sm leading-7 text-ink-800/68">
-        {description}
-      </p>
+      <p className="mt-2 text-sm leading-7 text-ink-800/68">{description}</p>
     </article>
   );
 }
@@ -86,23 +108,15 @@ function PlanCard({
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-2xl font-bold text-ink-900">
-            {name}
-          </h3>
+          <h3 className="text-2xl font-bold text-ink-900">{name}</h3>
 
-          <p className="mt-3 text-sm leading-6 text-ink-800/58">
-            {summary}
-          </p>
+          <p className="mt-3 text-sm leading-6 text-ink-800/58">{summary}</p>
         </div>
 
         <div className="text-right">
-          <p className="text-3xl font-black tracking-[-0.05em] text-[#eb7d87]">
-            {price}
-          </p>
+          <p className="text-3xl font-black tracking-[-0.05em] text-[#eb7d87]">{price}</p>
 
-          <p className="text-xs font-semibold text-ink-800/42">
-            {note}
-          </p>
+          <p className="text-xs font-semibold text-ink-800/42">{note}</p>
         </div>
       </div>
 
@@ -110,7 +124,7 @@ function PlanCard({
         {items.map((item) => (
           <li key={item} className="flex items-center gap-3 text-sm text-ink-800/76">
             <span className="grid size-5 place-items-center rounded-full bg-[#fff8ef] text-xs font-bold text-[#d2a049]">
-              ✓
+              +
             </span>
             {item}
           </li>
@@ -150,13 +164,13 @@ export function ProductShowcaseSection() {
             </p>
           </div>
 
-          {EVENT_PLANS.map((plan) => (
+          {marketingPlans.map((plan) => (
             <PlanCard
               key={plan.code}
-              name={plan.name}
+              name={plan.marketingName}
               price={plan.priceLabel}
               note="/evento"
-              summary={plan.description}
+              summary={plan.marketingDescription}
               items={plan.items}
               highlighted={plan.highlighted}
             />

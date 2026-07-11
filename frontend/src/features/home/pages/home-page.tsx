@@ -1,85 +1,42 @@
 import { PublicShell } from '@/components/layout/public-shell';
+import { HomeHowItWorksSection } from '@/features/home/components/home-how-it-works-section';
 import { HomeIntroSection } from '@/features/home/components/home-intro-section';
 import { LandingFinalCta } from '@/features/home/components/landing-final-cta';
 import { ProductShowcaseSection } from '@/features/home/components/product-showcase-section';
-
-function StepCard({
-  step,
-  title,
-  description,
-}: {
-  step: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <article className="rounded-[1.7rem] bg-white/92 p-6 shadow-[0_12px_30px_rgba(96,60,36,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(96,60,36,0.1)] active:scale-[0.99]">
-      <span className="text-xs font-bold uppercase tracking-[0.24em] text-[#eb7d87]">
-        {step}
-      </span>
-
-      <h3 className="mt-3 text-xl font-bold text-ink-900">
-        {title}
-      </h3>
-
-      <p className="mt-3 text-sm leading-7 text-ink-800/68">
-        {description}
-      </p>
-    </article>
-  );
-}
+import {
+  HomeCameraFlowSection,
+  HomeEmotionalSection,
+  HomeWhatsappComparisonSection,
+} from '@/features/home/components/home-story-sections';
+import {
+  HomeFaqSection,
+  HomePrivacySection,
+  HomeQrCodePlacementSection,
+  HomeSocialProofSection,
+} from '@/features/home/components/home-trust-sections';
+import { LANDING_FAQ_ITEMS } from '@/features/home/data/landing-content';
+import { PageSeo } from '@/lib/page-seo';
 
 export function HomePage() {
   return (
     <PublicShell>
+      <PageSeo
+        title="Memora | As fotos do seu casamento em um so lugar"
+        description="Crie uma pagina personalizada, compartilhe um QR Code e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e sem complicacao."
+        path="/"
+        faqJsonLd={LANDING_FAQ_ITEMS.map((item) => ({ question: item.question, answer: item.answer }))}
+      />
+
       <HomeIntroSection />
-
-      <section id="como-funciona" className="px-4 py-3 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,250,245,0.88),rgba(255,245,240,0.84))] p-5 shadow-[0_16px_44px_rgba(96,60,36,0.05)] sm:p-7 lg:p-8">
-          <div className="mb-6 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">
-              Como funciona
-            </p>
-
-            <h2 className="mt-3 font-display text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-ink-950">
-              Um fluxo bonito por fora e simples por dentro
-            </h2>
-
-            <p className="mt-4 text-base leading-8 text-ink-800/68">
-              Os noivos criam o evento, compartilham o QR Code e os convidados enviam fotos sem precisar instalar aplicativo.
-            </p>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-4">
-            <StepCard
-              step="Passo 01"
-              title="Crie o evento"
-              description="Defina nome, data e local. A página pública e a galeria privada nascem a partir disso."
-            />
-
-            <StepCard
-              step="Passo 02"
-              title="Compartilhe o QR Code"
-              description="Use o QR em mesas, convites, espelhos ou totens para levar convidados direto para o upload."
-            />
-
-            <StepCard
-              step="Passo 03"
-              title="Receba as fotos"
-              description="O envio acontece no celular, em poucos toques, durante toda a celebração."
-            />
-
-            <StepCard
-              step="Passo 04"
-              title="Baixe e favorite"
-              description="Acompanhe tudo no painel privado, favorite imagens e guarde as melhores memórias."
-            />
-          </div>
-        </div>
-      </section>
-
+      <HomeHowItWorksSection />
+      <HomeEmotionalSection />
+      <HomeWhatsappComparisonSection />
+      <HomeCameraFlowSection />
       <ProductShowcaseSection />
-
+      <HomePrivacySection />
+      <HomeQrCodePlacementSection />
+      <HomeSocialProofSection />
+      <HomeFaqSection />
       <LandingFinalCta />
     </PublicShell>
   );

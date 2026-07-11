@@ -1,28 +1,29 @@
 import { useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
-import { ProtectedRoute } from '@/components/layout/protected-route';
 import { AdminRoute } from '@/components/layout/admin-route';
+import { ProtectedRoute } from '@/components/layout/protected-route';
 import { PublicShell } from '@/components/layout/public-shell';
 import { Card } from '@/components/ui/card';
+import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page';
 import { AuthProvider, useAuth } from '@/features/auth/auth-context';
 import { LoginPage } from '@/features/auth/pages/login-page';
 import { RegisterPage } from '@/features/auth/pages/register-page';
 import { DashboardPage } from '@/features/dashboard/pages/dashboard-page';
+import { EventCheckoutPage } from '@/features/events/pages/event-checkout-page';
 import { EventDetailPage } from '@/features/events/pages/event-detail-page';
 import { EventDownloadsPage } from '@/features/events/pages/event-downloads-page';
 import { EventFavoritesPage } from '@/features/events/pages/event-favorites-page';
 import { EventGalleryPage } from '@/features/events/pages/event-gallery-page';
-import { EventCheckoutPage } from '@/features/events/pages/event-checkout-page';
-import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
-import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
-import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
 import { EventInvitationPage } from '@/features/events/pages/event-invitation-page';
+import { EventMessagesPage } from '@/features/events/pages/event-messages-page';
+import { EventPublicPageSettingsPage } from '@/features/events/pages/event-public-page-settings-page';
+import { EventQrCodePage } from '@/features/events/pages/event-qrcode-page';
 import { invitationFeatureEnabled } from '@/features/events/utils/event-feature-toggles';
 import { HomePage } from '@/features/home/pages/home-page';
+import { QrCodeWeddingPage } from '@/features/home/pages/qr-code-wedding-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
 import { PublicInvitationPage } from '@/features/public/pages/public-invitation-page';
-import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page';
 import { setStoredReferral } from '@/lib/storage';
 
 function ReferralCapture() {
@@ -48,7 +49,6 @@ function RootRedirect() {
 
   return <Navigate to={token ? (user?.role === 'ADMIN' ? '/admin' : '/app') : '/login'} replace />;
 }
-
 
 function PublicUploadRedirect() {
   const { slug } = useParams();
@@ -79,11 +79,11 @@ function NotFoundPage() {
           <p className="text-xs font-bold uppercase tracking-[0.34em] text-[#b9852f]">404</p>
 
           <h1 className="font-display text-5xl font-semibold tracking-[-0.04em] text-ink-900">
-            Página não encontrada
+            Pagina nao encontrada
           </h1>
 
           <p className="mx-auto max-w-xl text-sm leading-7 text-ink-800/72">
-            O caminho acessado não existe. Volte para a página inicial ou entre na sua conta para gerenciar seus eventos.
+            O caminho acessado nao existe. Volte para a pagina inicial ou entre na sua conta para gerenciar seus eventos.
           </p>
 
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
@@ -91,7 +91,7 @@ function NotFoundPage() {
               className="inline-flex items-center justify-center rounded-2xl bg-[#ef7885] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.25)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
               to="/"
             >
-              Voltar para início
+              Voltar para inicio
             </Link>
 
             <Link
@@ -113,6 +113,7 @@ export default function App() {
       <ReferralCapture />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/qr-code-casamento" element={<QrCodeWeddingPage />} />
         <Route path="/start" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -129,111 +130,110 @@ export default function App() {
 
         <Route
           path="/app"
-          element={
+          element={(
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/checkout"
-          element={
+          element={(
             <ProtectedRoute>
               <EventCheckoutPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId"
-          element={
+          element={(
             <ProtectedRoute>
               <EventDetailPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/event/:eventId"
-          element={
+          element={(
             <ProtectedRoute>
               <LegacyEventRedirect />
             </ProtectedRoute>
-          }
+          )}
         />
-
 
         <Route
           path="/app/events/:eventId/public-page"
-          element={
+          element={(
             <ProtectedRoute>
               <EventPublicPageSettingsPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/invitation"
-          element={
+          element={(
             <ProtectedRoute>
               {invitationFeatureEnabled ? <EventInvitationPage /> : <EventInvitationStandbyRedirect />}
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/event/:eventId/public-page"
-          element={
+          element={(
             <ProtectedRoute>
               <LegacyEventPublicPageRedirect />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/gallery"
-          element={
+          element={(
             <ProtectedRoute>
               <EventGalleryPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/qrcode"
-          element={
+          element={(
             <ProtectedRoute>
               <EventQrCodePage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/favorites"
-          element={
+          element={(
             <ProtectedRoute>
               <EventFavoritesPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/downloads"
-          element={
+          element={(
             <ProtectedRoute>
               <EventDownloadsPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route
           path="/app/events/:eventId/messages"
-          element={
+          element={(
             <ProtectedRoute>
               <EventMessagesPage />
             </ProtectedRoute>
-          }
+          )}
         />
 
         <Route path="/e/:slug/upload" element={<PublicUploadRedirect />} />
