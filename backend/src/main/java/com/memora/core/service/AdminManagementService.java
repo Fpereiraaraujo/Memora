@@ -147,7 +147,7 @@ public class AdminManagementService {
 			user.getDeletedAt(),
 			asLong(summary.get("total_events")),
 			asLong(summary.get("total_photos")),
-			(String) summary.get("current_plan_code"),
+			summary.get("current_plan_code") == null ? null : summary.get("current_plan_code").toString(),
 			asLong(summary.get("total_approved_payments")),
 			asLong(summary.get("total_revenue_cents")),
 			events,
@@ -637,14 +637,9 @@ public class AdminManagementService {
 		String ipAddress,
 		String userAgent
 	) {
-		String metadataJson = null;
-		if (metadata != null && !metadata.isEmpty()) {
-			try {
-				metadataJson = objectMapper.writeValueAsString(metadata);
-			} catch (JsonProcessingException exception) {
-				metadataJson = "{\"serialization\":\"failed\"}";
-			}
-		}
+		Map<String, Object> auditMetadata = metadata == null || metadata.isEmpty()
+			? null
+			: metadata;
 
 		adminAuditLogRepository.save(AdminAuditLogEntity.builder()
 			.id(UUID.randomUUID())
@@ -654,7 +649,7 @@ public class AdminManagementService {
 			.targetId(targetId)
 			.targetEmail(targetEmail)
 			.reason(reason)
-			.metadata(metadataJson)
+			.metadata(auditMetadata)
 			.ipAddress(ipAddress)
 			.userAgent(userAgent)
 			.createdAt(LocalDateTime.now(ZoneOffset.UTC))

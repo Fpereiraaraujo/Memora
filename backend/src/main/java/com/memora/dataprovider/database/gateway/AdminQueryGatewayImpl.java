@@ -541,14 +541,10 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 		String commissionStatus
 	) {
 		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("dateFrom", startOfDay(dateFrom));
-		params.addValue("dateTo", endExclusive(dateTo));
-		params.addValue("couponId", couponId);
-		params.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
-		String influencerFilter = influencerId == null ? "" : " where i.id = :influencerId";
-		if (influencerId != null) {
-			params.addValue("influencerId", influencerId);
-		}
+		String salesWhere = buildAffiliateSalesFilters(dateFrom, dateTo, null, couponId, params, "po");
+		String commissionWhere = buildCommissionBaseFilters(dateFrom, dateTo, null, couponId, params, "rc");
+		String influencerFilter = buildInfluencerFilters(influencerId, params, "i");
+		String commissionStatusFilter = buildCommissionStatusFilter(commissionStatus, params, "rc");
 
 		return jdbcTemplate.query("""
 			with sales_metrics as (
@@ -559,9 +555,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 				from payment_orders po
 				where po.status = 'APPROVED'
 				  and po.influencer_id is not null
-				  and (:dateFrom is null or po.paid_at >= :dateFrom)
-				  and (:dateTo is null or po.paid_at < :dateTo)
-				  and (:couponId is null or po.coupon_id = :couponId)
+				""" + salesWhere + """
 				group by po.influencer_id
 			),
 			commission_metrics as (
@@ -570,10 +564,8 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 					coalesce(sum(case when rc.status in ('APPROVED', 'PAYABLE') then rc.commission_amount_cents else 0 end), 0) as pending_commission_cents,
 					coalesce(sum(case when rc.status = 'PAID' then rc.commission_amount_cents else 0 end), 0) as paid_commission_cents
 				from referral_commissions rc
-				where (:dateFrom is null or rc.created_at >= :dateFrom)
-				  and (:dateTo is null or rc.created_at < :dateTo)
-				  and (:couponId is null or rc.coupon_id = :couponId)
-				  and (:commissionStatus is null or rc.status = :commissionStatus)
+				where 1=1
+				""" + commissionWhere + commissionStatusFilter + """
 				group by rc.influencer_id
 			)
 			select
@@ -619,12 +611,11 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 		UUID couponId,
 		String commissionStatus
 	) {
-		MapSqlParameterSource params = new MapSqlParameterSource()
-			.addValue("dateFrom", startOfDay(dateFrom))
-			.addValue("dateTo", endExclusive(dateTo))
-			.addValue("influencerId", influencerId)
-			.addValue("couponId", couponId)
-			.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		String salesWhere = buildAffiliateSalesFilters(dateFrom, dateTo, influencerId, couponId, params, "po");
+		String commissionWhere = buildCommissionBaseFilters(dateFrom, dateTo, influencerId, couponId, params, "rc");
+		String couponWhere = buildCouponFilters(influencerId, couponId, params, "c");
+		String commissionStatusFilter = buildCommissionStatusFilter(commissionStatus, params, "rc");
 
 		return jdbcTemplate.query("""
 			with sales_metrics as (
@@ -636,10 +627,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 				from payment_orders po
 				where po.status = 'APPROVED'
 				  and po.coupon_id is not null
-				  and (:dateFrom is null or po.paid_at >= :dateFrom)
-				  and (:dateTo is null or po.paid_at < :dateTo)
-				  and (:influencerId is null or po.influencer_id = :influencerId)
-				  and (:couponId is null or po.coupon_id = :couponId)
+				""" + salesWhere + """
 				group by po.coupon_id
 			),
 			commission_metrics as (
@@ -647,11 +635,8 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 					rc.coupon_id,
 					coalesce(sum(rc.commission_amount_cents), 0) as commission_generated_cents
 				from referral_commissions rc
-				where (:dateFrom is null or rc.created_at >= :dateFrom)
-				  and (:dateTo is null or rc.created_at < :dateTo)
-				  and (:influencerId is null or rc.influencer_id = :influencerId)
-				  and (:couponId is null or rc.coupon_id = :couponId)
-				  and (:commissionStatus is null or rc.status = :commissionStatus)
+				where 1=1
+				""" + commissionWhere + commissionStatusFilter + """
 				group by rc.coupon_id
 			)
 			select
@@ -668,8 +653,8 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			left join influencers i on i.id = c.influencer_id
 			left join sales_metrics sm on sm.coupon_id = c.id
 			left join commission_metrics cm on cm.coupon_id = c.id
-			where (:influencerId is null or c.influencer_id = :influencerId)
-			  and (:couponId is null or c.id = :couponId)
+			where 1=1
+			""" + couponWhere + """
 			order by approved_sales desc, c.created_at desc
 			""", params, (rs, rowNum) -> new AdminAffiliateCouponMetricDto(
 			rs.getObject("coupon_id", UUID.class),
@@ -693,11 +678,11 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 		String commissionStatus
 	) {
 		MapSqlParameterSource baseParams = new MapSqlParameterSource()
-			.addValue("influencerId", influencerId)
-			.addValue("dateFrom", startOfDay(dateFrom))
-			.addValue("dateTo", endExclusive(dateTo))
-			.addValue("couponId", couponId)
-			.addValue("commissionStatus", normalizeNullableUpper(commissionStatus));
+			.addValue("influencerId", influencerId);
+		String salesWhere = buildAffiliateSalesFilters(dateFrom, dateTo, null, couponId, baseParams, "po");
+		String commissionWhere = buildCommissionBaseFilters(dateFrom, dateTo, null, couponId, baseParams, "rc");
+		String commissionStatusFilter = buildCommissionStatusFilter(commissionStatus, baseParams, "rc");
+		String couponFilter = buildCouponIdFilter(couponId, baseParams, "c");
 
 		Map<String, Object> summary = jdbcTemplate.queryForMap("""
 			select
@@ -712,36 +697,26 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 					from payment_orders po
 					where po.status = 'APPROVED'
 					  and po.influencer_id = i.id
-					  and (:dateFrom is null or po.paid_at >= :dateFrom)
-					  and (:dateTo is null or po.paid_at < :dateTo)
-					  and (:couponId is null or po.coupon_id = :couponId)
+					""" + salesWhere + """
 				), 0) as approved_sales,
 				coalesce((
 					select sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents))
 					from payment_orders po
 					where po.status = 'APPROVED'
 					  and po.influencer_id = i.id
-					  and (:dateFrom is null or po.paid_at >= :dateFrom)
-					  and (:dateTo is null or po.paid_at < :dateTo)
-					  and (:couponId is null or po.coupon_id = :couponId)
+					""" + salesWhere + """
 				), 0) as net_revenue_cents,
 				coalesce((
 					select sum(case when rc.status in ('APPROVED', 'PAYABLE') then rc.commission_amount_cents else 0 end)
 					from referral_commissions rc
 					where rc.influencer_id = i.id
-					  and (:dateFrom is null or rc.created_at >= :dateFrom)
-					  and (:dateTo is null or rc.created_at < :dateTo)
-					  and (:couponId is null or rc.coupon_id = :couponId)
-					  and (:commissionStatus is null or rc.status = :commissionStatus)
+					""" + commissionWhere + commissionStatusFilter + """
 				), 0) as pending_commission_cents,
 				coalesce((
 					select sum(case when rc.status = 'PAID' then rc.commission_amount_cents else 0 end)
 					from referral_commissions rc
 					where rc.influencer_id = i.id
-					  and (:dateFrom is null or rc.created_at >= :dateFrom)
-					  and (:dateTo is null or rc.created_at < :dateTo)
-					  and (:couponId is null or rc.coupon_id = :couponId)
-					  and (:commissionStatus is null or rc.status = :commissionStatus)
+					""" + commissionWhere + commissionStatusFilter + """
 				), 0) as paid_commission_cents
 			from influencers i
 			where i.id = :influencerId
@@ -765,7 +740,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			from coupons c
 			left join influencers i on i.id = c.influencer_id
 			where c.influencer_id = :influencerId
-			  and (:couponId is null or c.id = :couponId)
+			""" + couponFilter + """
 			order by c.created_at desc
 			""", baseParams, (rs, rowNum) -> new AdminCouponListItemDto(
 			rs.getObject("id", UUID.class),
@@ -802,9 +777,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			join users u on u.id = po.user_id
 			where po.influencer_id = :influencerId
 			  and po.status = 'APPROVED'
-			  and (:dateFrom is null or po.paid_at >= :dateFrom)
-			  and (:dateTo is null or po.paid_at < :dateTo)
-			  and (:couponId is null or po.coupon_id = :couponId)
+			""" + salesWhere + """
 			order by po.paid_at desc nulls last, po.created_at desc
 			""", baseParams, (rs, rowNum) -> new AdminAffiliateSaleListItemDto(
 			rs.getObject("payment_order_id", UUID.class),
@@ -840,10 +813,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			join events e on e.id = rc.event_id
 			join users u on u.id = rc.user_id
 			where rc.influencer_id = :influencerId
-			  and (:dateFrom is null or rc.created_at >= :dateFrom)
-			  and (:dateTo is null or rc.created_at < :dateTo)
-			  and (:couponId is null or rc.coupon_id = :couponId)
-			  and (:commissionStatus is null or rc.status = :commissionStatus)
+			""" + commissionWhere + commissionStatusFilter + """
 			order by rc.created_at desc
 			""", baseParams, (rs, rowNum) -> new AdminReferralCommissionListItemDto(
 			rs.getObject("id", UUID.class),
@@ -1030,6 +1000,45 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			params.addValue("couponId", couponId);
 		}
 		return where.toString();
+	}
+
+	private String buildInfluencerFilters(UUID influencerId, MapSqlParameterSource params, String alias) {
+		StringBuilder where = new StringBuilder();
+		if (influencerId != null) {
+			where.append(" where ").append(alias).append(".id = :influencerId");
+			params.addValue("influencerId", influencerId);
+		}
+		return where.toString();
+	}
+
+	private String buildCouponFilters(UUID influencerId, UUID couponId, MapSqlParameterSource params, String alias) {
+		StringBuilder where = new StringBuilder();
+		if (influencerId != null) {
+			where.append(" and ").append(alias).append(".influencer_id = :influencerId");
+			params.addValue("influencerId", influencerId);
+		}
+		if (couponId != null) {
+			where.append(" and ").append(alias).append(".id = :couponId");
+			params.addValue("couponId", couponId);
+		}
+		return where.toString();
+	}
+
+	private String buildCouponIdFilter(UUID couponId, MapSqlParameterSource params, String alias) {
+		if (couponId == null) {
+			return "";
+		}
+		params.addValue("couponId", couponId);
+		return " and " + alias + ".id = :couponId";
+	}
+
+	private String buildCommissionStatusFilter(String commissionStatus, MapSqlParameterSource params, String alias) {
+		String normalizedStatus = normalizeNullableUpper(commissionStatus);
+		if (normalizedStatus == null) {
+			return "";
+		}
+		params.addValue("commissionStatus", normalizedStatus);
+		return " and " + alias + ".status = :commissionStatus";
 	}
 
 	private LocalDateTime startOfDay(LocalDate value) {

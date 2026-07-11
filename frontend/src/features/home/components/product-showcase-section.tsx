@@ -1,4 +1,5 @@
 import { DashboardPreview } from '@/features/home/components/dashboard-preview';
+import { EVENT_PLANS } from '@/types/payment';
 
 const features = [
   {
@@ -24,31 +25,6 @@ const features = [
     description: 'As fotos ficam disponíveis pelo tempo do plano para abrir, favoritar e baixar.',
     icon: '☁',
     tone: 'bg-[#fff8ef] text-[#d39a35]',
-  },
-];
-
-const plans = [
-  {
-    name: 'Essencial',
-    price: 'R$ 39,90',
-    note: '/evento',
-    summary: 'Para eventos pequenos e celebrações íntimas.',
-    items: ['Até 150 fotos', '3 meses de armazenamento', 'QR Code e link público', 'Upload sem login'],
-  },
-  {
-    name: 'Evento',
-    price: 'R$ 69,90',
-    note: '/evento',
-    summary: 'O melhor equilíbrio para aniversários, noivados e festas médias.',
-    highlighted: true,
-    items: ['Até 500 fotos', '6 meses de armazenamento', 'Galeria pública e privada', 'Favoritas e recados'],
-  },
-  {
-    name: 'Premium',
-    price: 'R$ 99,90',
-    note: '/evento',
-    summary: 'Pensado para casamentos, formaturas e eventos maiores.',
-    items: ['Até 1.500 fotos', '12 meses de armazenamento', 'Personalização da página', 'Mais tempo para baixar tudo'],
   },
 ];
 
@@ -174,8 +150,16 @@ export function ProductShowcaseSection() {
             </p>
           </div>
 
-          {plans.map((plan) => (
-            <PlanCard key={plan.name} {...plan} />
+          {EVENT_PLANS.map((plan) => (
+            <PlanCard
+              key={plan.code}
+              name={plan.name}
+              price={plan.priceLabel}
+              note="/evento"
+              summary={plan.description}
+              items={plan.items}
+              highlighted={plan.highlighted}
+            />
           ))}
         </div>
       </div>

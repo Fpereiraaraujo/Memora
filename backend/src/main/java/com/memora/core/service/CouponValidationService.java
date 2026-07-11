@@ -9,6 +9,7 @@ import com.memora.dataprovider.database.repository.CouponRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Locale;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,6 +18,7 @@ public class CouponValidationService {
 	private final CouponRepository couponRepository;
 	private final Clock clock;
 
+	@Autowired
 	public CouponValidationService(CouponRepository couponRepository) {
 		this(couponRepository, Clock.systemUTC());
 	}
