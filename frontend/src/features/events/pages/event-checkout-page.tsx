@@ -5,7 +5,10 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuth } from '@/features/auth/auth-context';
+import { CheckoutCouponPanel } from '@/features/events/components/checkout-coupon-panel';
+import { CheckoutPricingSummary } from '@/features/events/components/checkout-pricing-summary';
 import { EventPlanSelector } from '@/features/events/components/event-plan-selector';
+import { useCheckoutPreview } from '@/features/events/hooks/use-checkout-preview';
 import {
   buildEventOverviewPath,
   buildEventQrPath,
@@ -71,8 +74,8 @@ function CheckoutHeader({
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/68 sm:text-base sm:leading-8">
-            O evento é liberado assim que o pagamento for confirmado.
-            Assim, o QR Code, a página pública e a galeria ficam protegidos desde o início.
+            Agora você pode validar um cupom antes de seguir. O valor final mostrado aqui
+            sempre vem do backend e o pagamento só libera o evento após confirmação.
           </p>
         </div>
 
@@ -134,7 +137,7 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
           <div className="mt-5 space-y-3 text-sm text-ink-800/70">
             <div className="flex items-start gap-3 rounded-[1.2rem] border border-[#f1ddd1] bg-white/74 p-4">
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#fff1f2] text-[#ef7885]">
-                ◌
+                ○
               </span>
 
               <div>
@@ -183,7 +186,7 @@ function CheckoutSummaryCard({ event }: { event: EventSummary }) {
           </div>
 
           <div className="rounded-[1.5rem] border border-[#f7dec7] bg-[#fff7ef] p-5 text-sm leading-7 text-[#8f6228]">
-            O pagamento é conferido com segurança antes de liberar os recursos do plano.
+            O preview não cria cobrança nem reserva cupom. O cálculo será refeito novamente no checkout real.
           </div>
         </div>
       </div>
@@ -250,7 +253,7 @@ function PendingPaymentCard({
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#b87955] shadow-[0_12px_28px_rgba(96,60,36,0.08)]">
             <span className="grid size-5 place-items-center rounded-full bg-[#fff4ef] text-[#d19a38]">
-              ◌
+              ○
             </span>
             Pagamento em análise
           </div>
@@ -313,6 +316,93 @@ function FailedPaymentCard({
   );
 }
 
+function CheckoutWorkspace({
+  busy,
+  error,
+  selectedPlanCode,
+  couponCode,
+  appliedCouponCode,
+  preview,
+  previewing,
+  applyingCoupon,
+  couponFeedback,
+  couponError,
+  onCouponCodeChange,
+  onApplyCoupon,
+  onRemoveCoupon,
+  onSelectPlan,
+  onContinue,
+}: {
+  busy: boolean;
+  error: string | null;
+  selectedPlanCode: EventPlanCode | null;
+  couponCode: string;
+  appliedCouponCode: string | null;
+  preview: import('@/types/payment').EventCheckoutPreviewResponse | null;
+  previewing: boolean;
+  applyingCoupon: boolean;
+  couponFeedback: string | null;
+  couponError: string | null;
+  onCouponCodeChange: (value: string) => void;
+  onApplyCoupon: () => void;
+  onRemoveCoupon: () => void;
+  onSelectPlan: (planCode: EventPlanCode) => void;
+  onContinue: () => void;
+}) {
+  return (
+    <div className="space-y-6">
+      {error ? (
+        <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
+          {error}
+        </div>
+      ) : null}
+
+      <Card className="rounded-[2rem] border-[#f0d8ca] bg-white/78 p-5 shadow-[0_22px_70px_rgba(96,60,36,0.08)] sm:p-6">
+        <div className="mb-5">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">
+            Escolha seu plano
+          </p>
+
+          <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.05em] text-ink-950">
+            Revise o valor antes de pagar
+          </h2>
+
+          <p className="mt-3 text-sm leading-7 text-ink-800/64">
+            Primeiro escolha o plano, depois valide um cupom se quiser. O valor final sempre será recalculado pelo backend no checkout real.
+          </p>
+        </div>
+
+        <EventPlanSelector
+          busy={busy || previewing}
+          selectedPlanCode={selectedPlanCode}
+          onSelectPlan={onSelectPlan}
+        />
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <CheckoutCouponPanel
+            couponCode={couponCode}
+            disabled={!selectedPlanCode}
+            applying={applyingCoupon}
+            appliedCouponCode={appliedCouponCode}
+            feedback={couponFeedback}
+            error={couponError}
+            onCouponCodeChange={onCouponCodeChange}
+            onApplyCoupon={onApplyCoupon}
+            onRemoveCoupon={onRemoveCoupon}
+          />
+
+          <CheckoutPricingSummary
+            preview={preview}
+            selectedPlanCode={selectedPlanCode}
+            busy={busy}
+            onContinue={onContinue}
+          />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function CheckoutHelpCard() {
   return (
     <div className="rounded-[2rem] border border-[#f1ddd1] bg-white/78 p-6 shadow-[0_18px_44px_rgba(96,60,36,0.05)] sm:p-7">
@@ -323,8 +413,8 @@ function CheckoutHelpCard() {
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {[
           ['1', 'Escolha do plano', 'Escolha a opção que combina com o seu casamento.'],
-          ['2', 'Confirmação segura', 'O pagamento é conferido antes de qualquer recurso ser liberado.'],
-          ['3', 'Evento liberado', 'Depois da confirmação, o plano e o limite de fotos entram em vigor.'],
+          ['2', 'Validação do cupom', 'Veja o desconto antes de seguir, sem criar cobrança.'],
+          ['3', 'Pagamento seguro', 'O valor final é recalculado no checkout e o evento só ativa após confirmação.'],
         ].map(([step, title, description]) => (
           <div
             key={step}
@@ -353,8 +443,25 @@ export function EventCheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlanCode, setSelectedPlanCode] = useState<EventPlanCode | null>(null);
   const pollAttemptsRef = useRef(0);
+
+  const {
+    selectedPlanCode,
+    couponCode,
+    appliedCouponCode,
+    preview,
+    previewing,
+    applyingCoupon,
+    couponFeedback,
+    couponError,
+    setCouponCode,
+    selectPlan,
+    applyCoupon,
+    removeCoupon,
+  } = useCheckoutPreview({
+    token,
+    eventId,
+  });
 
   const hasActivePlan = useMemo(
     () => Boolean(event?.planCode && event?.status === 'ACTIVE'),
@@ -468,16 +575,43 @@ export function EventCheckoutPage() {
   }
 
   async function handleSelectPlan(planCode: EventPlanCode) {
-    if (!token || !event) {
+    setError(null);
+
+    try {
+      await selectPlan(planCode);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : 'Não foi possível calcular o valor deste plano.',
+      );
+    }
+  }
+
+  async function handleApplyCoupon() {
+    setError(null);
+    await applyCoupon();
+  }
+
+  async function handleRemoveCoupon() {
+    setError(null);
+    await removeCoupon();
+  }
+
+  async function handleContinueToCheckout() {
+    if (!token || !event || !selectedPlanCode) {
       return;
     }
 
     setBusy(true);
     setError(null);
-    setSelectedPlanCode(planCode);
 
     try {
-      const checkout = await api.createEventCheckout(token, event.id, { planCode });
+      const checkout = await api.createEventCheckout(token, event.id, {
+        planCode: selectedPlanCode,
+        couponCode: appliedCouponCode ?? undefined,
+      });
+
       setCheckoutStatus({
         paymentOrderId: checkout.paymentOrderId,
         status: checkout.status,
@@ -541,31 +675,31 @@ export function EventCheckoutPage() {
           </div>
         ) : checkoutStatus?.status === 'PENDING' ? (
           <div className="space-y-6">
-            {error ? (
-              <div className="rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
-                {error}
-              </div>
-            ) : null}
             <PendingPaymentCard
               event={event}
               checkoutStatus={checkoutStatus}
               onRefresh={handleRefreshStatus}
               refreshing={busy}
             />
-            <Card className="rounded-[2rem] border-[#f0d8ca] bg-white/78 p-5 shadow-[0_22px_70px_rgba(96,60,36,0.08)] sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">Mudou de ideia?</p>
-              <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.05em] text-ink-950">Escolha outro plano</h2>
-              <p className="mt-3 text-sm leading-7 text-ink-800/64">
-                Ao escolher outra opção, esta tentativa será encerrada e um novo checkout será criado para o plano selecionado.
-              </p>
-              <div className="mt-5">
-                <EventPlanSelector
-                  busy={busy}
-                  selectedPlanCode={selectedPlanCode}
-                  onSelectPlan={handleSelectPlan}
-                />
-              </div>
-            </Card>
+
+            <CheckoutWorkspace
+              busy={busy}
+              error={error}
+              selectedPlanCode={selectedPlanCode}
+              couponCode={couponCode}
+              appliedCouponCode={appliedCouponCode}
+              preview={preview}
+              previewing={previewing}
+              applyingCoupon={applyingCoupon}
+              couponFeedback={couponFeedback}
+              couponError={couponError}
+              onCouponCodeChange={setCouponCode}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
+              onSelectPlan={handleSelectPlan}
+              onContinue={handleContinueToCheckout}
+            />
+
             <CheckoutHelpCard />
           </div>
         ) : (
@@ -575,37 +709,29 @@ export function EventCheckoutPage() {
               <CheckoutHelpCard />
             </div>
 
-            <Card className="rounded-[2rem] border-[#f0d8ca] bg-white/78 p-5 shadow-[0_22px_70px_rgba(96,60,36,0.08)] sm:p-6">
-              <div className="mb-5">
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">
-                  Escolha seu plano
-                </p>
-
-                <h2 className="mt-3 font-display text-4xl font-semibold tracking-[-0.05em] text-ink-950">
-                  Libere seu evento
-                </h2>
-
-                <p className="mt-3 text-sm leading-7 text-ink-800/64">
-                  Selecione uma opção abaixo para seguir para o checkout seguro.
-                </p>
-              </div>
-
+            <div className="space-y-6">
               {checkoutStatus?.status && checkoutStatus.status !== 'APPROVED' ? (
                 <FailedPaymentCard status={checkoutStatus.status} />
               ) : null}
 
-              {error ? (
-                <div className="mb-5 rounded-[1.4rem] border border-rose-200 bg-rose-100/80 px-4 py-3 text-sm font-semibold text-rose-600">
-                  {error}
-                </div>
-              ) : null}
-
-              <EventPlanSelector
+              <CheckoutWorkspace
                 busy={busy}
+                error={error}
                 selectedPlanCode={selectedPlanCode}
+                couponCode={couponCode}
+                appliedCouponCode={appliedCouponCode}
+                preview={preview}
+                previewing={previewing}
+                applyingCoupon={applyingCoupon}
+                couponFeedback={couponFeedback}
+                couponError={couponError}
+                onCouponCodeChange={setCouponCode}
+                onApplyCoupon={handleApplyCoupon}
+                onRemoveCoupon={handleRemoveCoupon}
                 onSelectPlan={handleSelectPlan}
+                onContinue={handleContinueToCheckout}
               />
-            </Card>
+            </div>
           </div>
         )}
       </div>

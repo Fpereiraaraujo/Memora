@@ -5,6 +5,7 @@ import type { EventCreateRequest, EventStatus, EventSummary, EventUpdateRequest 
 import type { LoginRequest, LoginResponse, RegisterRequest, User } from '@/types/auth';
 import type {
   EventCheckoutRequest,
+  EventCheckoutPreviewResponse,
   EventCheckoutResponse,
   EventCheckoutStatusResponse,
 } from '@/types/payment';
@@ -191,6 +192,13 @@ export const api = {
   },
   createEventCheckout(token: string, eventId: string, requestBody: EventCheckoutRequest) {
     return request<EventCheckoutResponse>(`/api/events/${eventId}/checkout`, {
+      method: 'POST',
+      token,
+      data: requestBody,
+    });
+  },
+  previewEventCheckout(token: string, eventId: string, requestBody: EventCheckoutRequest) {
+    return request<EventCheckoutPreviewResponse>(`/api/events/${eventId}/checkout/preview`, {
       method: 'POST',
       token,
       data: requestBody,

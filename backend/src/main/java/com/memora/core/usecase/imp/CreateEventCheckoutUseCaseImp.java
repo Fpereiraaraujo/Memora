@@ -1,28 +1,19 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.config.AppProperties;
-import com.memora.core.domain.model.CheckoutPricing;
 import com.memora.core.domain.model.CheckoutResponse;
 import com.memora.core.domain.model.CreateCheckoutCommand;
-import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.model.PaymentProvider;
-import com.memora.core.domain.model.Plan;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.gateway.PaymentGateway;
-import com.memora.core.service.CheckoutPricingService;
-import com.memora.core.service.CouponValidationService;
+import com.memora.core.service.EventCheckoutPricingResolverService;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
-import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PaymentOrderDatabaseMapper;
-import com.memora.dataprovider.database.mapper.PlanDatabaseMapper;
-import com.memora.dataprovider.database.repository.EventRepository;
 import com.memora.dataprovider.database.repository.PaymentOrderRepository;
-import com.memora.dataprovider.database.repository.PlanRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,50 +23,34 @@ import org.springframework.stereotype.Service;
 public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateEventCheckoutUseCaseImp.class);
 
-	private final EventRepository eventRepository;
-	private final PlanRepository planRepository;
 	private final PaymentOrderRepository paymentOrderRepository;
 	private final PaymentGateway paymentGateway;
 	private final AppProperties appProperties;
-	private final CouponValidationService couponValidationService;
-	private final CheckoutPricingService checkoutPricingService;
+	private final EventCheckoutPricingResolverService eventCheckoutPricingResolverService;
 
 	public CreateEventCheckoutUseCaseImp(
-		EventRepository eventRepository,
-		PlanRepository planRepository,
 		PaymentOrderRepository paymentOrderRepository,
 		PaymentGateway paymentGateway,
 		AppProperties appProperties,
-		CouponValidationService couponValidationService,
-		CheckoutPricingService checkoutPricingService
+		EventCheckoutPricingResolverService eventCheckoutPricingResolverService
 	) {
-		this.eventRepository = eventRepository;
-		this.planRepository = planRepository;
 		this.paymentOrderRepository = paymentOrderRepository;
 		this.paymentGateway = paymentGateway;
 		this.appProperties = appProperties;
-		this.couponValidationService = couponValidationService;
-		this.checkoutPricingService = checkoutPricingService;
+		this.eventCheckoutPricingResolverService = eventCheckoutPricingResolverService;
 	}
 
 	@Override
 	public PaymentOrder execute(CreateEventCheckoutParam param) {
-		if (param.planCode() == null) {
-			throw new IllegalArgumentException("Plan code is required");
-		}
-
-		Event event = eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
-			.map(EventDatabaseMapper::toDomain)
-			.orElseThrow(() -> new NoSuchElementException("Evento nao encontrado."));
-
-		if (event.getPaidAt() != null && event.getPlanCode() != null) {
-			throw new IllegalArgumentException("Este evento ja possui um plano aprovado.");
-		}
-
-		Plan plan = planRepository.findByCodeAndActiveTrue(param.planCode())
-			.map(PlanDatabaseMapper::toDomain)
-			.orElseThrow(() -> new IllegalArgumentException("Plano invalido."));
-		CheckoutPricing pricing = resolvePricing(plan, param.couponCode());
+		var resolvedCheckout = eventCheckoutPricingResolverService.resolve(
+			param.ownerId(),
+			param.eventId(),
+			param.planCode(),
+			param.couponCode()
+		);
+		var event = resolvedCheckout.getEvent();
+		var plan = resolvedCheckout.getPlan();
+		var pricing = resolvedCheckout.getPricing();
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 		paymentOrderRepository.findAllByEventIdAndStatus(event.getId(), PaymentOrderStatus.PENDING)
@@ -152,16 +127,6 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 			checkoutResponse != null && checkoutResponse.providerReference() != null
 		);
 		return savedOrder;
-	}
-
-	private CheckoutPricing resolvePricing(Plan plan, String couponCode) {
-		if (couponCode == null || couponCode.isBlank()) {
-			return checkoutPricingService.calculate(plan, null);
-		}
-
-		var couponValidationResult = couponValidationService.validateByCode(couponCode);
-		checkoutPricingService.ensureApplicable(couponValidationResult);
-		return checkoutPricingService.calculate(plan, couponValidationResult);
 	}
 
 	private String normalizeBaseUrl(String baseUrl) {

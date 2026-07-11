@@ -113,10 +113,12 @@ Modelos de dominio e enums.
 Exemplos:
 
 - `Event`
+- `EventCheckoutPreview`
 - `Photo`
 - `User`
 - `Plan`
 - `CheckoutPricing`
+- `ResolvedEventCheckout`
 - `Coupon`
 - `Influencer`
 - `PaymentOrder`
@@ -140,6 +142,7 @@ Padrao atual:
 Exemplos:
 
 - `CreateEventParam`
+- `PreviewEventCheckoutParam`
 - `UploadGuestPhotoParam`
 - `SubmitGuestRsvpParam`
 - `CreateEventCheckoutParam`
@@ -179,6 +182,7 @@ Padrao atual do projeto:
 Exemplos:
 
 - `CreateEventUseCaseImp`
+- `PreviewEventCheckoutUseCaseImp`
 - `UploadGuestPhotoUseCaseImp`
 - `GetPublicInvitationUseCaseImp`
 - `HandleInfinitePayWebhookUseCaseImp`
@@ -194,6 +198,7 @@ Exemplos reais:
 - `EventPlanService`
 - `EventFeatureAccessService`
 - `CheckoutPricingService`
+- `EventCheckoutPricingResolverService`
 - `CouponValidationService`
 - `AdminManagementService`
 

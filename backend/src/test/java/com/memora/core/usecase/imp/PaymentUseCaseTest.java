@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.memora.config.AppProperties;
+import com.memora.core.domain.model.CheckoutPricing;
 import com.memora.core.domain.model.CheckoutResponse;
 import com.memora.core.domain.model.Coupon;
 import com.memora.core.domain.model.CouponStatus;
@@ -21,6 +22,7 @@ import com.memora.core.domain.model.PaymentOrderStatus;
 import com.memora.core.domain.model.PaymentProvider;
 import com.memora.core.domain.model.PaymentVerificationCommand;
 import com.memora.core.domain.model.PaymentVerificationResult;
+import com.memora.core.domain.model.ResolvedEventCheckout;
 import com.memora.core.domain.param.ApprovePaymentOrderParam;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.domain.param.GetEventCheckoutStatusParam;
@@ -28,6 +30,7 @@ import com.memora.core.domain.param.HandleInfinitePayWebhookParam;
 import com.memora.core.gateway.PaymentGateway;
 import com.memora.core.service.CheckoutPricingService;
 import com.memora.core.service.CouponValidationService;
+import com.memora.core.service.EventCheckoutPricingResolverService;
 import com.memora.core.service.EventPlanService;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.entity.PaymentOrderJpaEntity;
@@ -59,6 +62,7 @@ class PaymentUseCaseTest {
 	@Mock private PaymentGateway paymentGateway;
 	@Mock private AppProperties appProperties;
 	@Mock private CouponValidationService couponValidationService;
+	@Mock private EventCheckoutPricingResolverService eventCheckoutPricingResolverService;
 
 	private EventPlanService eventPlanService;
 	private CheckoutPricingService checkoutPricingService;
@@ -71,11 +75,11 @@ class PaymentUseCaseTest {
 
 	@Test
 	void createCheckoutCreatesPendingOrderWithoutCouponUsingBackendPlanPrice() {
-		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null))
+			.thenReturn(resolvedCheckout(9990, 0, 9990, null, null));
 		when(paymentGateway.createCheckout(any(CreateCheckoutCommand.class)))
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/dynamic", "provider-order-1"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -96,9 +100,8 @@ class PaymentUseCaseTest {
 
 	@Test
 	void createCheckoutAppliesValidCouponAndStoresCommissionTracking() {
-		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
-		when(couponValidationService.validateByCode("noiva10")).thenReturn(validCoupon("NOIVA10", 10, 20));
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10"))
+			.thenReturn(resolvedCheckout(9990, 999, 8991, "NOIVA10", 10));
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
@@ -121,12 +124,8 @@ class PaymentUseCaseTest {
 
 	@Test
 	void createCheckoutRejectsExpiredCoupon() {
-		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
-		when(couponValidationService.validateByCode("NOIVA10")).thenReturn(CouponValidationResult.builder()
-			.normalizedCode("NOIVA10")
-			.status(CouponValidationStatus.EXPIRED)
-			.build());
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10"))
+			.thenThrow(new IllegalArgumentException("Cupom expirado."));
 
 		var useCase = checkoutUseCase();
 
@@ -140,8 +139,8 @@ class PaymentUseCaseTest {
 	@Test
 	void createCheckoutCancelsPreviousPendingOrderWhenThePlanChanges() {
 		PaymentOrderJpaEntity previousOrder = paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 0, 9990);
-		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null))
+			.thenReturn(resolvedCheckout(9990, 0, 9990, null, null));
 		when(paymentOrderRepository.findAllByEventIdAndStatus(EVENT_ID, PaymentOrderStatus.PENDING))
 			.thenReturn(java.util.List.of(previousOrder));
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
@@ -279,30 +278,33 @@ class PaymentUseCaseTest {
 
 	private CreateEventCheckoutUseCaseImp checkoutUseCase() {
 		return new CreateEventCheckoutUseCaseImp(
-			eventRepository,
-			planRepository,
 			paymentOrderRepository,
 			paymentGateway,
 			appProperties,
-			couponValidationService,
-			checkoutPricingService
+			eventCheckoutPricingResolverService
 		);
 	}
 
-	private CouponValidationResult validCoupon(String code, int discountPercent, int commissionPercent) {
-		LocalDateTime now = LocalDateTime.now();
-		return CouponValidationResult.builder()
-			.normalizedCode(code)
-			.status(CouponValidationStatus.VALID)
-			.coupon(Coupon.builder()
-				.id(UUID.fromString("f7df5956-6a12-4516-9ca6-b6eeaf0f2420"))
-				.code(code)
-				.influencerId(UUID.fromString("f1ed1c55-cd52-40c9-96f9-5440f609aaec"))
+	private ResolvedEventCheckout resolvedCheckout(
+		int originalAmountCents,
+		int discountAmountCents,
+		int finalAmountCents,
+		String couponCode,
+		Integer discountPercent
+	) {
+		return ResolvedEventCheckout.builder()
+			.event(com.memora.dataprovider.database.mapper.EventDatabaseMapper.toDomain(eventEntity(EventStatus.DRAFT)))
+			.plan(com.memora.dataprovider.database.mapper.PlanDatabaseMapper.toDomain(planEntity(EventPlanCode.EVENT, originalAmountCents)))
+			.pricing(CheckoutPricing.builder()
+				.planCode(EventPlanCode.EVENT)
+				.originalAmountCents(originalAmountCents)
+				.discountAmountCents(discountAmountCents)
+				.finalAmountCents(finalAmountCents)
+				.couponCode(couponCode)
 				.discountPercent(discountPercent)
-				.commissionPercent(commissionPercent)
-				.status(CouponStatus.ACTIVE)
-				.createdAt(now)
-				.updatedAt(now)
+				.commissionPercent(couponCode != null ? 20 : null)
+				.commissionAmountCents(couponCode != null ? 1798 : null)
+				.message(couponCode != null ? "Cupom aplicado com sucesso." : null)
 				.build())
 			.build();
 	}

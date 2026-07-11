@@ -3,6 +3,7 @@ package com.memora.entrypoint.api.controller.definition;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutPreviewResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutStatusResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
@@ -73,6 +74,24 @@ public interface EventControllerApi {
 		}
 	)
 	ResponseEntity<EventCheckoutResponseDto> createCheckout(
+		@PathVariable UUID eventId,
+		@Valid @RequestBody EventCheckoutRequestDto request,
+		Authentication authentication
+	);
+
+	@PostMapping("/api/events/{eventId}/checkout/preview")
+	@Operation(
+		summary = "Preview event checkout",
+		description = "Validates the selected plan and optional coupon without creating a payment order.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Checkout preview returned"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventCheckoutPreviewResponseDto> previewCheckout(
 		@PathVariable UUID eventId,
 		@Valid @RequestBody EventCheckoutRequestDto request,
 		Authentication authentication

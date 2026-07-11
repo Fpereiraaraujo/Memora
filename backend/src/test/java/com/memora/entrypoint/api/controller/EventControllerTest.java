@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.memora.config.AppProperties;
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.EventPlanCode;
+import com.memora.core.domain.model.EventCheckoutPreview;
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventType;
@@ -23,6 +24,7 @@ import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.GetEventCheckoutStatusUseCase;
 import com.memora.core.usecase.GetEventPublicPageCustomizationUseCase;
 import com.memora.core.usecase.GetEventUseCase;
+import com.memora.core.usecase.PreviewEventCheckoutUseCase;
 import com.memora.core.usecase.ListEventPhotosPageUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
@@ -42,6 +44,7 @@ import com.memora.core.usecase.CreateEventGuestUseCase;
 import com.memora.core.usecase.GetEventRsvpSummaryUseCase;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutPreviewResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
@@ -80,6 +83,7 @@ class EventControllerTest {
 
 	@Mock private CreateEventUseCase createEventUseCase;
 	@Mock private CreateEventCheckoutUseCase createEventCheckoutUseCase;
+	@Mock private PreviewEventCheckoutUseCase previewEventCheckoutUseCase;
 	@Mock private GetEventCheckoutStatusUseCase getEventCheckoutStatusUseCase;
 	@Mock private ListEventsUseCase listEventsUseCase;
 	@Mock private GetEventUseCase getEventUseCase;
@@ -113,6 +117,7 @@ class EventControllerTest {
 		controller = new EventController(
 			createEventUseCase,
 			createEventCheckoutUseCase,
+			previewEventCheckoutUseCase,
 			getEventCheckoutStatusUseCase,
 			listEventsUseCase,
 			getEventUseCase,
@@ -175,6 +180,31 @@ class EventControllerTest {
 		assertThat(response.getBody()).isNotNull();
 		assertThat(response.getBody().checkoutUrl()).isEqualTo("https://checkout.memora.app/pay/1");
 		assertThat(response.getBody().couponCode()).isEqualTo("NOIVA10");
+		assertThat(response.getBody().finalAmountCents()).isEqualTo(8991);
+	}
+
+	@Test
+	void previewCheckoutReturnsCalculatedValues() {
+		when(previewEventCheckoutUseCase.execute(any())).thenReturn(EventCheckoutPreview.builder()
+			.planCode(EventPlanCode.EVENT)
+			.originalAmountCents(9990)
+			.discountAmountCents(999)
+			.finalAmountCents(8991)
+			.couponCode("NOIVA10")
+			.discountPercent(10)
+			.couponApplied(true)
+			.message("Cupom aplicado com sucesso.")
+			.build());
+
+		ResponseEntity<EventCheckoutPreviewResponseDto> response = controller.previewCheckout(
+			sampleEvent().getId(),
+			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10"),
+			authentication
+		);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().couponApplied()).isTrue();
 		assertThat(response.getBody().finalAmountCents()).isEqualTo(8991);
 	}
 

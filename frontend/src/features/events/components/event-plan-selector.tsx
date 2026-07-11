@@ -107,7 +107,7 @@ function PlanCard({
             : 'border border-[#ead1c4] bg-white text-ink-900 shadow-[0_14px_32px_rgba(96,60,36,0.06)] hover:-translate-y-0.5 hover:bg-[#fff7f2]',
         ].join(' ')}
       >
-        {busy && selected ? 'Abrindo checkout...' : `Escolher ${plan.name}`}
+        {busy && selected ? 'Atualizando valor...' : selected ? `${plan.name} selecionado` : `Escolher ${plan.name}`}
       </button>
     </article>
   );

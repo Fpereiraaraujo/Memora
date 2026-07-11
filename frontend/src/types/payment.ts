@@ -18,6 +18,17 @@ export interface EventCheckoutResponse {
   checkoutUrl: string | null;
 }
 
+export interface EventCheckoutPreviewResponse {
+  planCode: EventPlanCode;
+  originalAmountCents: number;
+  discountAmountCents: number;
+  finalAmountCents: number;
+  couponCode: string | null;
+  discountPercent: number | null;
+  couponApplied: boolean;
+  message: string;
+}
+
 export interface EventCheckoutStatusResponse {
   paymentOrderId: string | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | null;

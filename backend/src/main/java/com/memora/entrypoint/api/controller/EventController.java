@@ -3,6 +3,7 @@ package com.memora.entrypoint.api.controller;
 import com.memora.core.domain.model.Event;
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.PaymentOrder;
+import com.memora.core.domain.model.EventCheckoutPreview;
 import com.memora.core.domain.model.EventCheckoutStatus;
 import com.memora.core.domain.param.CreateEventParam;
 import com.memora.core.domain.param.CreateEventCheckoutParam;
@@ -12,6 +13,7 @@ import com.memora.core.domain.param.GetEventPublicPageCustomizationParam;
 import com.memora.core.domain.param.ListEventsParam;
 import com.memora.core.domain.param.ListEventPhotosParam;
 import com.memora.core.domain.param.ListEventPhotosPageParam;
+import com.memora.core.domain.param.PreviewEventCheckoutParam;
 import com.memora.core.domain.param.RemoveEventPublicPageCoverImageParam;
 import com.memora.core.domain.param.RemoveEventPublicPageHighlightImagesParam;
 import com.memora.core.domain.param.UpdateEventPublicPageCustomizationParam;
@@ -28,6 +30,7 @@ import com.memora.core.domain.param.CreateEventGuestParam;
 import com.memora.core.domain.param.GetEventRsvpSummaryParam;
 import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
+import com.memora.core.usecase.PreviewEventCheckoutUseCase;
 import com.memora.core.usecase.GetEventUseCase;
 import com.memora.core.usecase.GetEventCheckoutStatusUseCase;
 import com.memora.core.usecase.GetEventPublicPageCustomizationUseCase;
@@ -54,6 +57,7 @@ import com.memora.entrypoint.api.controller.definition.EventControllerApi;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventCreateResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
+import com.memora.entrypoint.api.dto.EventCheckoutPreviewResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutStatusResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
@@ -95,6 +99,7 @@ public class EventController implements EventControllerApi {
 
 	private final CreateEventUseCase createEventUseCase;
 	private final CreateEventCheckoutUseCase createEventCheckoutUseCase;
+	private final PreviewEventCheckoutUseCase previewEventCheckoutUseCase;
 	private final GetEventCheckoutStatusUseCase getEventCheckoutStatusUseCase;
 	private final ListEventsUseCase listEventsUseCase;
 	private final GetEventUseCase getEventUseCase;
@@ -123,6 +128,7 @@ public class EventController implements EventControllerApi {
 	public EventController(
 		CreateEventUseCase createEventUseCase,
 		CreateEventCheckoutUseCase createEventCheckoutUseCase,
+		PreviewEventCheckoutUseCase previewEventCheckoutUseCase,
 		GetEventCheckoutStatusUseCase getEventCheckoutStatusUseCase,
 		ListEventsUseCase listEventsUseCase,
 		GetEventUseCase getEventUseCase,
@@ -150,6 +156,7 @@ public class EventController implements EventControllerApi {
 	) {
 		this.createEventUseCase = createEventUseCase;
 		this.createEventCheckoutUseCase = createEventCheckoutUseCase;
+		this.previewEventCheckoutUseCase = previewEventCheckoutUseCase;
 		this.getEventCheckoutStatusUseCase = getEventCheckoutStatusUseCase;
 		this.listEventsUseCase = listEventsUseCase;
 		this.getEventUseCase = getEventUseCase;
@@ -174,6 +181,27 @@ public class EventController implements EventControllerApi {
 		this.appProperties = appProperties;
 		this.photoApiMapper = photoApiMapper;
 		this.eventPublicPageCustomizationApiMapper = eventPublicPageCustomizationApiMapper;
+	}
+
+	@Override
+	public ResponseEntity<EventCheckoutPreviewResponseDto> previewCheckout(UUID eventId, EventCheckoutRequestDto request, Authentication authentication) {
+		EventCheckoutPreview preview = previewEventCheckoutUseCase.execute(new PreviewEventCheckoutParam(
+			resolveUserId(authentication),
+			eventId,
+			request.planCode(),
+			request.couponCode()
+		));
+
+		return ResponseEntity.ok(new EventCheckoutPreviewResponseDto(
+			preview.getPlanCode(),
+			preview.getOriginalAmountCents(),
+			preview.getDiscountAmountCents(),
+			preview.getFinalAmountCents(),
+			preview.getCouponCode(),
+			preview.getDiscountPercent(),
+			preview.isCouponApplied(),
+			preview.getMessage()
+		));
 	}
 
 	@Override
