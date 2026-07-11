@@ -11,6 +11,8 @@ public class EventCheckoutPreview {
 	int discountAmountCents;
 	int finalAmountCents;
 	String couponCode;
+	String referralCode;
+	boolean referralApplied;
 	Integer discountPercent;
 	boolean couponApplied;
 	String message;

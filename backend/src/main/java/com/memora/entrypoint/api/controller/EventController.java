@@ -189,7 +189,8 @@ public class EventController implements EventControllerApi {
 			resolveUserId(authentication),
 			eventId,
 			request.planCode(),
-			request.couponCode()
+			request.couponCode(),
+			request.referralCode()
 		));
 
 		return ResponseEntity.ok(new EventCheckoutPreviewResponseDto(
@@ -198,6 +199,8 @@ public class EventController implements EventControllerApi {
 			preview.getDiscountAmountCents(),
 			preview.getFinalAmountCents(),
 			preview.getCouponCode(),
+			preview.getReferralCode(),
+			preview.isReferralApplied(),
 			preview.getDiscountPercent(),
 			preview.isCouponApplied(),
 			preview.getMessage()
@@ -224,7 +227,8 @@ public class EventController implements EventControllerApi {
 			resolveUserId(authentication),
 			eventId,
 			request.planCode(),
-			request.couponCode()
+			request.couponCode(),
+			request.referralCode()
 		));
 
 		return ResponseEntity.ok(new EventCheckoutResponseDto(

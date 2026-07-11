@@ -21,7 +21,8 @@ public class PreviewEventCheckoutUseCaseImp implements PreviewEventCheckoutUseCa
 			param.ownerId(),
 			param.eventId(),
 			param.planCode(),
-			param.couponCode()
+			param.couponCode(),
+			param.referralCode()
 		);
 		var pricing = resolvedCheckout.getPricing();
 
@@ -31,6 +32,8 @@ public class PreviewEventCheckoutUseCaseImp implements PreviewEventCheckoutUseCa
 			.discountAmountCents(pricing.getDiscountAmountCents())
 			.finalAmountCents(pricing.getFinalAmountCents())
 			.couponCode(pricing.getCouponCode())
+			.referralCode(param.referralCode())
+			.referralApplied(pricing.getMessage() != null && pricing.getMessage().contains("link de parceria"))
 			.discountPercent(pricing.getDiscountPercent())
 			.couponApplied(pricing.getCouponCode() != null)
 			.message(pricing.getCouponCode() != null ? pricing.getMessage() : "Sem cupom aplicado.")

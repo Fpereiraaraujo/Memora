@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CouponRepository extends JpaRepository<CouponJpaEntity, UUID> {
 	Optional<CouponJpaEntity> findByCode(String code);
 	List<CouponJpaEntity> findAllByOrderByCreatedAtDesc();
+	List<CouponJpaEntity> findAllByInfluencerIdOrderByCreatedAtAsc(UUID influencerId);
 	long countByStatus(CouponStatus status);
 	long countByInfluencerId(UUID influencerId);
 	boolean existsByCodeAndIdNot(String code, UUID id);

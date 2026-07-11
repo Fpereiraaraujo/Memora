@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 public record EventCheckoutRequestDto(
 	@NotNull
 	EventPlanCode planCode,
-	String couponCode
+	String couponCode,
+	String referralCode
 ) {
 }

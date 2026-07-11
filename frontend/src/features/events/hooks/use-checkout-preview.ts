@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { api } from '@/lib/api';
+import { getStoredReferral } from '@/lib/storage';
 import type { EventPlanCode } from '@/types/event';
 import type { EventCheckoutPreviewResponse } from '@/types/payment';
 
@@ -13,6 +14,7 @@ export interface UseCheckoutPreviewResult {
   selectedPlanCode: EventPlanCode | null;
   couponCode: string;
   appliedCouponCode: string | null;
+  activeReferralCode: string | null;
   preview: EventCheckoutPreviewResponse | null;
   previewing: boolean;
   applyingCoupon: boolean;
@@ -39,6 +41,7 @@ export function useCheckoutPreview({
   const [preview, setPreview] = useState<EventCheckoutPreviewResponse | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [ignoreStoredReferral, setIgnoreStoredReferral] = useState(false);
   const [couponFeedback, setCouponFeedback] = useState<string | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
@@ -61,6 +64,7 @@ export function useCheckoutPreview({
     return api.previewEventCheckout(token, eventId, {
       planCode,
       couponCode: couponCodeToApply ?? undefined,
+      referralCode: ignoreStoredReferral ? undefined : getStoredReferral()?.referralCode,
     });
   }
 
@@ -72,7 +76,11 @@ export function useCheckoutPreview({
     try {
       const response = await fetchPreview(planCode, appliedCouponCode);
       setPreview(response);
-      if (!appliedCouponCode) {
+      if (response?.couponApplied && response.couponCode && !appliedCouponCode) {
+        setAppliedCouponCode(response.couponCode);
+        setCouponCodeState(response.couponCode);
+        setCouponFeedback(response.message);
+      } else if (!appliedCouponCode) {
         setCouponFeedback(null);
       }
     } finally {
@@ -94,6 +102,7 @@ export function useCheckoutPreview({
     setApplyingCoupon(true);
     setCouponError(null);
     setCouponFeedback(null);
+    setIgnoreStoredReferral(false);
 
     try {
       const response = await fetchPreview(selectedPlanCode, normalizedCouponCode);
@@ -118,6 +127,7 @@ export function useCheckoutPreview({
     setAppliedCouponCode(null);
     setCouponFeedback('Cupom removido.');
     setCouponError(null);
+    setIgnoreStoredReferral(true);
 
     if (!selectedPlanCode) {
       setPreview(null);
@@ -145,6 +155,7 @@ export function useCheckoutPreview({
     selectedPlanCode,
     couponCode,
     appliedCouponCode,
+    activeReferralCode: ignoreStoredReferral ? null : getStoredReferral()?.referralCode ?? null,
     preview,
     previewing,
     applyingCoupon,

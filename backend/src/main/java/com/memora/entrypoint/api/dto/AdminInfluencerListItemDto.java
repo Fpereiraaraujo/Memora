@@ -8,6 +8,7 @@ public record AdminInfluencerListItemDto(
 	UUID id,
 	String name,
 	String instagramHandle,
+	String referralCode,
 	String email,
 	String pixKey,
 	InfluencerStatus status,

@@ -33,6 +33,9 @@ public class InfluencerJpaEntity {
 	@Column(name = "instagram_handle", length = 120)
 	private String instagramHandle;
 
+	@Column(name = "referral_code", unique = true, length = 80)
+	private String referralCode;
+
 	@Column(length = 180)
 	private String email;
 

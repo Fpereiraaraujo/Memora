@@ -52,6 +52,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -414,10 +415,12 @@ public class AdminManagementService {
 	) {
 		findAdminUser(admin.userId());
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+		String referralCode = buildReferralCode(request.name(), request.instagramHandle(), null);
 		InfluencerJpaEntity influencer = influencerRepository.save(InfluencerJpaEntity.builder()
 			.id(UUID.randomUUID())
 			.name(request.name().trim())
 			.instagramHandle(normalizeNullable(request.instagramHandle()))
+			.referralCode(referralCode)
 			.email(normalizeNullable(request.email()))
 			.pixKey(normalizeNullable(request.pixKey()))
 			.status(request.status())
@@ -441,6 +444,9 @@ public class AdminManagementService {
 			.orElseThrow(() -> new NoSuchElementException("Influencer nao encontrada."));
 		influencer.setName(request.name().trim());
 		influencer.setInstagramHandle(normalizeNullable(request.instagramHandle()));
+		if (influencer.getReferralCode() == null || influencer.getReferralCode().isBlank()) {
+			influencer.setReferralCode(buildReferralCode(request.name(), request.instagramHandle(), influencer.getId()));
+		}
 		influencer.setEmail(normalizeNullable(request.email()));
 		influencer.setPixKey(normalizeNullable(request.pixKey()));
 		influencer.setStatus(request.status());
@@ -717,6 +723,7 @@ public class AdminManagementService {
 			influencer.getId(),
 			influencer.getName(),
 			influencer.getInstagramHandle(),
+			influencer.getReferralCode(),
 			influencer.getEmail(),
 			influencer.getPixKey(),
 			influencer.getStatus(),
@@ -750,5 +757,40 @@ public class AdminManagementService {
 		}
 		String normalizedValue = value.trim();
 		return normalizedValue.isBlank() ? null : normalizedValue;
+	}
+
+	private String buildReferralCode(String name, String instagramHandle, UUID currentInfluencerId) {
+		String baseSource = instagramHandle != null && !instagramHandle.isBlank() ? instagramHandle : name;
+		String sanitized = sanitizeReferralCode(baseSource);
+		if (sanitized.isBlank()) {
+			sanitized = "MEMORA";
+		}
+
+		String candidate = sanitized.substring(0, Math.min(sanitized.length(), 24));
+		int suffix = 1;
+		while (referralCodeExists(candidate, currentInfluencerId)) {
+			String suffixValue = String.valueOf(suffix++);
+			int maxBaseLength = Math.max(1, 24 - suffixValue.length());
+			candidate = sanitized.substring(0, Math.min(sanitized.length(), maxBaseLength)) + suffixValue;
+		}
+		return candidate;
+	}
+
+	private boolean referralCodeExists(String referralCode, UUID currentInfluencerId) {
+		return influencerRepository.findByReferralCode(referralCode)
+			.filter(influencer -> currentInfluencerId == null || !influencer.getId().equals(currentInfluencerId))
+			.isPresent();
+	}
+
+	private String sanitizeReferralCode(String value) {
+		if (value == null) {
+			return "";
+		}
+
+		return java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+			.replaceAll("\\p{M}", "")
+			.replace("@", "")
+			.replaceAll("[^A-Za-z0-9]+", "")
+			.toUpperCase(Locale.ROOT);
 	}
 }

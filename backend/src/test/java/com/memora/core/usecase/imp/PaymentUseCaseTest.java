@@ -63,7 +63,7 @@ class PaymentUseCaseTest {
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
-		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null))
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null, null))
 			.thenReturn(resolvedCheckout(9990, 0, 9990, null));
 		when(paymentGateway.createCheckout(any(CreateCheckoutCommand.class)))
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/dynamic", "provider-order-1"));
@@ -71,7 +71,7 @@ class PaymentUseCaseTest {
 
 		var useCase = checkoutUseCase();
 
-		PaymentOrder paymentOrder = useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null));
+		PaymentOrder paymentOrder = useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null, null));
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.PENDING);
 		assertThat(paymentOrder.getOriginalAmountCents()).isEqualTo(9990);
@@ -86,14 +86,14 @@ class PaymentUseCaseTest {
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
-		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10"))
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10", null))
 			.thenReturn(resolvedCheckout(9990, 999, 8991, "NOIVA10"));
 		when(paymentGateway.createCheckout(any(CreateCheckoutCommand.class)))
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/dynamic", "provider-order-1"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		PaymentOrder paymentOrder = checkoutUseCase().execute(
-			new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10")
+			new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10", null)
 		);
 
 		assertThat(paymentOrder.getCouponCode()).isEqualTo("NOIVA10");
@@ -104,11 +104,11 @@ class PaymentUseCaseTest {
 
 	@Test
 	void createCheckoutRejectsExpiredCoupon() {
-		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10"))
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10", null))
 			.thenThrow(new IllegalArgumentException("Cupom expirado."));
 
 		org.assertj.core.api.Assertions.assertThatThrownBy(
-			() -> checkoutUseCase().execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10"))
+			() -> checkoutUseCase().execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10", null))
 		)
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("Cupom expirado.");
@@ -119,7 +119,7 @@ class PaymentUseCaseTest {
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
-		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null))
+		when(eventCheckoutPricingResolverService.resolve(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null, null))
 			.thenReturn(resolvedCheckout(9990, 0, 9990, null));
 		when(paymentOrderRepository.findAllByEventIdAndStatus(EVENT_ID, PaymentOrderStatus.PENDING))
 			.thenReturn(java.util.List.of(paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 0, 9990)));
@@ -127,7 +127,7 @@ class PaymentUseCaseTest {
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/new", "provider-order-2"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		checkoutUseCase().execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null));
+		checkoutUseCase().execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null, null));
 
 		ArgumentCaptor<PaymentOrderJpaEntity> orderCaptor = ArgumentCaptor.forClass(PaymentOrderJpaEntity.class);
 		verify(paymentOrderRepository, org.mockito.Mockito.times(3)).save(orderCaptor.capture());

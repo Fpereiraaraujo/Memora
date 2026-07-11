@@ -696,6 +696,7 @@ export function AdminPartnerships({
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#a88473]">Contato</p><p className="mt-1 break-all text-sm text-[#4f4038]">{influencer.email || 'Sem e-mail'}</p></div>
                   <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#a88473]">PIX</p><p className="mt-1 break-all text-sm text-[#4f4038]">{influencer.pixKey || 'Sem chave'}</p></div>
+                  <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#a88473]">Referral</p><p className="mt-1 text-sm text-[#4f4038]">{influencer.referralCode || 'Nao gerado'}</p></div>
                   <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#a88473]">Cupons</p><p className="mt-1 text-sm text-[#4f4038]">{influencer.couponsCount}</p></div>
                   <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#a88473]">Atualizada</p><p className="mt-1 text-sm text-[#4f4038]">{formatDate(influencer.updatedAt)}</p></div>
                 </div>

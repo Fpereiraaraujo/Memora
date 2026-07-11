@@ -72,6 +72,7 @@ export interface AdminInfluencer {
   id: string;
   name: string;
   instagramHandle: string | null;
+  referralCode: string | null;
   email: string | null;
   pixKey: string | null;
   status: 'ACTIVE' | 'INACTIVE';

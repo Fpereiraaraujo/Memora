@@ -3,6 +3,7 @@ import type { EventPlanCode } from '@/types/event';
 export interface EventCheckoutRequest {
   planCode: EventPlanCode;
   couponCode?: string;
+  referralCode?: string;
 }
 
 export interface EventCheckoutResponse {
@@ -24,6 +25,8 @@ export interface EventCheckoutPreviewResponse {
   discountAmountCents: number;
   finalAmountCents: number;
   couponCode: string | null;
+  referralCode: string | null;
+  referralApplied: boolean;
   discountPercent: number | null;
   couponApplied: boolean;
   message: string;

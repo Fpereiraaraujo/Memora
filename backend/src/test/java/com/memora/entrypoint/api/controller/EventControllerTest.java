@@ -172,7 +172,7 @@ class EventControllerTest {
 
 		ResponseEntity<EventCheckoutResponseDto> response = controller.createCheckout(
 			sampleEvent().getId(),
-			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10"),
+			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10", null),
 			authentication
 		);
 
@@ -198,7 +198,7 @@ class EventControllerTest {
 
 		ResponseEntity<EventCheckoutPreviewResponseDto> response = controller.previewCheckout(
 			sampleEvent().getId(),
-			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10"),
+			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10", null),
 			authentication
 		);
 

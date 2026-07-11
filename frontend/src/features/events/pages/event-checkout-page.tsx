@@ -450,6 +450,7 @@ export function EventCheckoutPage() {
     selectedPlanCode,
     couponCode,
     appliedCouponCode,
+    activeReferralCode,
     preview,
     previewing,
     applyingCoupon,
@@ -611,6 +612,7 @@ export function EventCheckoutPage() {
       const checkout = await api.createEventCheckout(token, event.id, {
         planCode: selectedPlanCode,
         couponCode: appliedCouponCode ?? undefined,
+        referralCode: activeReferralCode ?? undefined,
       });
 
       setCheckoutStatus({

@@ -46,7 +46,8 @@ public class CreateEventCheckoutUseCaseImp implements CreateEventCheckoutUseCase
 			param.ownerId(),
 			param.eventId(),
 			param.planCode(),
-			param.couponCode()
+			param.couponCode(),
+			param.referralCode()
 		);
 		var event = resolvedCheckout.getEvent();
 		var plan = resolvedCheckout.getPlan();

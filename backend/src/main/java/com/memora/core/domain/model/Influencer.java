@@ -11,6 +11,7 @@ public class Influencer {
 	UUID id;
 	String name;
 	String instagramHandle;
+	String referralCode;
 	String email;
 	String pixKey;
 	InfluencerStatus status;

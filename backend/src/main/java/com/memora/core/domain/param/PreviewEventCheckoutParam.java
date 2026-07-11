@@ -7,6 +7,7 @@ public record PreviewEventCheckoutParam(
 	UUID ownerId,
 	UUID eventId,
 	EventPlanCode planCode,
-	String couponCode
+	String couponCode,
+	String referralCode
 ) {
 }

@@ -17,17 +17,20 @@ public class EventCheckoutPricingResolverService {
 
 	private final EventRepository eventRepository;
 	private final PlanRepository planRepository;
+	private final ReferralCouponResolverService referralCouponResolverService;
 	private final CouponValidationService couponValidationService;
 	private final CheckoutPricingService checkoutPricingService;
 
 	public EventCheckoutPricingResolverService(
 		EventRepository eventRepository,
 		PlanRepository planRepository,
+		ReferralCouponResolverService referralCouponResolverService,
 		CouponValidationService couponValidationService,
 		CheckoutPricingService checkoutPricingService
 	) {
 		this.eventRepository = eventRepository;
 		this.planRepository = planRepository;
+		this.referralCouponResolverService = referralCouponResolverService;
 		this.couponValidationService = couponValidationService;
 		this.checkoutPricingService = checkoutPricingService;
 	}
@@ -36,7 +39,8 @@ public class EventCheckoutPricingResolverService {
 		UUID ownerId,
 		UUID eventId,
 		EventPlanCode planCode,
-		String couponCode
+		String couponCode,
+		String referralCode
 	) {
 		if (planCode == null) {
 			throw new IllegalArgumentException("Plan code is required");
@@ -54,7 +58,7 @@ public class EventCheckoutPricingResolverService {
 			.map(PlanDatabaseMapper::toDomain)
 			.orElseThrow(() -> new IllegalArgumentException("Plano invalido."));
 
-		var pricing = resolvePricing(plan, couponCode);
+		var pricing = resolvePricing(plan, couponCode, referralCode);
 
 		return ResolvedEventCheckout.builder()
 			.event(event)
@@ -63,13 +67,20 @@ public class EventCheckoutPricingResolverService {
 			.build();
 	}
 
-	private com.memora.core.domain.model.CheckoutPricing resolvePricing(Plan plan, String couponCode) {
-		if (couponCode == null || couponCode.isBlank()) {
+	private com.memora.core.domain.model.CheckoutPricing resolvePricing(Plan plan, String couponCode, String referralCode) {
+		var resolvedCouponInput = referralCouponResolverService.resolve(couponCode, referralCode);
+		if (resolvedCouponInput.couponCode() == null || resolvedCouponInput.couponCode().isBlank()) {
 			return checkoutPricingService.calculate(plan, null);
 		}
 
-		var couponValidationResult = couponValidationService.validateByCode(couponCode);
+		var couponValidationResult = couponValidationService.validateByCode(resolvedCouponInput.couponCode());
 		checkoutPricingService.ensureApplicable(couponValidationResult);
-		return checkoutPricingService.calculate(plan, couponValidationResult);
+		var pricing = checkoutPricingService.calculate(plan, couponValidationResult);
+		if (resolvedCouponInput.fromReferral()) {
+			return pricing.toBuilder()
+				.message("Cupom " + pricing.getCouponCode() + " disponivel para voce via link de parceria.")
+				.build();
+		}
+		return pricing;
 	}
 }

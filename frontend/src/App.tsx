@@ -1,4 +1,5 @@
-import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/components/layout/protected-route';
 import { AdminRoute } from '@/components/layout/admin-route';
@@ -22,6 +23,21 @@ import { HomePage } from '@/features/home/pages/home-page';
 import { PublicEventPage } from '@/features/public/pages/public-event-page';
 import { PublicInvitationPage } from '@/features/public/pages/public-invitation-page';
 import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page';
+import { setStoredReferral } from '@/lib/storage';
+
+function ReferralCapture() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const referralCode = searchParams.get('ref');
+    if (referralCode?.trim()) {
+      setStoredReferral(referralCode);
+    }
+  }, [location.search]);
+
+  return null;
+}
 
 function RootRedirect() {
   const { token, ready, user } = useAuth();
@@ -94,6 +110,7 @@ function NotFoundPage() {
 export default function App() {
   return (
     <AuthProvider>
+      <ReferralCapture />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/start" element={<RootRedirect />} />
