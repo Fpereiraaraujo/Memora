@@ -116,6 +116,9 @@ Exemplos:
 - `Photo`
 - `User`
 - `Plan`
+- `CheckoutPricing`
+- `Coupon`
+- `Influencer`
 - `PaymentOrder`
 - `PublicInvitation`
 - `EventPublicPageCustomization`
@@ -190,6 +193,8 @@ Exemplos reais:
 
 - `EventPlanService`
 - `EventFeatureAccessService`
+- `CheckoutPricingService`
+- `CouponValidationService`
 - `AdminManagementService`
 
 Importante:
@@ -230,6 +235,8 @@ Exemplos:
 - `EventJpaEntity`
 - `PhotoJpaEntity`
 - `UserEntity`
+- `CouponJpaEntity`
+- `InfluencerJpaEntity`
 - `PlanJpaEntity`
 - `PaymentOrderJpaEntity`
 - `EventInvitationJpaEntity`
@@ -245,6 +252,8 @@ Exemplos:
 - `EventRepository`
 - `PhotoRepository`
 - `UserRepository`
+- `CouponRepository`
+- `InfluencerRepository`
 - `PlanRepository`
 - `PaymentOrderRepository`
 - `EventGuestRepository`
@@ -259,6 +268,8 @@ Exemplos:
 - `EventDatabaseMapper`
 - `PhotoDatabaseMapper`
 - `PlanDatabaseMapper`
+- `CouponDatabaseMapper`
+- `InfluencerDatabaseMapper`
 - `UserDatabaseMapper`
 
 #### `dataprovider.database.gateway`

@@ -167,13 +167,15 @@ class EventControllerTest {
 
 		ResponseEntity<EventCheckoutResponseDto> response = controller.createCheckout(
 			sampleEvent().getId(),
-			new EventCheckoutRequestDto(EventPlanCode.EVENT),
+			new EventCheckoutRequestDto(EventPlanCode.EVENT, "NOIVA10"),
 			authentication
 		);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
 		assertThat(response.getBody().checkoutUrl()).isEqualTo("https://checkout.memora.app/pay/1");
+		assertThat(response.getBody().couponCode()).isEqualTo("NOIVA10");
+		assertThat(response.getBody().finalAmountCents()).isEqualTo(8991);
 	}
 
 	@Test
@@ -506,7 +508,14 @@ class EventControllerTest {
 			.externalReference("MEMORA-529205f4-3ed6-4cef-b5dc-b7d640aa4ab1-87553897-2b22-4ed4-a6b9-e3d182669c70")
 			.orderNsu("MEMORA-529205f4-3ed6-4cef-b5dc-b7d640aa4ab1-87553897-2b22-4ed4-a6b9-e3d182669c70")
 			.checkoutUrl("https://checkout.memora.app/pay/1")
-			.amountCents(6990)
+			.amountCents(8991)
+			.originalAmountCents(9990)
+			.discountAmountCents(999)
+			.finalAmountCents(8991)
+			.discountPercent(10)
+			.couponCode("NOIVA10")
+			.commissionPercent(20)
+			.commissionAmountCents(1798)
 			.createdAt(LocalDateTime.now())
 			.updatedAt(LocalDateTime.now())
 			.build();

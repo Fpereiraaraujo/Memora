@@ -67,7 +67,7 @@ public class ApprovePaymentOrderUseCaseImp implements ApprovePaymentOrderUseCase
 
 		var approvedOrder = paymentOrder.toBuilder()
 			.status(PaymentOrderStatus.APPROVED)
-			.paidAmountCents(paymentOrder.getAmountCents())
+			.paidAmountCents(paymentOrder.getFinalAmountCents())
 			.paidAt(now)
 			.updatedAt(now)
 			.build();

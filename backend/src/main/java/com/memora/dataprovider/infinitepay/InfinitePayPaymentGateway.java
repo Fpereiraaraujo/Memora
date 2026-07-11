@@ -25,7 +25,7 @@ public class InfinitePayPaymentGateway implements PaymentGateway {
 				List.of(new InfinitePayCheckoutClient.CheckoutItem(
 					command.plan().getName(),
 					1,
-					command.plan().getPriceCents()
+					command.amountCents()
 				)),
 				command.externalReference(),
 				command.redirectUrl(),

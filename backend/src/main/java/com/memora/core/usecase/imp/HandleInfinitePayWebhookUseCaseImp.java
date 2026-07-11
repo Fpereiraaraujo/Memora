@@ -85,7 +85,7 @@ public class HandleInfinitePayWebhookUseCaseImp implements HandleInfinitePayWebh
 			throw new SecurityException("A referência confirmada pelo provedor não corresponde à ordem.");
 		}
 
-		int expectedAmount = paymentOrder.getAmountCents();
+		int expectedAmount = paymentOrder.getFinalAmountCents();
 		int informedAmount = verificationResult.amountCents() != null ? verificationResult.amountCents() : expectedAmount;
 		Integer paidAmount = verificationResult.paidAmountCents() != null
 			? verificationResult.paidAmountCents()

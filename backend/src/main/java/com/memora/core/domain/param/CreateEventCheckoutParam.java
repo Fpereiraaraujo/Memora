@@ -6,6 +6,7 @@ import java.util.UUID;
 public record CreateEventCheckoutParam(
 	UUID ownerId,
 	UUID eventId,
-	EventPlanCode planCode
+	EventPlanCode planCode,
+	String couponCode
 ) {
 }

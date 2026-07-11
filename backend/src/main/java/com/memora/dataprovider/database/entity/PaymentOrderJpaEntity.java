@@ -71,6 +71,33 @@ public class PaymentOrderJpaEntity {
 	@Column(name = "amount_cents", nullable = false)
 	private int amountCents;
 
+	@Column(name = "original_amount_cents", nullable = false)
+	private int originalAmountCents;
+
+	@Column(name = "discount_amount_cents", nullable = false)
+	private int discountAmountCents;
+
+	@Column(name = "final_amount_cents", nullable = false)
+	private int finalAmountCents;
+
+	@Column(name = "discount_percent")
+	private Integer discountPercent;
+
+	@Column(name = "coupon_id")
+	private UUID couponId;
+
+	@Column(name = "coupon_code")
+	private String couponCode;
+
+	@Column(name = "influencer_id")
+	private UUID influencerId;
+
+	@Column(name = "commission_percent")
+	private Integer commissionPercent;
+
+	@Column(name = "commission_amount_cents")
+	private Integer commissionAmountCents;
+
 	@Column(name = "paid_amount_cents")
 	private Integer paidAmountCents;
 

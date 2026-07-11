@@ -22,6 +22,15 @@ public class PaymentOrder {
 	String providerInvoiceSlug;
 	String receiptUrl;
 	int amountCents;
+	int originalAmountCents;
+	int discountAmountCents;
+	int finalAmountCents;
+	Integer discountPercent;
+	UUID couponId;
+	String couponCode;
+	UUID influencerId;
+	Integer commissionPercent;
+	Integer commissionAmountCents;
 	Integer paidAmountCents;
 	LocalDateTime paidAt;
 	LocalDateTime createdAt;

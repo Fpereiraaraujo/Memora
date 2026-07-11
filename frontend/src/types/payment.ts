@@ -2,13 +2,19 @@ import type { EventPlanCode } from '@/types/event';
 
 export interface EventCheckoutRequest {
   planCode: EventPlanCode;
+  couponCode?: string;
 }
 
 export interface EventCheckoutResponse {
   paymentOrderId: string;
   planCode: EventPlanCode;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
-  amountCents: number;
+  originalAmountCents: number;
+  discountAmountCents: number;
+  finalAmountCents: number;
+  couponCode: string | null;
+  discountPercent: number | null;
+  message: string | null;
   checkoutUrl: string | null;
 }
 
@@ -36,7 +42,7 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
   {
     code: 'ESSENTIAL',
     name: 'Essencial',
-    priceLabel: 'R$ 39,90',
+    priceLabel: 'R$ 59,90',
     storageLabel: '3 meses',
     photoLimitLabel: '150 fotos',
     description: 'Ideal para eventos pequenos e celebrações mais intimistas.',
@@ -50,7 +56,7 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
   {
     code: 'EVENT',
     name: 'Evento',
-    priceLabel: 'R$ 69,90',
+    priceLabel: 'R$ 99,90',
     storageLabel: '6 meses',
     photoLimitLabel: '500 fotos',
     description: 'O melhor equilíbrio para casamentos e festas com mais convidados.',
@@ -65,7 +71,7 @@ export const EVENT_PLANS: EventPlanPresentation[] = [
   {
     code: 'PREMIUM',
     name: 'Premium',
-    priceLabel: 'R$ 99,90',
+    priceLabel: 'R$ 149,90',
     storageLabel: '12 meses',
     photoLimitLabel: '1.500 fotos',
     description: 'Perfeito para eventos com alto volume e página pública personalizada.',

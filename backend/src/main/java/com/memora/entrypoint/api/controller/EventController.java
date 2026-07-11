@@ -195,14 +195,20 @@ public class EventController implements EventControllerApi {
 		PaymentOrder paymentOrder = createEventCheckoutUseCase.execute(new CreateEventCheckoutParam(
 			resolveUserId(authentication),
 			eventId,
-			request.planCode()
+			request.planCode(),
+			request.couponCode()
 		));
 
 		return ResponseEntity.ok(new EventCheckoutResponseDto(
 			paymentOrder.getId(),
 			paymentOrder.getPlanCode(),
 			paymentOrder.getStatus(),
-			paymentOrder.getAmountCents(),
+			paymentOrder.getOriginalAmountCents(),
+			paymentOrder.getDiscountAmountCents(),
+			paymentOrder.getFinalAmountCents(),
+			paymentOrder.getCouponCode(),
+			paymentOrder.getDiscountPercent(),
+			paymentOrder.getCouponCode() != null ? "Cupom aplicado com sucesso." : null,
 			paymentOrder.getCheckoutUrl()
 		));
 	}

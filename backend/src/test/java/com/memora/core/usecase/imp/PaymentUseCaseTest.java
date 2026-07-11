@@ -8,6 +8,10 @@ import static org.mockito.Mockito.when;
 
 import com.memora.config.AppProperties;
 import com.memora.core.domain.model.CheckoutResponse;
+import com.memora.core.domain.model.Coupon;
+import com.memora.core.domain.model.CouponStatus;
+import com.memora.core.domain.model.CouponValidationResult;
+import com.memora.core.domain.model.CouponValidationStatus;
 import com.memora.core.domain.model.CreateCheckoutCommand;
 import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.EventStatus;
@@ -22,6 +26,8 @@ import com.memora.core.domain.param.CreateEventCheckoutParam;
 import com.memora.core.domain.param.GetEventCheckoutStatusParam;
 import com.memora.core.domain.param.HandleInfinitePayWebhookParam;
 import com.memora.core.gateway.PaymentGateway;
+import com.memora.core.service.CheckoutPricingService;
+import com.memora.core.service.CouponValidationService;
 import com.memora.core.service.EventPlanService;
 import com.memora.dataprovider.database.entity.EventJpaEntity;
 import com.memora.dataprovider.database.entity.PaymentOrderJpaEntity;
@@ -52,18 +58,21 @@ class PaymentUseCaseTest {
 	@Mock private PaymentOrderRepository paymentOrderRepository;
 	@Mock private PaymentGateway paymentGateway;
 	@Mock private AppProperties appProperties;
+	@Mock private CouponValidationService couponValidationService;
 
 	private EventPlanService eventPlanService;
+	private CheckoutPricingService checkoutPricingService;
 
 	@BeforeEach
 	void setUp() {
 		eventPlanService = new EventPlanService();
+		checkoutPricingService = new CheckoutPricingService();
 	}
 
 	@Test
-	void createCheckoutCreatesPendingOrderWithBackendPlanPrice() {
+	void createCheckoutCreatesPendingOrderWithoutCouponUsingBackendPlanPrice() {
 		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
 		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
 		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
@@ -71,28 +80,68 @@ class PaymentUseCaseTest {
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/dynamic", "provider-order-1"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		var useCase = new CreateEventCheckoutUseCaseImp(
-			eventRepository,
-			planRepository,
-			paymentOrderRepository,
-			paymentGateway,
-			appProperties
-		);
+		var useCase = checkoutUseCase();
 
-		PaymentOrder paymentOrder = useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT));
+		PaymentOrder paymentOrder = useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null));
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.PENDING);
-		assertThat(paymentOrder.getAmountCents()).isEqualTo(6990);
+		assertThat(paymentOrder.getOriginalAmountCents()).isEqualTo(9990);
+		assertThat(paymentOrder.getDiscountAmountCents()).isZero();
+		assertThat(paymentOrder.getFinalAmountCents()).isEqualTo(9990);
+		assertThat(paymentOrder.getAmountCents()).isEqualTo(9990);
 		assertThat(paymentOrder.getCheckoutUrl()).isEqualTo("https://checkout.infinitepay.io/dynamic");
 		assertThat(paymentOrder.getExternalReference()).startsWith("MEMORA-" + EVENT_ID);
 		assertThat(paymentOrder.getOrderNsu()).isEqualTo("provider-order-1");
 	}
 
 	@Test
-	void createCheckoutCancelsPreviousPendingOrderWhenThePlanChanges() {
-		PaymentOrderJpaEntity previousOrder = paymentOrderEntity(PaymentOrderStatus.PENDING);
+	void createCheckoutAppliesValidCouponAndStoresCommissionTracking() {
 		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
+		when(couponValidationService.validateByCode("noiva10")).thenReturn(validCoupon("NOIVA10", 10, 20));
+		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
+		when(appProperties.apiBaseUrl()).thenReturn("https://memora.api.br");
+		when(appProperties.infinitepayWebhookToken()).thenReturn("secret-token");
+		when(paymentGateway.createCheckout(any(CreateCheckoutCommand.class)))
+			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/dynamic", "provider-order-1"));
+		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		var useCase = checkoutUseCase();
+
+		PaymentOrder paymentOrder = useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "noiva10"));
+
+		assertThat(paymentOrder.getOriginalAmountCents()).isEqualTo(9990);
+		assertThat(paymentOrder.getDiscountAmountCents()).isEqualTo(999);
+		assertThat(paymentOrder.getFinalAmountCents()).isEqualTo(8991);
+		assertThat(paymentOrder.getCouponCode()).isEqualTo("NOIVA10");
+		assertThat(paymentOrder.getDiscountPercent()).isEqualTo(10);
+		assertThat(paymentOrder.getCommissionPercent()).isEqualTo(20);
+		assertThat(paymentOrder.getCommissionAmountCents()).isEqualTo(1798);
+	}
+
+	@Test
+	void createCheckoutRejectsExpiredCoupon() {
+		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
+		when(couponValidationService.validateByCode("NOIVA10")).thenReturn(CouponValidationResult.builder()
+			.normalizedCode("NOIVA10")
+			.status(CouponValidationStatus.EXPIRED)
+			.build());
+
+		var useCase = checkoutUseCase();
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(
+			() -> useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, "NOIVA10"))
+		)
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("Cupom expirado.");
+	}
+
+	@Test
+	void createCheckoutCancelsPreviousPendingOrderWhenThePlanChanges() {
+		PaymentOrderJpaEntity previousOrder = paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 0, 9990);
+		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
 		when(paymentOrderRepository.findAllByEventIdAndStatus(EVENT_ID, PaymentOrderStatus.PENDING))
 			.thenReturn(java.util.List.of(previousOrder));
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora-pied.vercel.app");
@@ -102,15 +151,9 @@ class PaymentUseCaseTest {
 			.thenReturn(new CheckoutResponse("https://checkout.infinitepay.io/new", "provider-order-2"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		var useCase = new CreateEventCheckoutUseCaseImp(
-			eventRepository,
-			planRepository,
-			paymentOrderRepository,
-			paymentGateway,
-			appProperties
-		);
+		var useCase = checkoutUseCase();
 
-		useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT));
+		useCase.execute(new CreateEventCheckoutParam(OWNER_ID, EVENT_ID, EventPlanCode.EVENT, null));
 
 		ArgumentCaptor<PaymentOrderJpaEntity> orderCaptor = ArgumentCaptor.forClass(PaymentOrderJpaEntity.class);
 		verify(paymentOrderRepository, org.mockito.Mockito.times(3)).save(orderCaptor.capture());
@@ -122,7 +165,8 @@ class PaymentUseCaseTest {
 	@Test
 	void getCheckoutStatusReturnsLatestPaymentOrder() {
 		when(eventRepository.findByIdAndOwnerId(EVENT_ID, OWNER_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
-		when(paymentOrderRepository.findTopByEventIdOrderByCreatedAtDesc(EVENT_ID)).thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));
+		when(paymentOrderRepository.findTopByEventIdOrderByCreatedAtDesc(EVENT_ID))
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 999, 8991)));
 
 		var useCase = new GetEventCheckoutStatusUseCaseImp(eventRepository, paymentOrderRepository);
 
@@ -137,10 +181,10 @@ class PaymentUseCaseTest {
 	@Test
 	void handleWebhookApprovesOrderAndActivatesEventWhenPaymentIsVerified() {
 		when(paymentOrderRepository.findWithLockByExternalReference("MEMORA-ORDER-1"))
-			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 999, 8991)));
 		when(paymentGateway.verifyPayment(any(PaymentVerificationCommand.class)))
-			.thenReturn(new PaymentVerificationResult(true, true, "MEMORA-ORDER-1", "provider-payment-1", 6990, 6990, "approved"));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT)));
+			.thenReturn(new PaymentVerificationResult(true, true, "MEMORA-ORDER-1", "provider-payment-1", 8991, 8991, "approved"));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
 		when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -152,13 +196,13 @@ class PaymentUseCaseTest {
 			eventPlanService
 		);
 
-		PaymentOrder paymentOrder = useCase.execute(webhookParam());
+		PaymentOrder paymentOrder = useCase.execute(webhookParam(8991, 8991));
 
 		ArgumentCaptor<EventJpaEntity> eventCaptor = ArgumentCaptor.forClass(EventJpaEntity.class);
 		verify(eventRepository).save(eventCaptor.capture());
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.APPROVED);
-		assertThat(paymentOrder.getPaidAmountCents()).isEqualTo(6990);
+		assertThat(paymentOrder.getPaidAmountCents()).isEqualTo(8991);
 		assertThat(eventCaptor.getValue().getStatus()).isEqualTo(EventStatus.ACTIVE);
 		assertThat(eventCaptor.getValue().getPhotoLimit()).isEqualTo(500);
 		assertThat(eventCaptor.getValue().getPlanCode()).isEqualTo(EventPlanCode.EVENT);
@@ -167,7 +211,7 @@ class PaymentUseCaseTest {
 	@Test
 	void handleWebhookIsIdempotentWhenOrderIsAlreadyApproved() {
 		when(paymentOrderRepository.findWithLockByExternalReference("MEMORA-ORDER-1"))
-			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.APPROVED)));
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.APPROVED, 9990, 999, 8991)));
 
 		var useCase = new HandleInfinitePayWebhookUseCaseImp(
 			paymentOrderRepository,
@@ -177,7 +221,7 @@ class PaymentUseCaseTest {
 			eventPlanService
 		);
 
-		PaymentOrder paymentOrder = useCase.execute(webhookParam());
+		PaymentOrder paymentOrder = useCase.execute(webhookParam(8991, 8991));
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.APPROVED);
 		verify(paymentGateway, never()).verifyPayment(any());
@@ -187,9 +231,9 @@ class PaymentUseCaseTest {
 	@Test
 	void handleWebhookRejectsPaymentWithDifferentPaidAmount() {
 		when(paymentOrderRepository.findWithLockByExternalReference("MEMORA-ORDER-1"))
-			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 999, 8991)));
 		when(paymentGateway.verifyPayment(any(PaymentVerificationCommand.class)))
-			.thenReturn(new PaymentVerificationResult(true, true, "MEMORA-ORDER-1", "provider-payment-1", 6990, 100, "approved"));
+			.thenReturn(new PaymentVerificationResult(true, true, "MEMORA-ORDER-1", "provider-payment-1", 8991, 100, "approved"));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		var useCase = new HandleInfinitePayWebhookUseCaseImp(
@@ -200,7 +244,7 @@ class PaymentUseCaseTest {
 			eventPlanService
 		);
 
-		PaymentOrder paymentOrder = useCase.execute(webhookParam());
+		PaymentOrder paymentOrder = useCase.execute(webhookParam(8991, 8991));
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.FAILED);
 		verify(eventRepository, never()).save(any());
@@ -210,8 +254,8 @@ class PaymentUseCaseTest {
 	@Test
 	void approvePaymentOrderAppliesPlanInsideTransactionFlow() {
 		when(paymentOrderRepository.findWithLockById(PAYMENT_ORDER_ID))
-			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING)));
-		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT)));
+			.thenReturn(Optional.of(paymentOrderEntity(PaymentOrderStatus.PENDING, 9990, 999, 8991)));
+		when(planRepository.findByCodeAndActiveTrue(EventPlanCode.EVENT)).thenReturn(Optional.of(planEntity(EventPlanCode.EVENT, 9990)));
 		when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(eventEntity(EventStatus.DRAFT)));
 		when(paymentOrderRepository.save(any(PaymentOrderJpaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -228,11 +272,42 @@ class PaymentUseCaseTest {
 		verify(eventRepository).save(eventCaptor.capture());
 
 		assertThat(paymentOrder.getStatus()).isEqualTo(PaymentOrderStatus.APPROVED);
+		assertThat(paymentOrder.getPaidAmountCents()).isEqualTo(8991);
 		assertThat(eventCaptor.getValue().getStatus()).isEqualTo(EventStatus.ACTIVE);
 		assertThat(eventCaptor.getValue().getPhotoLimit()).isEqualTo(500);
 	}
 
-	private HandleInfinitePayWebhookParam webhookParam() {
+	private CreateEventCheckoutUseCaseImp checkoutUseCase() {
+		return new CreateEventCheckoutUseCaseImp(
+			eventRepository,
+			planRepository,
+			paymentOrderRepository,
+			paymentGateway,
+			appProperties,
+			couponValidationService,
+			checkoutPricingService
+		);
+	}
+
+	private CouponValidationResult validCoupon(String code, int discountPercent, int commissionPercent) {
+		LocalDateTime now = LocalDateTime.now();
+		return CouponValidationResult.builder()
+			.normalizedCode(code)
+			.status(CouponValidationStatus.VALID)
+			.coupon(Coupon.builder()
+				.id(UUID.fromString("f7df5956-6a12-4516-9ca6-b6eeaf0f2420"))
+				.code(code)
+				.influencerId(UUID.fromString("f1ed1c55-cd52-40c9-96f9-5440f609aaec"))
+				.discountPercent(discountPercent)
+				.commissionPercent(commissionPercent)
+				.status(CouponStatus.ACTIVE)
+				.createdAt(now)
+				.updatedAt(now)
+				.build())
+			.build();
+	}
+
+	private HandleInfinitePayWebhookParam webhookParam(int amountCents, int paidAmountCents) {
 		return new HandleInfinitePayWebhookParam(
 			"MEMORA-ORDER-1",
 			"MEMORA-ORDER-1",
@@ -240,8 +315,8 @@ class PaymentUseCaseTest {
 			"transaction-1",
 			"invoice-1",
 			"APPROVED",
-			6990,
-			6990,
+			amountCents,
+			paidAmountCents,
 			"https://receipt.memora.test"
 		);
 	}
@@ -262,18 +337,18 @@ class PaymentUseCaseTest {
 			.build();
 	}
 
-	private PlanJpaEntity planEntity(EventPlanCode code) {
+	private PlanJpaEntity planEntity(EventPlanCode code, int priceCents) {
 		return PlanJpaEntity.builder()
 			.code(code)
 			.name("Evento")
-			.priceCents(6990)
+			.priceCents(priceCents)
 			.photoLimit(500)
 			.storageMonths(6)
 			.active(true)
 			.build();
 	}
 
-	private PaymentOrderJpaEntity paymentOrderEntity(PaymentOrderStatus status) {
+	private PaymentOrderJpaEntity paymentOrderEntity(PaymentOrderStatus status, int originalAmountCents, int discountAmountCents, int finalAmountCents) {
 		LocalDateTime now = LocalDateTime.now();
 		return PaymentOrderJpaEntity.builder()
 			.id(PAYMENT_ORDER_ID)
@@ -285,7 +360,14 @@ class PaymentUseCaseTest {
 			.externalReference("MEMORA-ORDER-1")
 			.orderNsu("MEMORA-ORDER-1")
 			.checkoutUrl("https://checkout.infinitepay.io/dynamic")
-			.amountCents(6990)
+			.amountCents(finalAmountCents)
+			.originalAmountCents(originalAmountCents)
+			.discountAmountCents(discountAmountCents)
+			.finalAmountCents(finalAmountCents)
+			.discountPercent(discountAmountCents > 0 ? 10 : null)
+			.couponCode(discountAmountCents > 0 ? "NOIVA10" : null)
+			.commissionPercent(discountAmountCents > 0 ? 20 : null)
+			.commissionAmountCents(discountAmountCents > 0 ? 1798 : null)
 			.createdAt(now)
 			.updatedAt(now)
 			.build();

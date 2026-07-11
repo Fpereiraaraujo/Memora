@@ -1,9 +1,9 @@
 package com.memora.core.domain.model;
 
 public enum EventPlanCode {
-	ESSENTIAL(3990, 150, 3, "Plano Essencial"),
-	EVENT(6990, 500, 6, "Plano Evento"),
-	PREMIUM(9990, 1500, 12, "Plano Premium");
+	ESSENTIAL(5990, 150, 3, "Plano Essencial"),
+	EVENT(9990, 500, 6, "Plano Evento"),
+	PREMIUM(14990, 1500, 12, "Plano Premium");
 
 	private final int amountCents;
 	private final int photoLimit;

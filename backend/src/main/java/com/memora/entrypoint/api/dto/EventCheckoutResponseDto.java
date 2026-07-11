@@ -8,7 +8,12 @@ public record EventCheckoutResponseDto(
 	UUID paymentOrderId,
 	EventPlanCode planCode,
 	PaymentOrderStatus status,
-	int amountCents,
+	int originalAmountCents,
+	int discountAmountCents,
+	int finalAmountCents,
+	String couponCode,
+	Integer discountPercent,
+	String message,
 	String checkoutUrl
 ) {
 }
