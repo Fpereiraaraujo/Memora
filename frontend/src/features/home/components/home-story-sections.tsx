@@ -11,7 +11,7 @@ const extensionCards = [
   },
   {
     title: 'Noivos recebem tudo',
-    description: 'As lembrancas chegam organizadas em um unico lugar.',
+    description: 'As lembranças chegam organizadas em um único lugar.',
   },
 ];
 
@@ -29,12 +29,12 @@ export function HomeEmotionalSection() {
         <article className="rounded-[2rem] bg-white/90 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
           <SectionHeading
             eyebrow="Por que a Memora existe"
-            title="Seu casamento visto pelos olhos de quem estava la."
-            description="O fotografo registra os grandes momentos. Mas seus convidados registram os bastidores, as risadas, os abracos, a pista de danca e detalhes que talvez voce nunca veria."
+            title="Seu casamento visto pelos olhos de quem estava lá."
+            description="O fotógrafo registra os grandes momentos. Mas seus convidados registram os bastidores, as risadas, os abraços, a pista de dança e detalhes que talvez você nunca veria."
           />
 
           <p className="mt-5 max-w-2xl text-base leading-8 text-ink-800/72">
-            Com a Memora, essas fotos nao se perdem em conversas, grupos ou celulares esquecidos.
+            Com a Memora, essas fotos não se perdem em conversas, grupos ou celulares esquecidos.
             Cada convidado escaneia o QR Code, envia as fotos pelo celular e tudo chega em uma
             galeria privada para os noivos.
           </p>
@@ -43,13 +43,13 @@ export function HomeEmotionalSection() {
         <article className="rounded-[2rem] border border-[#f0dbcf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f2_100%)] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.05)] sm:p-8">
           <SectionHeading
             eyebrow="Mais do que upload"
-            title="Nao e so tecnologia. E uma extensao do seu casamento."
-            description="A Memora foi criada para fazer parte da experiencia do evento de forma natural."
+            title="Não é só tecnologia. É uma extensão do seu casamento."
+            description="A Memora foi criada para fazer parte da experiência do evento de forma natural."
           />
 
           <p className="mt-5 text-base leading-8 text-ink-800/72">
-            O QR Code pode estar na decoracao, nas mesas, no convite ou na entrada da festa,
-            convidando cada pessoa a participar da construcao das memorias.
+            O QR Code pode estar na decoração, nas mesas, no convite ou na entrada da festa,
+            convidando cada pessoa a participar da construção das memórias.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -76,9 +76,9 @@ export function HomeWhatsappComparisonSection() {
     <section id="comparativo" className="px-4 py-3 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,250,247,0.95),rgba(255,244,239,0.9))] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
-          eyebrow="Objecoes reais"
-          title="Por que nao usar apenas um grupo no WhatsApp?"
-          description="Grupo de WhatsApp e conversa. A Memora e memoria organizada."
+          eyebrow="Objeções reais"
+          title="Por que não usar apenas um grupo no WhatsApp?"
+          description="Grupo de WhatsApp é conversa. A Memora é memória organizada."
         />
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
@@ -89,7 +89,7 @@ export function HomeWhatsappComparisonSection() {
               <li>A qualidade pode ser reduzida.</li>
               <li>Os noivos precisam pedir depois.</li>
               <li>Tudo se mistura com mensagens.</li>
-              <li>Fica dificil organizar e baixar.</li>
+              <li>Fica difícil organizar e baixar.</li>
             </ul>
           </article>
 
@@ -98,8 +98,8 @@ export function HomeWhatsappComparisonSection() {
             <ul className="mt-5 space-y-3 text-sm leading-7 text-ink-800/72">
               <li>Fotos chegam em uma galeria privada.</li>
               <li>Convidados enviam pelo QR Code.</li>
-              <li>Nao precisa app.</li>
-              <li>Nao precisa login.</li>
+              <li>Não precisa app.</li>
+              <li>Não precisa login.</li>
               <li>Noivos podem organizar, favoritar e baixar depois.</li>
             </ul>
           </article>
@@ -114,8 +114,8 @@ export function HomeCameraFlowSection() {
     <section id="fluxo-qr" className="px-4 py-3 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-white/92 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
-          eyebrow="Da camera ao album"
-          title="Da camera do convidado para sua galeria em segundos."
+          eyebrow="Da câmera ao álbum"
+          title="Da câmera do convidado para sua galeria em segundos."
           description="Simples o bastante para qualquer convidado usar. Bonito o bastante para fazer parte do casamento."
         />
 

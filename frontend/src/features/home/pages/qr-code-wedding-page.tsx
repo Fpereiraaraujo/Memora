@@ -53,10 +53,10 @@ function QrCodeWeddingHero() {
 
           <article className="rounded-[1.8rem] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fff9f5_0%,#fff1f2_100%)] p-6 shadow-[0_16px_40px_rgba(96,60,36,0.06)]">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#c5922e]">
-              O que e
+              O que é
             </p>
             <h2 className="mt-4 font-display text-3xl font-semibold tracking-[-0.04em] text-ink-950">
-              Um QR Code para fotos de casamento leva seus convidados direto para a pagina do evento.
+              Um QR Code para fotos de casamento leva seus convidados direto para a página do evento.
             </h2>
             <p className="mt-4 text-sm leading-7 text-ink-800/72">
               Eles escaneiam, escolhem as fotos no celular e enviam para uma galeria privada sem
@@ -75,15 +75,15 @@ function QrCodeWeddingInfoSection() {
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-white/92 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
           eyebrow="Como funciona na Memora"
-          title="Sem app. Sem login. Sem complicacao."
+          title="Sem app. Sem login. Sem complicação."
           description="A Memora transforma o envio de fotos dos convidados em um gesto simples e natural dentro do casamento."
         />
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            'Os noivos criam a pagina personalizada do evento.',
-            'O QR Code e compartilhado nas mesas, no convite ou na entrada.',
-            'Os convidados acessam a pagina pelo celular e enviam fotos e recados.',
+            'Os noivos criam a página personalizada do evento.',
+            'O QR Code é compartilhado nas mesas, no convite ou na entrada.',
+            'Os convidados acessam a página pelo celular e enviam fotos e recados.',
             'Tudo chega a uma galeria privada para organizar, favoritar e baixar depois.',
           ].map((item, index) => (
             <article key={item} className="rounded-[1.5rem] bg-[#fffaf7] p-5 shadow-[0_10px_24px_rgba(96,60,36,0.04)]">
@@ -104,7 +104,7 @@ export function QrCodeWeddingPage() {
     <PublicShell>
       <PageSeo
         title="QR Code para fotos de casamento | Receba fotos dos convidados com a Memora"
-        description="Crie um QR Code para seu casamento e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e facil de usar."
+        description="Crie um QR Code para seu casamento e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e fácil de usar."
         path="/qr-code-casamento"
         faqJsonLd={LANDING_FAQ_ITEMS.map((item) => ({ question: item.question, answer: item.answer }))}
       />

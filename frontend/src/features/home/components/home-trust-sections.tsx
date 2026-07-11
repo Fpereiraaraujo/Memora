@@ -11,11 +11,11 @@ const privacyCards = [
   },
   {
     title: 'Controle dos noivos',
-    description: 'Os noivos podem acompanhar, organizar e remover fotos quando necessario.',
+    description: 'Os noivos podem acompanhar, organizar e remover fotos quando necessário.',
   },
   {
-    title: 'Sem exposicao desnecessaria',
-    description: 'As fotos nao precisam ficar espalhadas em grupos ou redes sociais.',
+    title: 'Sem exposição desnecessária',
+    description: 'As fotos não precisam ficar espalhadas em grupos ou redes sociais.',
   },
   {
     title: 'Envio simples',
@@ -48,8 +48,8 @@ export function HomePrivacySection() {
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-[linear-gradient(135deg,rgba(255,250,247,0.96),rgba(255,244,239,0.9))] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
           eyebrow="Privacidade"
-          title="Suas memorias ficam privadas."
-          description="Fotos de casamento sao intimas. Por isso, a Memora foi pensada para reunir os registros dos convidados com mais controle, organizacao e seguranca."
+          title="Suas memórias ficam privadas."
+          description="Fotos de casamento são íntimas. Por isso, a Memora foi pensada para reunir os registros dos convidados com mais controle, organização e segurança."
         />
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -71,8 +71,8 @@ export function HomeQrCodePlacementSection() {
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-white/92 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
           eyebrow="Onde usar o QR Code"
-          title="O QR Code pode fazer parte da decoracao."
-          description="Quanto mais natural for o convite para enviar fotos, mais memorias chegam ate os noivos."
+          title="O QR Code pode fazer parte da decoração."
+          description="Quanto mais natural for o convite para enviar fotos, mais memórias chegam até os noivos."
         />
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -93,8 +93,8 @@ export function HomeSocialProofSection() {
       <div className="mx-auto max-w-[1520px] rounded-[2rem] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fffaf7_0%,#fff2f1_100%)] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
           eyebrow="Prova social honesta"
-          title="Historias que comecam com um QR Code."
-          description="A Memora esta comecando sua historia ao lado dos primeiros casais. Em breve, este espaco reunira experiencias reais de noivos que usaram a plataforma para guardar as fotos dos convidados."
+          title="Histórias que começam com um QR Code."
+          description="A Memora está começando sua história ao lado dos primeiros casais. Em breve, este espaço reunirá experiências reais de noivos que usaram a plataforma para guardar as fotos dos convidados."
         />
 
         <div className="mt-6 rounded-[1.6rem] bg-white/90 p-6 shadow-[0_12px_30px_rgba(96,60,36,0.05)]">
@@ -103,7 +103,7 @@ export function HomeSocialProofSection() {
             Quer ser um dos primeiros casais a usar a Memora no seu evento?
           </h3>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/72">
-            Se voce quer uma forma elegante de receber fotos e recados dos convidados sem depender de grupos de conversa, a Memora ja esta pronta para comecar com voce.
+            Se você quer uma forma elegante de receber fotos e recados dos convidados sem depender de grupos de conversa, a Memora já está pronta para começar com você.
           </p>
           <Link
             to="/register"
@@ -124,7 +124,7 @@ export function HomeFaqSection() {
         <SectionHeading
           eyebrow="FAQ"
           title="Tudo sobre QR Code para fotos de casamento"
-          description="Respostas diretas para as duvidas mais comuns de quem quer receber fotos dos convidados com leveza e organizacao."
+          description="Respostas diretas para as dúvidas mais comuns de quem quer receber fotos dos convidados com leveza e organização."
         />
 
         <div className="mt-6 space-y-3">

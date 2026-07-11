@@ -147,10 +147,10 @@ function RouteFallback() {
         <Card className="space-y-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d19a38]">Memora</p>
           <h1 className="font-display text-4xl font-semibold tracking-[-0.04em] text-ink-900">
-            Carregando a proxima pagina
+            Carregando a próxima página
           </h1>
           <p className="mx-auto max-w-xl text-sm leading-7 text-ink-800/72">
-            Estamos preparando a experiencia para voce.
+            Estamos preparando a experiência para você.
           </p>
           <div className="mx-auto h-2 w-40 overflow-hidden rounded-full bg-[#f4e4da]">
             <div className="h-full w-1/2 animate-pulse rounded-full bg-[linear-gradient(135deg,#f28e94,#eb7d87)]" />
@@ -169,11 +169,11 @@ function NotFoundPage() {
           <p className="text-xs font-bold uppercase tracking-[0.34em] text-[#b9852f]">404</p>
 
           <h1 className="font-display text-5xl font-semibold tracking-[-0.04em] text-ink-900">
-            Pagina nao encontrada
+            Página não encontrada
           </h1>
 
           <p className="mx-auto max-w-xl text-sm leading-7 text-ink-800/72">
-            O caminho acessado nao existe. Volte para a pagina inicial ou entre na sua conta para gerenciar seus eventos.
+            O caminho acessado não existe. Volte para a página inicial ou entre na sua conta para gerenciar seus eventos.
           </p>
 
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
@@ -181,7 +181,7 @@ function NotFoundPage() {
               className="inline-flex items-center justify-center rounded-2xl bg-[#ef7885] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.25)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b]"
               to="/"
             >
-              Voltar para inicio
+              Voltar para início
             </Link>
 
             <Link

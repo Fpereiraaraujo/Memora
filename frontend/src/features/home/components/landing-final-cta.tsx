@@ -3,19 +3,19 @@ import { Link } from 'react-router-dom';
 const items = [
   {
     title: 'Para os noivos',
-    description: 'Crie sua pagina, compartilhe o QR Code e acompanhe tudo sem depender de grupos de conversa.',
+    description: 'Crie sua página, compartilhe o QR Code e acompanhe tudo sem depender de grupos de conversa.',
   },
   {
     title: 'Para os convidados',
     description: 'O envio acontece em poucos toques, direto no navegador do celular e sem cadastro.',
   },
   {
-    title: 'Para a memoria do evento',
-    description: 'Os bastidores, abracos e cenas espontaneas ficam reunidos em um unico lugar.',
+    title: 'Para a memória do evento',
+    description: 'Os bastidores, abraços e cenas espontâneas ficam reunidos em um único lugar.',
   },
   {
     title: 'Para depois da festa',
-    description: 'Os noivos acessam a galeria privada para organizar, favoritar e baixar as melhores lembrancas.',
+    description: 'Os noivos acessam a galeria privada para organizar, favoritar e baixar as melhores lembranças.',
   },
 ];
 
@@ -30,12 +30,12 @@ export function LandingFinalCta() {
             </p>
 
             <h2 className="mt-4 max-w-3xl font-display text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-ink-950 md:text-6xl">
-              Pronto para receber as fotos que voce talvez nunca veria?
+              Pronto para receber as fotos que você talvez nunca veria?
             </h2>
 
             <p className="mt-5 max-w-2xl text-base leading-8 text-ink-800/68">
-              Crie sua pagina, compartilhe seu QR Code e deixe seus convidados ajudarem a construir
-              a memoria do seu casamento.
+              Crie sua página, compartilhe seu QR Code e deixe seus convidados ajudarem a construir
+              a memória do seu casamento.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">

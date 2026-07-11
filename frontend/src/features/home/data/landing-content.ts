@@ -7,37 +7,37 @@ export const LANDING_FAQ_ITEMS: LandingFaqItem[] = [
   {
     question: 'Os convidados precisam baixar aplicativo?',
     answer:
-      'Nao. O envio funciona direto pelo navegador do celular. O convidado escaneia o QR Code, escolhe as fotos e envia.',
+      'Não. O envio funciona direto pelo navegador do celular. O convidado escaneia o QR Code, escolhe as fotos e envia.',
   },
   {
     question: 'Precisa criar conta para enviar fotos?',
     answer:
-      'Nao. A experiencia foi pensada para ser simples: sem login, sem cadastro e sem complicacao para os convidados.',
+      'Não. A experiência foi pensada para ser simples: sem login, sem cadastro e sem complicação para os convidados.',
   },
   {
     question: 'Onde posso colocar o QR Code?',
     answer:
-      'Voce pode usar nas mesas, no convite, na entrada da festa, no bar, no espelho, em totens, plaquinhas ou onde fizer sentido para o seu evento.',
+      'Você pode usar nas mesas, no convite, na entrada da festa, no bar, no espelho, em totens, plaquinhas ou onde fizer sentido para o seu evento.',
   },
   {
     question: 'Pessoas mais velhas conseguem usar?',
     answer:
-      'Sim. O fluxo e simples e direto. Basta escanear o QR Code, escolher as fotos e enviar.',
+      'Sim. O fluxo é simples e direto. Basta escanear o QR Code, escolher as fotos e enviar.',
   },
   {
-    question: 'As fotos ficam publicas?',
+    question: 'As fotos ficam públicas?',
     answer:
-      'A galeria da Memora e pensada para ser privada e acessivel pelo link ou QR Code do evento. Os noivos tem controle sobre as memorias recebidas.',
+      'A galeria da Memora é pensada para ser privada e acessível pelo link ou QR Code do evento. Os noivos têm controle sobre as memórias recebidas.',
   },
   {
-    question: 'A Memora substitui o fotografo?',
+    question: 'A Memora substitui o fotógrafo?',
     answer:
-      'Nao. A Memora complementa o trabalho do fotografo profissional. O fotografo registra os grandes momentos; os convidados registram bastidores, reacoes e cenas espontaneas.',
+      'Não. A Memora complementa o trabalho do fotógrafo profissional. O fotógrafo registra os grandes momentos; os convidados registram bastidores, reações e cenas espontâneas.',
   },
   {
     question: 'E se a internet do local estiver ruim?',
     answer:
-      'Os convidados podem enviar as fotos quando tiverem conexao. O QR Code continua levando para a pagina do evento.',
+      'Os convidados podem enviar as fotos quando tiverem conexão. O QR Code continua levando para a página do evento.',
   },
   {
     question: 'Posso remover fotos?',
@@ -45,24 +45,24 @@ export const LANDING_FAQ_ITEMS: LandingFaqItem[] = [
       'Sim. Os noivos podem gerenciar as fotos recebidas na galeria privada.',
   },
   {
-    question: 'Posso usar em aniversarios, formaturas ou eventos corporativos?',
+    question: 'Posso usar em aniversários, formaturas ou eventos corporativos?',
     answer:
-      'Sim. Apesar de ser ideal para casamentos, a Memora tambem pode ser usada em outros tipos de eventos.',
+      'Sim. Apesar de ser ideal para casamentos, a Memora também pode ser usada em outros tipos de eventos.',
   },
   {
     question: 'O QR Code expira?',
     answer:
-      'Depende do plano escolhido. Cada plano pode ter um periodo de armazenamento e disponibilidade da galeria.',
+      'Depende do plano escolhido. Cada plano pode ter um período de armazenamento e disponibilidade da galeria.',
   },
   {
     question: 'As fotos perdem qualidade?',
     answer:
-      'A Memora foi pensada para preservar boas lembrancas com qualidade adequada para visualizacao e organizacao. A qualidade final pode depender do arquivo enviado e das configuracoes do sistema.',
+      'A Memora foi pensada para preservar boas lembranças com qualidade adequada para visualização e organização. A qualidade final pode depender do arquivo enviado e das configurações do sistema.',
   },
   {
     question: 'Como os noivos acessam as fotos?',
     answer:
-      'Os noivos acessam pelo painel privado, onde podem visualizar, organizar, favoritar e baixar as memorias recebidas.',
+      'Os noivos acessam pelo painel privado, onde podem visualizar, organizar, favoritar e baixar as memórias recebidas.',
   },
 ];
 

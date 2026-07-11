@@ -53,7 +53,7 @@ const footerGroups: PublicShellFooterGroup[] = [
       { label: 'QR Code para fotos', href: '#fluxo-qr' },
       { label: 'Galeria privada', href: '#privacidade' },
       { label: 'Recados dos convidados', href: '#recursos' },
-      { label: 'Pagina personalizada', href: '#recursos' },
+      { label: 'Página personalizada', href: '#recursos' },
       { label: 'Fotos favoritas', href: '#planos' },
       { label: 'Download de fotos', href: '#planos' },
     ],
@@ -72,7 +72,7 @@ const footerGroups: PublicShellFooterGroup[] = [
     links: [
       { label: 'Privacidade', href: '#privacidade' },
       { label: 'Termos de uso', href: '#faq' },
-      { label: 'Politica de cookies', href: '#faq' },
+      { label: 'Política de cookies', href: '#faq' },
     ],
   },
 ];
@@ -231,7 +231,7 @@ export function PublicShell({
               <div>
                 <MemoraLogo className="w-fit" iconClassName="h-9 sm:h-10" />
                 <p className="mt-4 max-w-md text-sm leading-7 text-ink-800/68">
-                  O album digital que reune fotos e recados dos convidados em uma galeria privada.
+                  O álbum digital que reúne fotos e recados dos convidados em uma galeria privada.
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-ink-800/65">

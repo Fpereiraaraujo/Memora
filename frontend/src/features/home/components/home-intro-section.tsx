@@ -31,12 +31,12 @@ export function HomeIntroSection() {
             <h1 className="max-w-[34rem] font-display text-[3rem] font-semibold leading-[0.92] tracking-[-0.055em] text-[#1f2430] sm:text-[4rem] md:text-[3.15rem] lg:text-[4.05rem] xl:text-[4.35rem]">
               As fotos do seu casamento
               <br />
-              <span className="text-[#eb8b93]">em um so lugar</span>
+              <span className="text-[#eb8b93]">em um só lugar</span>
             </h1>
 
             <p className="mt-5 max-w-[31rem] text-base leading-8 text-ink-800/74 md:max-w-[27rem] md:text-[15px] md:leading-7 lg:max-w-[31rem] lg:text-base lg:leading-8">
-              Crie uma pagina personalizada, compartilhe um QR Code e receba fotos e recados dos
-              convidados em uma galeria privada. Sem app, sem login e sem complicacao.
+              Crie uma página personalizada, compartilhe um QR Code e receba fotos e recados dos
+              convidados em uma galeria privada. Sem app, sem login e sem complicação.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -59,14 +59,14 @@ export function HomeIntroSection() {
             <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
               <TrustItem label="Sem app" icon="♡" />
               <TrustItem label="Sem login" icon="◌" />
-              <TrustItem label="Memorias reais dos convidados" icon="◍" />
+              <TrustItem label="Memórias reais dos convidados" icon="◍" />
             </div>
           </div>
 
           <div className="relative overflow-hidden rounded-[1.8rem] md:my-5 md:mr-5 md:block lg:my-4 lg:mr-4">
             <img
               src={showcaseBannerUrl}
-              alt="Pagina da Memora mostrando um QR Code de casamento e o fluxo de envio de fotos dos convidados"
+              alt="Página da Memora mostrando um QR Code de casamento e o fluxo de envio de fotos dos convidados"
               loading="lazy"
               className="h-full w-full object-cover object-center"
             />

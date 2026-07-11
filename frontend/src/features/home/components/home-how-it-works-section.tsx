@@ -3,9 +3,9 @@ import { SectionHeading } from '@/components/ui/section-heading';
 const steps = [
   {
     step: 'Passo 01',
-    title: 'Crie sua pagina',
+    title: 'Crie sua página',
     description:
-      'Personalize com nome dos noivos, data, mensagem, capa e informacoes do evento.',
+      'Personalize com nome dos noivos, data, mensagem, capa e informações do evento.',
   },
   {
     step: 'Passo 02',
@@ -21,7 +21,7 @@ const steps = [
   },
   {
     step: 'Passo 04',
-    title: 'Guarde as memorias',
+    title: 'Guarde as memórias',
     description:
       'Tudo fica organizado em uma galeria privada para ver, favoritar e baixar depois.',
   },

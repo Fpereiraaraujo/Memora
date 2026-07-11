@@ -15,14 +15,14 @@ const features = [
     tone: 'bg-[#fff8ef] text-[#d39a35]',
   },
   {
-    title: 'Pagina dos convidados',
-    description: 'Uma pagina elegante com upload, fotos em destaque e galeria do evento.',
+    title: 'Página dos convidados',
+    description: 'Uma página elegante com upload, fotos em destaque e galeria do evento.',
     icon: 'P',
     tone: 'bg-[#fff0f1] text-[#ef8a8f]',
   },
   {
-    title: 'Memorias para baixar',
-    description: 'As fotos ficam disponiveis pelo tempo do plano para abrir, favoritar e baixar.',
+    title: 'Memórias para baixar',
+    description: 'As fotos ficam disponíveis pelo tempo do plano para abrir, favoritar e baixar.',
     icon: 'M',
     tone: 'bg-[#fff8ef] text-[#d39a35]',
   },
@@ -33,16 +33,16 @@ const marketingPlans = EVENT_PLANS.map((plan) => {
     return {
       ...plan,
       marketingName: 'Essencial',
-      marketingDescription: 'Ideal para eventos menores e para quem quer comecar com simplicidade.',
+      marketingDescription: 'Ideal para eventos menores e para quem quer começar com simplicidade.',
     };
   }
 
   if (plan.code === 'EVENT') {
     return {
       ...plan,
-      marketingName: 'Celebracao',
+      marketingName: 'Celebração',
       marketingDescription:
-        'O plano mais escolhido para casamentos, com mais espaco para fotos, recados e organizacao.',
+        'O plano mais escolhido para casamentos, com mais espaço para fotos, recados e organização.',
     };
   }
 
@@ -50,7 +50,7 @@ const marketingPlans = EVENT_PLANS.map((plan) => {
     ...plan,
     marketingName: 'Premium',
     marketingDescription:
-      'Para quem quer a experiencia completa, com mais personalizacao e mais tempo para guardar as memorias.',
+      'Para quem quer a experiência completa, com mais personalização e mais tempo para guardar as memórias.',
   };
 });
 

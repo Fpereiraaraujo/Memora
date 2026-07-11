@@ -21,8 +21,8 @@ export function HomePage() {
   return (
     <PublicShell>
       <PageSeo
-        title="Memora | As fotos do seu casamento em um so lugar"
-        description="Crie uma pagina personalizada, compartilhe um QR Code e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e sem complicacao."
+        title="Memora | As fotos do seu casamento em um só lugar"
+        description="Crie uma página personalizada, compartilhe um QR Code e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e sem complicação."
         path="/"
         faqJsonLd={LANDING_FAQ_ITEMS.map((item) => ({ question: item.question, answer: item.answer }))}
       />
