@@ -57,7 +57,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 				(select count(*) from payment_orders) as total_payment_orders,
 				(select count(*) from payment_orders where status = 'APPROVED') as total_approved_payments,
 				(select count(*) from payment_orders where status = 'PENDING') as total_pending_payments,
-				(select coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED') as gross_revenue_cents,
+				(select coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED') as gross_revenue_cents,
 				(select count(*) from users where created_at >= :todayStart) as users_created_today,
 				(select count(*) from users where created_at >= :monthStart) as users_created_this_month,
 				(select count(*) from payment_orders where status = 'APPROVED' and paid_at >= :monthStart) as payments_approved_this_month,
@@ -67,7 +67,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			.addValue("monthStart", LocalDate.now(ZoneOffset.UTC).withDayOfMonth(1).atStartOfDay()));
 
 		List<AdminPlanMetricDto> revenueByPlan = jdbcTemplate.query("""
-			select plan_code, coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) as total
+			select plan_code, coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) as total
 			from payment_orders
 			where status = 'APPROVED'
 			group by plan_code
@@ -135,7 +135,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 				(select e.plan_code from events e where e.owner_id = u.id and e.plan_code is not null order by e.paid_at desc nulls last, e.created_at desc limit 1) as active_plan_code,
 				(select count(*) from photos p join events e2 on e2.id = p.event_id where e2.owner_id = u.id and p.object_key is not null) as total_photos,
 				(select count(*) from payment_orders po where po.user_id = u.id and po.status = 'APPROVED') as total_approved_payments,
-				(select coalesce(sum(coalesce(po.paid_amount_cents, po.amount_cents)), 0) from payment_orders po where po.user_id = u.id and po.status = 'APPROVED') as total_revenue_cents
+				(select coalesce(sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents)), 0) from payment_orders po where po.user_id = u.id and po.status = 'APPROVED') as total_revenue_cents
 			from users u
 			where 1=1
 			""" + where + """
@@ -237,7 +237,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 				(select count(*) from photos p join events e2 on e2.id = p.event_id where e2.owner_id = :userId and p.object_key is not null) as total_photos,
 				(select e.plan_code from events e where e.owner_id = :userId and e.plan_code is not null order by e.paid_at desc nulls last, e.created_at desc limit 1) as current_plan_code,
 				(select count(*) from payment_orders po where po.user_id = :userId and po.status = 'APPROVED') as total_approved_payments,
-				(select coalesce(sum(coalesce(po.paid_amount_cents, po.amount_cents)), 0) from payment_orders po where po.user_id = :userId and po.status = 'APPROVED') as total_revenue_cents
+				(select coalesce(sum(coalesce(po.paid_amount_cents, po.final_amount_cents, po.amount_cents)), 0) from payment_orders po where po.user_id = :userId and po.status = 'APPROVED') as total_revenue_cents
 			""", new MapSqlParameterSource("userId", userId));
 	}
 
@@ -307,9 +307,9 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 	public AdminRevenueSummaryResponseDto getRevenueSummary() {
 		Map<String, Object> summary = jdbcTemplate.queryForMap("""
 			select
-				(select coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED') as gross_revenue_cents,
-				(select coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED' and paid_at >= :monthStart) as revenue_this_month_cents,
-				(select coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED' and paid_at >= :todayStart) as revenue_today_cents,
+				(select coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED') as gross_revenue_cents,
+				(select coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED' and paid_at >= :monthStart) as revenue_this_month_cents,
+				(select coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) from payment_orders where status = 'APPROVED' and paid_at >= :todayStart) as revenue_today_cents,
 				(select count(*) from payment_orders where status = 'APPROVED') as approved_payments_count,
 				(select count(*) from payment_orders where status = 'PENDING') as pending_payments_count,
 				(select count(*) from payment_orders where status in ('FAILED', 'REJECTED', 'CANCELLED', 'EXPIRED')) as failed_payments_count
@@ -318,7 +318,7 @@ public class AdminQueryGatewayImpl implements AdminQueryGateway {
 			.addValue("monthStart", LocalDate.now(ZoneOffset.UTC).withDayOfMonth(1).atStartOfDay()));
 
 		List<AdminPlanMetricDto> revenueByPlan = jdbcTemplate.query("""
-			select plan_code, coalesce(sum(coalesce(paid_amount_cents, amount_cents)), 0) as total
+			select plan_code, coalesce(sum(coalesce(paid_amount_cents, final_amount_cents, amount_cents)), 0) as total
 			from payment_orders
 			where status = 'APPROVED'
 			group by plan_code

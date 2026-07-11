@@ -22,6 +22,8 @@ O sistema atualmente cobre:
 - personalizacao da pagina publica
 - convite digital individual com RSVP
 - checkout e ativacao de plano via InfinitePay
+- cupons de desconto e influencers afiliadas
+- links de referencia com prioridade controlada sobre cupom manual
 - armazenamento de arquivos em S3 ou disco local
 
 ## 2. Estrutura do repositorio
@@ -201,6 +203,7 @@ Exemplos reais:
 - `CheckoutPricingService`
 - `EventCheckoutPricingResolverService`
 - `CouponValidationService`
+- `ReferralCouponResolverService`
 - `ApprovedPaymentFinalizationService`
 - `AdminManagementService`
 
@@ -636,6 +639,7 @@ Fluxos ja cobertos de forma explicita:
 - uploads
 - RSVP
 - pagamentos
+- cupons e referrals
 - QR Code
 - validacao de datas
 
