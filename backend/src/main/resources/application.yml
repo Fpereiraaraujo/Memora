@@ -73,6 +73,8 @@ memora:
         - https://*.sslip.io
         - https://*.ngrok-free.dev
         - https://memora.api.br
+        - https://memora-site.com.br
+        - https://www.memora-site.com.br
   storage:
     provider: ${STORAGE_PROVIDER:local}
     local-path: ${STORAGE_LOCAL_PATH:./data/uploads}
