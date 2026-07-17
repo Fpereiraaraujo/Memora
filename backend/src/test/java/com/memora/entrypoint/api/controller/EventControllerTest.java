@@ -307,6 +307,7 @@ class EventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			true,
 			LocalDateTime.now()
 		);
 		when(getEventPublicPageCustomizationUseCase.execute(any())).thenReturn(customization);
@@ -330,6 +331,7 @@ class EventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			false,
 			LocalDateTime.now()
 		);
 		when(updateEventPublicPageCustomizationUseCase.execute(any())).thenReturn(customization);
@@ -337,7 +339,7 @@ class EventControllerTest {
 
 		ResponseEntity<EventPublicPageCustomizationResponseDto> response = controller.updatePublicPageCustomization(
 			sampleEvent().getId(),
-			new EventPublicPageCustomizationUpdateRequestDto("Isadora & Fernando", LocalDate.of(2026, 10, 8), "Bem-vindos"),
+			new EventPublicPageCustomizationUpdateRequestDto("Isadora & Fernando", LocalDate.of(2026, 10, 8), "Bem-vindos", false),
 			authentication
 		);
 

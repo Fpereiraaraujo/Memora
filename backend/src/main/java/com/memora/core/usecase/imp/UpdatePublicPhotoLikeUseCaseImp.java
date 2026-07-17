@@ -3,6 +3,7 @@ package com.memora.core.usecase.imp;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.UpdatePublicPhotoLikeParam;
+import com.memora.core.service.PublicGalleryAccessService;
 import com.memora.core.usecase.UpdatePublicPhotoLikeUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
@@ -19,15 +20,18 @@ public class UpdatePublicPhotoLikeUseCaseImp implements UpdatePublicPhotoLikeUse
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
 	private final UserRepository userRepository;
+	private final PublicGalleryAccessService publicGalleryAccessService;
 
 	public UpdatePublicPhotoLikeUseCaseImp(
 		EventRepository eventRepository,
 		PhotoRepository photoRepository,
-		UserRepository userRepository
+		UserRepository userRepository,
+		PublicGalleryAccessService publicGalleryAccessService
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
 		this.userRepository = userRepository;
+		this.publicGalleryAccessService = publicGalleryAccessService;
 	}
 
 	@Override
@@ -42,6 +46,7 @@ public class UpdatePublicPhotoLikeUseCaseImp implements UpdatePublicPhotoLikeUse
 		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new NoSuchElementException("Event not found");
 		}
+		publicGalleryAccessService.requireEnabled(event.getId());
 
 		var photo = photoRepository.findByIdAndEventId(param.photoId(), event.getId())
 			.orElseThrow(() -> new NoSuchElementException("Photo not found"));

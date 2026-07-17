@@ -1,6 +1,7 @@
 package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.Photo;
+import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.ListEventPhotosParam;
 import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
@@ -26,7 +27,10 @@ public class ListEventPhotosUseCaseImp implements ListEventPhotosUseCase {
 		eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		return photoRepository.findAllByEventIdOrderByCreatedAtDesc(param.eventId())
+		return photoRepository.findAllByEventIdAndStatusNotOrderByCreatedAtDesc(
+				param.eventId(),
+				PhotoStatus.REMOVED
+			)
 			.stream()
 			.map(PhotoDatabaseMapper::toDomain)
 			.toList();

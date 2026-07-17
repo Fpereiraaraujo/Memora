@@ -16,5 +16,7 @@ public class EventPublicPageCustomization {
 	String welcomeMessage;
 	String coverImageKey;
 	List<String> highlightImageKeys;
+	@Builder.Default
+	boolean publicGalleryEnabled = true;
 	LocalDateTime updatedAt;
 }

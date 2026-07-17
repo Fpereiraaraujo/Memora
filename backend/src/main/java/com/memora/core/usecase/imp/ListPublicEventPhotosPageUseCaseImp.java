@@ -5,6 +5,7 @@ import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.ListPublicEventPhotosPageParam;
+import com.memora.core.service.PublicGalleryAccessService;
 import com.memora.core.usecase.ListPublicEventPhotosPageUseCase;
 import com.memora.dataprovider.database.mapper.EventDatabaseMapper;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
@@ -21,11 +22,18 @@ public class ListPublicEventPhotosPageUseCaseImp implements ListPublicEventPhoto
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
 	private final UserRepository userRepository;
+	private final PublicGalleryAccessService publicGalleryAccessService;
 
-	public ListPublicEventPhotosPageUseCaseImp(EventRepository eventRepository, PhotoRepository photoRepository, UserRepository userRepository) {
+	public ListPublicEventPhotosPageUseCaseImp(
+		EventRepository eventRepository,
+		PhotoRepository photoRepository,
+		UserRepository userRepository,
+		PublicGalleryAccessService publicGalleryAccessService
+	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
 		this.userRepository = userRepository;
+		this.publicGalleryAccessService = publicGalleryAccessService;
 	}
 
 	@Override
@@ -40,6 +48,7 @@ public class ListPublicEventPhotosPageUseCaseImp implements ListPublicEventPhoto
 		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new NoSuchElementException("Event not found");
 		}
+		publicGalleryAccessService.requireEnabled(event.getId());
 
 		var pageResult = photoRepository.findAllByEventIdAndStatusAndObjectKeyIsNotNullOrderByCreatedAtDesc(
 			event.getId(),

@@ -147,6 +147,7 @@ class PublicEventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			true,
 			LocalDateTime.now()
 		);
 		when(getPublicEventCustomizationUseCase.execute(any())).thenReturn(customization);

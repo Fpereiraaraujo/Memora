@@ -3,6 +3,7 @@ package com.memora.core.usecase.imp;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.ListPublicTopLikedPhotosParam;
+import com.memora.core.service.PublicGalleryAccessService;
 import com.memora.core.usecase.ListPublicTopLikedPhotosUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
 import com.memora.dataprovider.database.repository.EventRepository;
@@ -18,15 +19,18 @@ public class ListPublicTopLikedPhotosUseCaseImp implements ListPublicTopLikedPho
 	private final EventRepository eventRepository;
 	private final PhotoRepository photoRepository;
 	private final UserRepository userRepository;
+	private final PublicGalleryAccessService publicGalleryAccessService;
 
 	public ListPublicTopLikedPhotosUseCaseImp(
 		EventRepository eventRepository,
 		PhotoRepository photoRepository,
-		UserRepository userRepository
+		UserRepository userRepository,
+		PublicGalleryAccessService publicGalleryAccessService
 	) {
 		this.eventRepository = eventRepository;
 		this.photoRepository = photoRepository;
 		this.userRepository = userRepository;
+		this.publicGalleryAccessService = publicGalleryAccessService;
 	}
 
 	@Override
@@ -41,6 +45,7 @@ public class ListPublicTopLikedPhotosUseCaseImp implements ListPublicTopLikedPho
 		if (!PublicEventAccessSupport.canOpenPublicFlow(event, ownerActive)) {
 			throw new NoSuchElementException("Event not found");
 		}
+		publicGalleryAccessService.requireEnabled(event.getId());
 
 		return photoRepository.findTop10ByEventIdAndStatusAndObjectKeyIsNotNullOrderByLikesCountDescCreatedAtDesc(
 				event.getId(),

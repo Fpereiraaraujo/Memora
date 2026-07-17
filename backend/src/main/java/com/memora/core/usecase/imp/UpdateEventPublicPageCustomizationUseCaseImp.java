@@ -57,6 +57,7 @@ public class UpdateEventPublicPageCustomizationUseCaseImp implements UpdateEvent
 
 		var updated = current.toBuilder()
 			.welcomeMessage(param.welcomeMessage().trim())
+			.publicGalleryEnabled(param.publicGalleryEnabled())
 			.updatedAt(LocalDateTime.now(ZoneOffset.UTC))
 			.build();
 

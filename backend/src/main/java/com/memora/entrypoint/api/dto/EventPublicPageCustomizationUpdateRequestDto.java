@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public record EventPublicPageCustomizationUpdateRequestDto(
 	String title,
 	LocalDate eventDate,
-	String welcomeMessage
+	String welcomeMessage,
+	Boolean publicGalleryEnabled
 ) {
 }

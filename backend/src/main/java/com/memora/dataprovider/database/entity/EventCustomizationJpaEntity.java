@@ -42,6 +42,10 @@ public class EventCustomizationJpaEntity {
 	@Column(name = "highlight_image_keys")
 	private String highlightImageKeys;
 
+	@Builder.Default
+	@Column(name = "public_gallery_enabled", nullable = false)
+	private boolean publicGalleryEnabled = true;
+
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 }

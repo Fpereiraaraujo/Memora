@@ -361,7 +361,8 @@ public class EventController implements EventControllerApi {
 			eventId,
 			request.title(),
 			request.eventDate(),
-			request.welcomeMessage()
+			request.welcomeMessage(),
+			request.publicGalleryEnabled() == null || request.publicGalleryEnabled()
 		));
 
 		return ResponseEntity.ok(eventPublicPageCustomizationApiMapper.toResponse(customization));

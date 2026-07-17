@@ -10,6 +10,7 @@ public record EventPublicPageCustomizationResponseDto(
 	String welcomeMessage,
 	String coverImageUrl,
 	List<String> highlightImageUrls,
+	boolean publicGalleryEnabled,
 	LocalDateTime updatedAt
 ) {
 }

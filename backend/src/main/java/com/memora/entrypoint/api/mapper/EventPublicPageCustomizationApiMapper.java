@@ -22,6 +22,7 @@ public class EventPublicPageCustomizationApiMapper {
 			customization.getWelcomeMessage(),
 			resolveUrl(customization.getCoverImageKey()),
 			customization.getHighlightImageKeys().stream().map(this::resolveUrl).toList(),
+			customization.isPublicGalleryEnabled(),
 			customization.getUpdatedAt()
 		);
 	}

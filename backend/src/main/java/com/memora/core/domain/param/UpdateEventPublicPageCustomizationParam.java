@@ -8,6 +8,7 @@ public record UpdateEventPublicPageCustomizationParam(
 	UUID eventId,
 	String title,
 	LocalDate eventDate,
-	String welcomeMessage
+	String welcomeMessage,
+	boolean publicGalleryEnabled
 ) {
 }

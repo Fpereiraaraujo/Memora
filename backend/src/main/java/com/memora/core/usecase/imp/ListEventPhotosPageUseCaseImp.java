@@ -2,6 +2,7 @@ package com.memora.core.usecase.imp;
 
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.Photo;
+import com.memora.core.domain.model.PhotoStatus;
 import com.memora.core.domain.param.ListEventPhotosPageParam;
 import com.memora.core.usecase.ListEventPhotosPageUseCase;
 import com.memora.dataprovider.database.mapper.PhotoDatabaseMapper;
@@ -27,8 +28,9 @@ public class ListEventPhotosPageUseCaseImp implements ListEventPhotosPageUseCase
 		eventRepository.findByIdAndOwnerId(param.eventId(), param.ownerId())
 			.orElseThrow(() -> new NoSuchElementException("Event not found"));
 
-		var pageResult = photoRepository.findAllByEventIdOrderByCreatedAtDesc(
+		var pageResult = photoRepository.findAllByEventIdAndStatusNotOrderByCreatedAtDesc(
 			param.eventId(),
+			PhotoStatus.REMOVED,
 			PageRequest.of(param.page(), param.size())
 		);
 
