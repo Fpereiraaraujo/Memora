@@ -16,6 +16,7 @@ O sistema atualmente cobre:
 - criacao e gerenciamento de um evento principal por conta
 - pagina publica do evento por slug
 - QR Code e link de upload para convidados
+- editor de arte personalizada com QR Code para impressao e redes sociais
 - upload publico de fotos e recados
 - galeria privada do anfitriao
 - curtidas publicas em fotos
@@ -127,6 +128,7 @@ Exemplos:
 - `PaymentOrder`
 - `PublicInvitation`
 - `EventPublicPageCustomization`
+- `EventQrArtCustomization`
 - `EventPlanCode`
 - `EventStatus`
 - `PhotoStatus`
@@ -602,6 +604,7 @@ Exemplos:
 - `/app/events/:eventId/invitation`
 - `/app/events/:eventId/gallery`
 - `/app/events/:eventId/qrcode`
+- `/app/events/:eventId/qr-art`
 - `/app/events/:eventId/favorites`
 - `/app/events/:eventId/downloads`
 - `/app/events/:eventId/messages`

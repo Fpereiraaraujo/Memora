@@ -19,6 +19,7 @@ import {
   buildEventOverviewPath,
   buildEventPublicPageSettingsPath,
   buildEventInvitationPath,
+  buildEventQrArtPath,
   buildEventQrPath,
 } from '@/features/events/utils/event-routes';
 import {
@@ -110,6 +111,7 @@ export function EventSidebar({
   const publicSettingsPath = buildEventPublicPageSettingsPath(event.id);
   const invitationPath = buildEventInvitationPath(event.id);
   const qrPath = buildEventQrPath(event.id);
+  const qrArtPath = buildEventQrArtPath(event.id);
   const galleryPath = buildEventGalleryPath(event.id);
   const favoritesPath = buildEventFavoritesPath(event.id);
   const downloadsPath = buildEventDownloadsPath(event.id);
@@ -134,6 +136,7 @@ export function EventSidebar({
           <SidebarItem to={invitationPath} label="Convite e RSVP" icon="invitation" />
         ) : null}
         <SidebarItem to={qrPath} label="QR Code" icon="qr" />
+        <SidebarItem to={qrArtPath} label="Arte com QR Code" icon="qr" />
         <SidebarItem to={galleryPath} label="Galeria" icon="gallery" />
         <SidebarItem
           to={favoritesPath}

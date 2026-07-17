@@ -42,6 +42,8 @@ import com.memora.core.usecase.UpdateEventInvitationUseCase;
 import com.memora.core.usecase.ListEventGuestsUseCase;
 import com.memora.core.usecase.CreateEventGuestUseCase;
 import com.memora.core.usecase.GetEventRsvpSummaryUseCase;
+import com.memora.core.usecase.GetEventQrArtCustomizationUseCase;
+import com.memora.core.usecase.UpdateEventQrArtCustomizationUseCase;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.dto.EventCheckoutRequestDto;
 import com.memora.entrypoint.api.dto.EventCheckoutPreviewResponseDto;
@@ -104,6 +106,8 @@ class EventControllerTest {
 	@Mock private ListEventGuestsUseCase listEventGuestsUseCase;
 	@Mock private CreateEventGuestUseCase createEventGuestUseCase;
 	@Mock private GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase;
+	@Mock private GetEventQrArtCustomizationUseCase getEventQrArtCustomizationUseCase;
+	@Mock private UpdateEventQrArtCustomizationUseCase updateEventQrArtCustomizationUseCase;
 	@Mock private EventQrCodeService eventQrCodeService;
 	@Mock private AppProperties appProperties;
 	@Mock private PhotoApiMapper photoApiMapper;
@@ -138,6 +142,8 @@ class EventControllerTest {
 			listEventGuestsUseCase,
 			createEventGuestUseCase,
 			getEventRsvpSummaryUseCase,
+			getEventQrArtCustomizationUseCase,
+			updateEventQrArtCustomizationUseCase,
 			eventQrCodeService,
 			appProperties,
 			photoApiMapper,
@@ -234,10 +240,10 @@ class EventControllerTest {
 		Event event = sampleEvent();
 		HttpServletRequest request = requestWithOrigin("https://memora-pied.vercel.app");
 		when(getEventUseCase.execute(any())).thenReturn(event);
-		when(eventQrCodeService.generateCachedPng("https://memora-pied.vercel.app/e/isa-fer/upload"))
+		when(eventQrCodeService.generateCachedPng("https://memora-pied.vercel.app/e/isa-fer/upload", 320))
 			.thenReturn(new byte[] {1, 2, 3});
 
-		ResponseEntity<byte[]> response = controller.qrcode(event.getId(), authentication, request);
+		ResponseEntity<byte[]> response = controller.qrcode(event.getId(), 320, authentication, request);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.IMAGE_PNG);
@@ -250,10 +256,10 @@ class EventControllerTest {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		when(getEventUseCase.execute(any())).thenReturn(event);
 		when(appProperties.publicBaseUrl()).thenReturn("https://memora.app/");
-		when(eventQrCodeService.generateCachedPng("https://memora.app/e/isa-fer/upload"))
+		when(eventQrCodeService.generateCachedPng("https://memora.app/e/isa-fer/upload", 320))
 			.thenReturn(new byte[] {9, 8, 7});
 
-		ResponseEntity<byte[]> response = controller.qrcode(event.getId(), authentication, request);
+		ResponseEntity<byte[]> response = controller.qrcode(event.getId(), 320, authentication, request);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).containsExactly((byte) 9, (byte) 8, (byte) 7);

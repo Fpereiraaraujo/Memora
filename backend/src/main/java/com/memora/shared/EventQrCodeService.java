@@ -12,8 +12,8 @@ public class EventQrCodeService {
 		this.qrCodeGenerator = qrCodeGenerator;
 	}
 
-	@Cacheable(cacheNames = "eventQrCodes", key = "#publicUrl")
-	public byte[] generateCachedPng(String publicUrl) {
-		return qrCodeGenerator.generatePng(publicUrl, 320);
+	@Cacheable(cacheNames = "eventQrCodes", key = "#publicUrl + ':' + #size")
+	public byte[] generateCachedPng(String publicUrl, int size) {
+		return qrCodeGenerator.generatePng(publicUrl, size);
 	}
 }

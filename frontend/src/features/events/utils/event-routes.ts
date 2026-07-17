@@ -10,6 +10,10 @@ export function buildEventQrPath(eventId: string) {
   return `/app/events/${eventId}/qrcode`;
 }
 
+export function buildEventQrArtPath(eventId: string) {
+  return `/app/events/${eventId}/qr-art`;
+}
+
 export function buildEventGalleryPath(eventId: string) {
   return `/app/events/${eventId}/gallery`;
 }

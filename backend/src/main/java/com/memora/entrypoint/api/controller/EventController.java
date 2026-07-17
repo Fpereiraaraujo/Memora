@@ -28,6 +28,8 @@ import com.memora.core.domain.param.UpdateEventInvitationParam;
 import com.memora.core.domain.param.ListEventGuestsParam;
 import com.memora.core.domain.param.CreateEventGuestParam;
 import com.memora.core.domain.param.GetEventRsvpSummaryParam;
+import com.memora.core.domain.param.GetEventQrArtCustomizationParam;
+import com.memora.core.domain.param.UpdateEventQrArtCustomizationParam;
 import com.memora.core.usecase.CreateEventUseCase;
 import com.memora.core.usecase.CreateEventCheckoutUseCase;
 import com.memora.core.usecase.PreviewEventCheckoutUseCase;
@@ -51,6 +53,8 @@ import com.memora.core.usecase.UpdateEventInvitationUseCase;
 import com.memora.core.usecase.ListEventGuestsUseCase;
 import com.memora.core.usecase.CreateEventGuestUseCase;
 import com.memora.core.usecase.GetEventRsvpSummaryUseCase;
+import com.memora.core.usecase.GetEventQrArtCustomizationUseCase;
+import com.memora.core.usecase.UpdateEventQrArtCustomizationUseCase;
 import com.memora.config.AppProperties;
 import com.memora.entrypoint.api.auth.AuthenticatedUserPrincipal;
 import com.memora.entrypoint.api.controller.definition.EventControllerApi;
@@ -75,8 +79,11 @@ import com.memora.entrypoint.api.dto.EventInvitationResponseDto;
 import com.memora.entrypoint.api.dto.EventGuestCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventGuestResponseDto;
 import com.memora.entrypoint.api.dto.EventRsvpSummaryResponseDto;
+import com.memora.entrypoint.api.dto.EventQrArtCustomizationResponseDto;
+import com.memora.entrypoint.api.dto.EventQrArtCustomizationUpdateRequestDto;
 import com.memora.entrypoint.api.mapper.EventApiMapper;
 import com.memora.entrypoint.api.mapper.EventPublicPageCustomizationApiMapper;
+import com.memora.entrypoint.api.mapper.EventQrArtCustomizationApiMapper;
 import com.memora.entrypoint.api.mapper.InvitationApiMapper;
 import com.memora.entrypoint.api.mapper.PhotoApiMapper;
 import com.memora.shared.EventQrCodeService;
@@ -120,6 +127,8 @@ public class EventController implements EventControllerApi {
 	private final ListEventGuestsUseCase listEventGuestsUseCase;
 	private final CreateEventGuestUseCase createEventGuestUseCase;
 	private final GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase;
+	private final GetEventQrArtCustomizationUseCase getEventQrArtCustomizationUseCase;
+	private final UpdateEventQrArtCustomizationUseCase updateEventQrArtCustomizationUseCase;
 	private final EventQrCodeService eventQrCodeService;
 	private final AppProperties appProperties;
 	private final PhotoApiMapper photoApiMapper;
@@ -149,6 +158,8 @@ public class EventController implements EventControllerApi {
 		ListEventGuestsUseCase listEventGuestsUseCase,
 		CreateEventGuestUseCase createEventGuestUseCase,
 		GetEventRsvpSummaryUseCase getEventRsvpSummaryUseCase,
+		GetEventQrArtCustomizationUseCase getEventQrArtCustomizationUseCase,
+		UpdateEventQrArtCustomizationUseCase updateEventQrArtCustomizationUseCase,
 		EventQrCodeService eventQrCodeService,
 		AppProperties appProperties,
 		PhotoApiMapper photoApiMapper,
@@ -177,6 +188,8 @@ public class EventController implements EventControllerApi {
 		this.listEventGuestsUseCase = listEventGuestsUseCase;
 		this.createEventGuestUseCase = createEventGuestUseCase;
 		this.getEventRsvpSummaryUseCase = getEventRsvpSummaryUseCase;
+		this.getEventQrArtCustomizationUseCase = getEventQrArtCustomizationUseCase;
+		this.updateEventQrArtCustomizationUseCase = updateEventQrArtCustomizationUseCase;
 		this.eventQrCodeService = eventQrCodeService;
 		this.appProperties = appProperties;
 		this.photoApiMapper = photoApiMapper;
@@ -279,16 +292,53 @@ public class EventController implements EventControllerApi {
 	}
 
 	@Override
-	public ResponseEntity<byte[]> qrcode(UUID eventId, Authentication authentication, HttpServletRequest request) {
+	public ResponseEntity<byte[]> qrcode(UUID eventId, int size, Authentication authentication, HttpServletRequest request) {
 		Event event = getEventUseCase.execute(new GetEventParam(resolveUserId(authentication), eventId));
 		String publicBaseUrl = resolvePublicBaseUrl(request);
 		String publicUrl = publicBaseUrl + "/e/" + event.getSlug() + "/upload";
-		byte[] qrCode = eventQrCodeService.generateCachedPng(publicUrl);
+		int normalizedSize = Math.min(Math.max(size, 320), 1024);
+		byte[] qrCode = eventQrCodeService.generateCachedPng(publicUrl, normalizedSize);
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"memora-" + event.getSlug() + "-qrcode.png\"")
 			.contentType(MediaType.IMAGE_PNG)
 			.body(qrCode);
+	}
+
+	@Override
+	public ResponseEntity<EventQrArtCustomizationResponseDto> getQrArt(UUID eventId, Authentication authentication) {
+		var customization = getEventQrArtCustomizationUseCase.execute(new GetEventQrArtCustomizationParam(
+			resolveUserId(authentication),
+			eventId
+		));
+		return ResponseEntity.ok(EventQrArtCustomizationApiMapper.toResponse(customization));
+	}
+
+	@Override
+	public ResponseEntity<EventQrArtCustomizationResponseDto> updateQrArt(
+		UUID eventId,
+		EventQrArtCustomizationUpdateRequestDto request,
+		Authentication authentication
+	) {
+		var customization = updateEventQrArtCustomizationUseCase.execute(new UpdateEventQrArtCustomizationParam(
+			resolveUserId(authentication),
+			eventId,
+			request.title(),
+			request.subtitle(),
+			request.callToAction(),
+			request.message(),
+			request.themeName(),
+			request.primaryColor(),
+			request.secondaryColor(),
+			request.accentColor(),
+			request.visualStyle(),
+			request.templateCode(),
+			request.format(),
+			request.showMemoraBranding(),
+			request.showEventDate(),
+			request.showEventLocation()
+		));
+		return ResponseEntity.ok(EventQrArtCustomizationApiMapper.toResponse(customization));
 	}
 
 	@Override

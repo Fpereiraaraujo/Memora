@@ -74,6 +74,11 @@ const EventQrCodePage = lazy(() =>
     default: module.EventQrCodePage,
   })),
 );
+const EventQrArtPage = lazy(() =>
+  import('@/features/events/pages/event-qr-art-page').then((module) => ({
+    default: module.EventQrArtPage,
+  })),
+);
 const HomePage = lazy(() =>
   import('@/features/home/pages/home-page').then((module) => ({
     default: module.HomePage,
@@ -296,6 +301,15 @@ export default function App() {
             element={(
               <ProtectedRoute>
                 <EventQrCodePage />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/app/events/:eventId/qr-art"
+            element={(
+              <ProtectedRoute>
+                <EventQrArtPage />
               </ProtectedRoute>
             )}
           />

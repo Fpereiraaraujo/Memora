@@ -29,6 +29,10 @@ import type {
   PublicInvitation,
   PublicRsvpRequest,
 } from '@/types/invitation';
+import type {
+  EventQrArtCustomization,
+  EventQrArtCustomizationUpdateRequest,
+} from '@/types/qr-art';
 
 export interface AdminDashboardResponse {
   totalUsers: number;
@@ -460,9 +464,26 @@ export const api = {
       token,
     });
   },
-  async fetchEventQrCode(token: string, eventId: string) {
+  getEventQrArtCustomization(token: string, eventId: string) {
+    return request<EventQrArtCustomization>(`/api/events/${eventId}/qr-art`, {
+      method: 'GET',
+      token,
+    });
+  },
+  updateEventQrArtCustomization(
+    token: string,
+    eventId: string,
+    requestBody: EventQrArtCustomizationUpdateRequest,
+  ) {
+    return request<EventQrArtCustomization>(`/api/events/${eventId}/qr-art`, {
+      method: 'PUT',
+      token,
+      data: requestBody,
+    });
+  },
+  async fetchEventQrCode(token: string, eventId: string, size = 320) {
     try {
-      const response = await http.get<Blob>(`/api/events/${eventId}/qrcode`, {
+      const response = await http.get<Blob>(`/api/events/${eventId}/qrcode?size=${size}`, {
         headers: {
           ...authHeaders(token),
           Accept: 'image/png, application/octet-stream, */*',

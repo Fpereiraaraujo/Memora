@@ -17,6 +17,8 @@ import com.memora.entrypoint.api.dto.EventInvitationResponseDto;
 import com.memora.entrypoint.api.dto.EventGuestCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventGuestResponseDto;
 import com.memora.entrypoint.api.dto.EventRsvpSummaryResponseDto;
+import com.memora.entrypoint.api.dto.EventQrArtCustomizationResponseDto;
+import com.memora.entrypoint.api.dto.EventQrArtCustomizationUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PageResponseDto;
 import com.memora.entrypoint.api.dto.PhotoFavoriteUpdateRequestDto;
 import com.memora.entrypoint.api.dto.PhotoResponseDto;
@@ -149,7 +151,46 @@ public interface EventControllerApi {
 			@ApiResponse(responseCode = "404", description = "Event not found")
 		}
 	)
-	ResponseEntity<byte[]> qrcode(@PathVariable UUID eventId, Authentication authentication, HttpServletRequest request);
+	ResponseEntity<byte[]> qrcode(
+		@PathVariable UUID eventId,
+		@RequestParam(defaultValue = "320") int size,
+		Authentication authentication,
+		HttpServletRequest request
+	);
+
+	@GetMapping("/api/events/{eventId}/qr-art")
+	@Operation(
+		summary = "Get event QR art customization",
+		description = "Returns the saved QR art customization or event-based defaults.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "QR art customization returned"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventQrArtCustomizationResponseDto> getQrArt(
+		@PathVariable UUID eventId,
+		Authentication authentication
+	);
+
+	@PutMapping("/api/events/{eventId}/qr-art")
+	@Operation(
+		summary = "Update event QR art customization",
+		description = "Saves the printable QR art customization for the authenticated host event.",
+		security = { @SecurityRequirement(name = "bearerAuth") },
+		responses = {
+			@ApiResponse(responseCode = "200", description = "QR art customization saved"),
+			@ApiResponse(responseCode = "400", description = "Invalid payload"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "404", description = "Event not found")
+		}
+	)
+	ResponseEntity<EventQrArtCustomizationResponseDto> updateQrArt(
+		@PathVariable UUID eventId,
+		@Valid @RequestBody EventQrArtCustomizationUpdateRequestDto request,
+		Authentication authentication
+	);
 
 	@GetMapping("/api/events/{eventId}/photos")
 	@Operation(

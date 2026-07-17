@@ -1,9 +1,10 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
 import { EventQrCard } from '@/features/events/components/event-dashboard/event-qr-card';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
+import { buildEventQrArtPath } from '@/features/events/utils/event-routes';
 
 export function EventQrCodePage() {
   const { eventId } = useParams();
@@ -23,6 +24,14 @@ export function EventQrCodePage() {
             title="Compartilhe com seus convidados"
             description="Baixe o QR Code, copie o link público e deixe o acesso do evento pronto para mesas, entrada e lembranças."
             badge="Upload em tempo real"
+            actions={(
+              <Link
+                to={buildEventQrArtPath(dashboard.event.id)}
+                className="inline-flex items-center justify-center rounded-2xl border border-[#efb6bb] bg-white px-5 py-3 text-sm font-bold text-[#201914] shadow-[0_14px_34px_rgba(96,60,36,0.08)] transition hover:-translate-y-0.5 hover:bg-[#fff7f7]"
+              >
+                Criar arte para impressão
+              </Link>
+            )}
           />
 
           <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
