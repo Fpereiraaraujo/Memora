@@ -27,7 +27,7 @@ export const LANDING_FAQ_ITEMS: LandingFaqItem[] = [
   {
     question: 'As fotos ficam públicas?',
     answer:
-      'A galeria da Memora é pensada para ser privada e acessível pelo link ou QR Code do evento. Os noivos têm controle sobre as memórias recebidas.',
+      'A galeria da Memora é pensada para ser privada e acessível pelo link ou QR Code do evento. Quem organiza tem controle sobre as memórias recebidas.',
   },
   {
     question: 'A Memora substitui o fotógrafo?',
@@ -42,12 +42,12 @@ export const LANDING_FAQ_ITEMS: LandingFaqItem[] = [
   {
     question: 'Posso remover fotos?',
     answer:
-      'Sim. Os noivos podem gerenciar as fotos recebidas na galeria privada.',
+      'Sim. Quem organiza o evento pode gerenciar as fotos recebidas na galeria privada.',
   },
   {
     question: 'Posso usar em aniversários, formaturas ou eventos corporativos?',
     answer:
-      'Sim. Apesar de ser ideal para casamentos, a Memora também pode ser usada em outros tipos de eventos.',
+      'Sim. A Memora funciona muito bem em casamentos, aniversários infantis, aniversários adultos, festas de 15 anos, formaturas e eventos corporativos.',
   },
   {
     question: 'O QR Code expira?',
@@ -60,9 +60,9 @@ export const LANDING_FAQ_ITEMS: LandingFaqItem[] = [
       'A Memora foi pensada para preservar boas lembranças com qualidade adequada para visualização e organização. A qualidade final pode depender do arquivo enviado e das configurações do sistema.',
   },
   {
-    question: 'Como os noivos acessam as fotos?',
+    question: 'Como o anfitrião acessa as fotos?',
     answer:
-      'Os noivos acessam pelo painel privado, onde podem visualizar, organizar, favoritar e baixar as memórias recebidas.',
+      'O anfitrião acessa pelo painel privado, onde pode visualizar, organizar, favoritar e baixar as memórias recebidas.',
   },
 ];
 

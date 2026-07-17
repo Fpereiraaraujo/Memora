@@ -10,7 +10,7 @@ const features = [
   },
   {
     title: 'Galeria privada',
-    description: 'Os noivos acompanham tudo em um painel simples, bonito e organizado.',
+    description: 'Quem organiza acompanha tudo em um painel simples, bonito e organizado.',
     icon: 'G',
     tone: 'bg-[#fff8ef] text-[#d39a35]',
   },
@@ -42,7 +42,7 @@ const marketingPlans = EVENT_PLANS.map((plan) => {
       ...plan,
       marketingName: 'Celebração',
       marketingDescription:
-        'O plano mais escolhido para casamentos, com mais espaço para fotos, recados e organização.',
+        'O plano mais escolhido para eventos sociais, com mais espaço para fotos, recados e organização.',
     };
   }
 

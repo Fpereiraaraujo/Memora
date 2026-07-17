@@ -5,13 +5,13 @@ const steps = [
     step: 'Passo 01',
     title: 'Crie sua página',
     description:
-      'Personalize com nome dos noivos, data, mensagem, capa e informações do evento.',
+      'Personalize com nome do evento, data, mensagem, capa e informações para os convidados.',
   },
   {
     step: 'Passo 02',
     title: 'Compartilhe o QR Code',
     description:
-      'Use nas mesas, no convite, na entrada, no espelho ou em qualquer ponto da festa.',
+      'Use nas mesas, no convite, na entrada, no espelho ou em qualquer ponto da celebração.',
   },
   {
     step: 'Passo 03',
@@ -34,7 +34,7 @@ export function HomeHowItWorksSection() {
         <SectionHeading
           eyebrow="Como funciona"
           title="Um fluxo bonito por fora e simples por dentro"
-          description="Os noivos criam o evento, compartilham o QR Code e os convidados enviam fotos direto pelo celular."
+          description="Você cria o evento, compartilha o QR Code e os convidados enviam fotos direto pelo celular."
         />
 
         <div className="mt-6 grid gap-4 lg:grid-cols-4">

@@ -38,7 +38,7 @@ const tabs: Array<{
     id: 'downloads',
     label: 'Downloads',
     shortLabel: 'Baixar',
-    description: 'Organize os arquivos que os noivos vão guardar depois.',
+    description: 'Organize os arquivos que você vai guardar depois.',
   },
   {
     id: 'messages',
@@ -111,7 +111,7 @@ function ImageTile({ photo, index }: { photo: string; index: number }) {
     <div className="group relative h-24 overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#fff1f2,#f4d7c4_48%,#d8a84f)] shadow-[0_10px_22px_rgba(96,60,36,0.06)] transition duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_18px_38px_rgba(96,60,36,0.13)] active:scale-[0.99]">
       <img
         src={photo}
-        alt={`Momento do casamento ${index + 1}`}
+        alt={`Momento do evento ${index + 1}`}
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110"
         onError={(event) => {
@@ -137,9 +137,9 @@ function TabContent({ selectedTab }: { selectedTab: PreviewTab }) {
     return (
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {[
-          ['Mariana Silva', 'Que momento lindo. Vocês merecem toda felicidade!'],
-          ['Carlos Eduardo', 'A cerimônia foi emocionante do começo ao fim.'],
-          ['Juliana Mendes', 'Já enviei minhas fotos preferidas para vocês guardarem.'],
+          ['Mariana Silva', 'Que momento lindo. Já mandei minhas fotos preferidas do evento.'],
+          ['Carlos Eduardo', 'A celebração foi emocionante do começo ao fim.'],
+          ['Juliana Mendes', 'Enviei os melhores registros para vocês guardarem depois.'],
         ].map(([name, message]) => (
           <div
             key={name}
@@ -147,9 +147,7 @@ function TabContent({ selectedTab }: { selectedTab: PreviewTab }) {
           >
             <p className="text-sm font-black text-ink-900">{name}</p>
 
-            <p className="mt-2 text-xs leading-5 text-ink-800/62">
-              {message}
-            </p>
+            <p className="mt-2 text-xs leading-5 text-ink-800/62">{message}</p>
           </div>
         ))}
       </div>
@@ -161,8 +159,8 @@ function TabContent({ selectedTab }: { selectedTab: PreviewTab }) {
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {[
           ['Todas as fotos', '1.248 arquivos prontos para baixar'],
-          ['Favoritas', '142 imagens separadas pelos noivos'],
-          ['Recados', '18 mensagens exportáveis para guardar'],
+          ['Favoritas', '142 imagens separadas para guardar'],
+          ['Recados', '18 mensagens exportáveis para lembrar depois'],
         ].map(([title, description]) => (
           <div
             key={title}
@@ -170,9 +168,7 @@ function TabContent({ selectedTab }: { selectedTab: PreviewTab }) {
           >
             <p className="text-sm font-black text-ink-900">{title}</p>
 
-            <p className="mt-2 text-xs leading-5 text-ink-800/62">
-              {description}
-            </p>
+            <p className="mt-2 text-xs leading-5 text-ink-800/62">{description}</p>
 
             <button
               type="button"
@@ -224,7 +220,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
             <div className="flex items-center gap-3">
               <img
                 src={marketingWeddingAssets.coupleProfile}
-                alt="Isadora e Fernando"
+                alt="Prévia de evento no painel"
                 loading="lazy"
                 className="size-10 rounded-xl object-cover"
                 onError={(event) => {
@@ -233,9 +229,9 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
               />
 
               <div>
-                <p className="text-xs font-bold text-ink-900">Casamento</p>
-                <p className="text-xs text-ink-800/58">Isadora & Fernando</p>
-                <p className="text-[10px] text-ink-800/42">25 de maio de 2024</p>
+                <p className="text-xs font-bold text-ink-900">Evento</p>
+                <p className="text-xs text-ink-800/58">Aniversário da Marina</p>
+                <p className="text-[10px] text-ink-800/42">17 de julho de 2026</p>
               </div>
             </div>
           </div>
@@ -268,7 +264,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
             <div>
               <div className="flex flex-wrap items-center gap-2 text-sm text-[#c89331]">
                 <span>♡</span>
-                Casamento Isadora & Fernando
+                Evento Marina 30 anos
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2 text-sm text-ink-800/60 sm:gap-5">

@@ -1,4 +1,5 @@
 import { PublicShell } from '@/components/layout/public-shell';
+import { HomeEventTypesSection } from '@/features/home/components/home-event-types-section';
 import { HomeHowItWorksSection } from '@/features/home/components/home-how-it-works-section';
 import { HomeIntroSection } from '@/features/home/components/home-intro-section';
 import { LandingFinalCta } from '@/features/home/components/landing-final-cta';
@@ -21,14 +22,15 @@ export function HomePage() {
   return (
     <PublicShell>
       <PageSeo
-        title="Memora | As fotos do seu casamento em um só lugar"
-        description="Crie uma página personalizada, compartilhe um QR Code e receba fotos e recados dos convidados em uma galeria privada. Sem app, sem login e sem complicação."
+        title="Memora | As fotos do seu evento em um só lugar"
+        description="Crie uma página personalizada, compartilhe um QR Code e receba fotos e recados dos convidados em uma galeria privada. Ideal para casamentos, aniversários, festas de 15 anos, formaturas e outros eventos."
         path="/"
         faqJsonLd={LANDING_FAQ_ITEMS.map((item) => ({ question: item.question, answer: item.answer }))}
       />
 
       <HomeIntroSection />
       <HomeHowItWorksSection />
+      <HomeEventTypesSection />
       <HomeEmotionalSection />
       <HomeWhatsappComparisonSection />
       <HomeCameraFlowSection />

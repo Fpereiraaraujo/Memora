@@ -25,18 +25,19 @@ export function HomeIntroSection() {
               <span className="grid size-5 place-items-center rounded-full bg-[#fff1f2] text-[#ef7885]">
                 ♡
               </span>
-              O jeito mais bonito de receber fotos dos convidados
+              Para casamentos, aniversários e grandes celebrações
             </div>
 
             <h1 className="max-w-[34rem] font-display text-[3rem] font-semibold leading-[0.92] tracking-[-0.055em] text-[#1f2430] sm:text-[4rem] md:text-[3.15rem] lg:text-[4.05rem] xl:text-[4.35rem]">
-              As fotos do seu casamento
+              As fotos do seu evento
               <br />
               <span className="text-[#eb8b93]">em um só lugar</span>
             </h1>
 
             <p className="mt-5 max-w-[31rem] text-base leading-8 text-ink-800/74 md:max-w-[27rem] md:text-[15px] md:leading-7 lg:max-w-[31rem] lg:text-base lg:leading-8">
               Crie uma página personalizada, compartilhe um QR Code e receba fotos e recados dos
-              convidados em uma galeria privada. Sem app, sem login e sem complicação.
+              convidados em uma galeria privada. Funciona para casamentos, aniversários, festas
+              de 15 anos, formaturas e muito mais.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -44,7 +45,7 @@ export function HomeIntroSection() {
                 to="/register"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-7 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(239,120,133,0.3)] focus:outline-none focus:ring-2 focus:ring-[#ef7885]/40 active:scale-[0.98]"
               >
-                Criar minha galeria
+                Criar meu evento
                 <span aria-hidden="true">→</span>
               </Link>
 
@@ -66,7 +67,7 @@ export function HomeIntroSection() {
           <div className="relative overflow-hidden rounded-[1.8rem] md:my-5 md:mr-5 md:block lg:my-4 lg:mr-4">
             <img
               src={showcaseBannerUrl}
-              alt="Página da Memora mostrando um QR Code de casamento e o fluxo de envio de fotos dos convidados"
+              alt="Página da Memora mostrando um QR Code para eventos e o fluxo de envio de fotos dos convidados"
               loading="lazy"
               className="h-full w-full object-cover object-center"
             />

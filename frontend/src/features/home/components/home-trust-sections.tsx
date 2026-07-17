@@ -10,8 +10,8 @@ const privacyCards = [
     description: 'Acesso pelo link ou QR Code do evento.',
   },
   {
-    title: 'Controle dos noivos',
-    description: 'Os noivos podem acompanhar, organizar e remover fotos quando necessário.',
+    title: 'Controle do anfitrião',
+    description: 'Quem organiza o evento pode acompanhar, organizar e remover fotos quando necessário.',
   },
   {
     title: 'Sem exposição desnecessária',
@@ -49,7 +49,7 @@ export function HomePrivacySection() {
         <SectionHeading
           eyebrow="Privacidade"
           title="Suas memórias ficam privadas."
-          description="Fotos de casamento são íntimas. Por isso, a Memora foi pensada para reunir os registros dos convidados com mais controle, organização e segurança."
+          description="Fotos e recados do evento merecem cuidado. Por isso, a Memora foi pensada para reunir os registros dos convidados com mais controle, organização e segurança."
         />
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -72,7 +72,7 @@ export function HomeQrCodePlacementSection() {
         <SectionHeading
           eyebrow="Onde usar o QR Code"
           title="O QR Code pode fazer parte da decoração."
-          description="Quanto mais natural for o convite para enviar fotos, mais memórias chegam até os noivos."
+          description="Quanto mais natural for o convite para enviar fotos, mais memórias chegam até quem organizou o evento."
         />
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,13 +94,13 @@ export function HomeSocialProofSection() {
         <SectionHeading
           eyebrow="Prova social honesta"
           title="Histórias que começam com um QR Code."
-          description="A Memora está começando sua história ao lado dos primeiros casais. Em breve, este espaço reunirá experiências reais de noivos que usaram a plataforma para guardar as fotos dos convidados."
+          description="A Memora está começando sua história ao lado dos primeiros eventos. Em breve, este espaço reunirá experiências reais de anfitriões que usaram a plataforma para guardar as fotos dos convidados."
         />
 
         <div className="mt-6 rounded-[1.6rem] bg-white/90 p-6 shadow-[0_12px_30px_rgba(96,60,36,0.05)]">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#c5922e]">Primeiros casais</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#c5922e]">Primeiros eventos</p>
           <h3 className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-ink-950">
-            Quer ser um dos primeiros casais a usar a Memora no seu evento?
+            Quer ser um dos primeiros anfitriões a usar a Memora no seu evento?
           </h3>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/72">
             Se você quer uma forma elegante de receber fotos e recados dos convidados sem depender de grupos de conversa, a Memora já está pronta para começar com você.
@@ -123,7 +123,7 @@ export function HomeFaqSection() {
       <div className="mx-auto max-w-[1520px] rounded-[2rem] bg-white/92 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
         <SectionHeading
           eyebrow="FAQ"
-          title="Tudo sobre QR Code para fotos de casamento"
+          title="Tudo sobre QR Code para fotos de eventos"
           description="Respostas diretas para as dúvidas mais comuns de quem quer receber fotos dos convidados com leveza e organização."
         />
 

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 const items = [
   {
-    title: 'Para os noivos',
+    title: 'Para quem organiza',
     description: 'Crie sua página, compartilhe o QR Code e acompanhe tudo sem depender de grupos de conversa.',
   },
   {
@@ -15,7 +15,7 @@ const items = [
   },
   {
     title: 'Para depois da festa',
-    description: 'Os noivos acessam a galeria privada para organizar, favoritar e baixar as melhores lembranças.',
+    description: 'O anfitrião acessa a galeria privada para organizar, favoritar e baixar as melhores lembranças.',
   },
 ];
 
@@ -35,7 +35,7 @@ export function LandingFinalCta() {
 
             <p className="mt-5 max-w-2xl text-base leading-8 text-ink-800/68">
               Crie sua página, compartilhe seu QR Code e deixe seus convidados ajudarem a construir
-              a memória do seu casamento.
+              a memória do seu evento.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -43,14 +43,14 @@ export function LandingFinalCta() {
                 to="/register"
                 className="inline-flex h-12 items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#f29ba3,#eb7d87)] px-6 text-sm font-bold text-white shadow-[0_18px_34px_rgba(239,120,133,0.22)] transition hover:-translate-y-1 hover:shadow-[0_24px_44px_rgba(239,120,133,0.3)] focus:outline-none focus:ring-2 focus:ring-[#ef7885]/40 active:scale-[0.98]"
               >
-                Criar minha galeria
+                Criar meu evento
               </Link>
 
               <Link
                 to="/qr-code-casamento"
                 className="inline-flex h-12 items-center justify-center rounded-[1rem] border border-[#ead1c4] bg-white/80 px-6 text-sm font-bold text-ink-900 shadow-[0_12px_28px_rgba(96,60,36,0.06)] transition hover:-translate-y-1 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d19a38]/30 active:scale-[0.98]"
               >
-                Entender o QR Code
+                Ver exemplo para casamento
               </Link>
             </div>
           </div>
