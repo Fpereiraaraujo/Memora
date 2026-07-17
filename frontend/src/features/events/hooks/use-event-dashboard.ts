@@ -37,6 +37,7 @@ export interface UseEventDashboardResult {
   favoritePhotos: Photo[];
   galleryPreview: Photo[];
   toggleFavorite: (photoId: string) => Promise<void>;
+  removePhoto: (photoId: string) => Promise<void>;
   copyPublicLink: () => Promise<void>;
   copyUploadLink: () => Promise<void>;
   shareEvent: () => Promise<void>;
@@ -232,6 +233,22 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     );
   }
 
+  async function removePhoto(photoId: string) {
+    if (!eventId) {
+      return;
+    }
+
+    if (mockMode || !token) {
+      setPhotos((current) => current.filter((photo) => photo.id !== photoId));
+      setFavorites((current) => current.filter((id) => id !== photoId));
+      return;
+    }
+
+    await api.updatePhotoStatus(token, eventId, photoId, { status: 'REMOVED' });
+    setPhotos((current) => current.filter((photo) => photo.id !== photoId));
+    setFavorites((current) => current.filter((id) => id !== photoId));
+  }
+
   async function copyPublicLink() {
     if (!publicPageUrl || !publicLinksEnabled) {
       return;
@@ -294,6 +311,7 @@ export function useEventDashboard(eventId?: string): UseEventDashboardResult {
     favoritePhotos,
     galleryPreview,
     toggleFavorite,
+    removePhoto,
     copyPublicLink,
     copyUploadLink,
     shareEvent,

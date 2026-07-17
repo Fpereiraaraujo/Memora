@@ -20,7 +20,7 @@ export function GuestUploadRulesCard({ event }: GuestUploadRulesCardProps) {
     },
     {
       title: 'Tudo vai para os anfitriões',
-      description: 'As fotos entram na galeria e os recados aparecem no painel privado do casal.',
+      description: 'As fotos entram na galeria e os recados aparecem no painel privado dos anfitriões.',
     },
   ];
 

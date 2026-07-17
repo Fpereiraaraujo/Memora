@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { SectionHeading } from '@/components/ui/section-heading';
 import { LANDING_FAQ_ITEMS, QR_CODE_PLACEMENTS } from '@/features/home/data/landing-content';
@@ -81,36 +80,6 @@ export function HomeQrCodePlacementSection() {
               {item}
             </article>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function HomeSocialProofSection() {
-  return (
-    <section id="depoimentos" className="px-4 py-3 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1520px] rounded-[2rem] border border-[#f1ddd1] bg-[linear-gradient(135deg,#fffaf7_0%,#fff2f1_100%)] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
-        <SectionHeading
-          eyebrow="Prova social honesta"
-          title="Histórias que começam com um QR Code."
-          description="A Memora está começando sua história ao lado dos primeiros eventos. Em breve, este espaço reunirá experiências reais de anfitriões que usaram a plataforma para guardar as fotos dos convidados."
-        />
-
-        <div className="mt-6 rounded-[1.6rem] bg-white/90 p-6 shadow-[0_12px_30px_rgba(96,60,36,0.05)]">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#c5922e]">Primeiros eventos</p>
-          <h3 className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-ink-950">
-            Quer ser um dos primeiros anfitriões a usar a Memora no seu evento?
-          </h3>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-800/72">
-            Se você quer uma forma elegante de receber fotos e recados dos convidados sem depender de grupos de conversa, a Memora já está pronta para começar com você.
-          </p>
-          <Link
-            to="/register"
-            className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f28e94,#eb7d87)] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,120,133,0.26)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(239,120,133,0.3)] focus:outline-none focus:ring-2 focus:ring-[#ef7885]/40"
-          >
-            Criar meu evento
-          </Link>
         </div>
       </div>
     </section>

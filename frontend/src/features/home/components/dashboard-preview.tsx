@@ -219,7 +219,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
           <div className="mt-4 rounded-[1.2rem] bg-white p-2 shadow-[0_8px_18px_rgba(96,60,36,0.05)]">
             <div className="flex items-center gap-3">
               <img
-                src={marketingWeddingAssets.coupleProfile}
+                src={marketingWeddingAssets.eventProfile}
                 alt="Prévia de evento no painel"
                 loading="lazy"
                 className="size-10 rounded-xl object-cover"
@@ -229,9 +229,9 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
               />
 
               <div>
-                <p className="text-xs font-bold text-ink-900">Evento</p>
-                <p className="text-xs text-ink-800/58">Aniversário da Marina</p>
-                <p className="text-[10px] text-ink-800/42">17 de julho de 2026</p>
+                <p className="text-xs font-bold text-ink-900">Casamento</p>
+                <p className="text-xs text-ink-800/58">Isadora & Fernando</p>
+                <p className="text-[10px] text-ink-800/42">8 de outubro de 2026</p>
               </div>
             </div>
           </div>
@@ -264,7 +264,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
             <div>
               <div className="flex flex-wrap items-center gap-2 text-sm text-[#c89331]">
                 <span>♡</span>
-                Evento Marina 30 anos
+                Casamento Isadora & Fernando
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2 text-sm text-ink-800/60 sm:gap-5">

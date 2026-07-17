@@ -29,6 +29,7 @@ interface SettingsFormState {
   welcomeMessage: string;
   coverImageUrl: string | null;
   highlightImageUrls: string[];
+  publicGalleryEnabled: boolean;
 }
 
 function createLocalPreviewUrls(files: File[]) {
@@ -103,6 +104,7 @@ export function EventPublicPageSettingsPage() {
             welcomeMessage: resolved.welcomeMessage,
             coverImageUrl: resolved.coverImageUrl,
             highlightImageUrls: resolved.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
+            publicGalleryEnabled: resolved.publicGalleryEnabled,
           });
         }
       } catch {
@@ -113,6 +115,7 @@ export function EventPublicPageSettingsPage() {
             welcomeMessage: fallback.welcomeMessage,
             coverImageUrl: fallback.coverImageUrl,
             highlightImageUrls: fallback.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
+            publicGalleryEnabled: fallback.publicGalleryEnabled,
           });
         }
       } finally {
@@ -253,6 +256,7 @@ export function EventPublicPageSettingsPage() {
         title: form.title.trim(),
         eventDate: form.eventDate,
         welcomeMessage: form.welcomeMessage.trim(),
+        publicGalleryEnabled: form.publicGalleryEnabled,
       });
 
       let nextCoverImageUrl = updated.coverImageUrl ?? form.coverImageUrl;
@@ -286,6 +290,7 @@ export function EventPublicPageSettingsPage() {
         welcomeMessage: updated.welcomeMessage,
         coverImageUrl: nextCoverImageUrl,
         highlightImageUrls: nextHighlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
+        publicGalleryEnabled: updated.publicGalleryEnabled,
       });
       setCoverFile(null);
       setHighlightFiles([]);
@@ -364,13 +369,13 @@ export function EventPublicPageSettingsPage() {
 
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-[#2c2927]/80">
-                  Nome dos noivos ou título do evento
+                  Título do evento
                 </span>
                 <Input
                   value={form.title}
                   maxLength={MAX_PUBLIC_TITLE_LENGTH}
                   onChange={(inputEvent) => updateForm({ title: inputEvent.target.value })}
-                  placeholder="Ex: Isadora & Fernando"
+                  placeholder="Ex: Aniversário da Marina"
                 />
               </label>
 
@@ -401,6 +406,53 @@ export function EventPublicPageSettingsPage() {
                   {form.welcomeMessage.length}/{MAX_PUBLIC_MESSAGE_LENGTH}
                 </span>
               </label>
+
+              <div className="rounded-[20px] border border-[#f1ddd1] bg-[#fffaf7] p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="max-w-xl">
+                    <p className="text-sm font-black text-[#161314]">
+                      Galeria visível para convidados
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#2c2927]/62">
+                      Quando desativada, os convidados ainda enviam fotos e recados, mas somente os anfitriões podem ver as imagens no painel.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.publicGalleryEnabled}
+                    onClick={() =>
+                      updateForm({ publicGalleryEnabled: !form.publicGalleryEnabled })
+                    }
+                    className={`relative h-12 w-[92px] shrink-0 rounded-full border p-1 transition ${
+                      form.publicGalleryEnabled
+                        ? 'border-[#ef7885] bg-[#ef7885]'
+                        : 'border-[#dccbc1] bg-[#eee7e2]'
+                    }`}
+                  >
+                    <span
+                      className={`grid size-9 place-items-center rounded-full bg-white text-[10px] font-black shadow transition ${
+                        form.publicGalleryEnabled
+                          ? 'translate-x-10 text-[#ef7885]'
+                          : 'translate-x-0 text-[#7b6d65]'
+                      }`}
+                    >
+                      {form.publicGalleryEnabled ? 'SIM' : 'NÃO'}
+                    </span>
+                  </button>
+                </div>
+
+                <p className={`mt-4 rounded-[14px] px-4 py-3 text-xs font-bold ${
+                  form.publicGalleryEnabled
+                    ? 'bg-[#eefbf1] text-[#3f8b46]'
+                    : 'bg-[#fff1f2] text-[#b75c68]'
+                }`}>
+                  {form.publicGalleryEnabled
+                    ? 'Galeria pública: convidados podem ver e curtir as fotos.'
+                    : 'Galeria privada: fotos visíveis somente para os anfitriões.'}
+                </p>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block rounded-[18px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 transition hover:bg-white">

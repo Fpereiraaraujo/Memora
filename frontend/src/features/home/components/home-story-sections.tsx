@@ -1,75 +1,11 @@
 import { SectionHeading } from '@/components/ui/section-heading';
 
-const extensionCards = [
-  {
-    title: 'Combina com o evento',
-    description: 'Seu QR Code pode aparecer de forma elegante nas mesas, no convite e nos materiais da celebração.',
-  },
-  {
-    title: 'Convidados participam',
-    description: 'Cada pessoa pode enviar o olhar dela sobre esse dia especial em poucos toques.',
-  },
-  {
-    title: 'Tudo fica reunido',
-    description: 'As lembranças chegam organizadas em um único lugar para quem está organizando o evento.',
-  },
-];
-
 const flowSteps = [
   'O convidado escaneia o QR Code.',
   'Escolhe as fotos no celular.',
   'Envia sem login e sem aplicativo.',
   'O anfitrião recebe tudo na galeria.',
 ] as const;
-
-export function HomeEmotionalSection() {
-  return (
-    <section id="sobre-memora" className="px-4 py-3 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-[1520px] gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <article className="rounded-[2rem] bg-white/90 p-6 shadow-[0_18px_54px_rgba(96,60,36,0.06)] sm:p-8">
-          <SectionHeading
-            eyebrow="Por que a Memora existe"
-            title="Seu evento visto pelos olhos de quem estava lá."
-            description="O fotógrafo ou a equipe oficial registram os grandes momentos. Mas os convidados registram bastidores, risadas, abraços, dança e cenas espontâneas que muitas vezes se perdem depois da festa."
-          />
-
-          <p className="mt-5 max-w-2xl text-base leading-8 text-ink-800/72">
-            Com a Memora, essas fotos não se perdem em conversas, grupos ou celulares esquecidos.
-            Cada convidado escaneia o QR Code, envia as fotos pelo celular e tudo chega em uma
-            galeria privada para quem organizou o evento.
-          </p>
-        </article>
-
-        <article className="rounded-[2rem] border border-[#f0dbcf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f2_100%)] p-6 shadow-[0_18px_54px_rgba(96,60,36,0.05)] sm:p-8">
-          <SectionHeading
-            eyebrow="Mais do que upload"
-            title="Não é só tecnologia. É uma extensão da sua celebração."
-            description="A Memora foi criada para fazer parte da experiência do evento de forma natural."
-          />
-
-          <p className="mt-5 text-base leading-8 text-ink-800/72">
-            O QR Code pode estar na decoração, nas mesas, no convite, na entrada da festa ou onde
-            fizer sentido, convidando cada pessoa a participar da construção das memórias.
-          </p>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {extensionCards.map((card) => (
-              <article key={card.title} className="rounded-[1.4rem] bg-white/90 p-5 shadow-[0_12px_26px_rgba(96,60,36,0.05)]">
-                <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[#c5922e]">
-                  {card.title}
-                </h3>
-
-                <p className="mt-3 text-sm leading-7 text-ink-800/68">
-                  {card.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </article>
-      </div>
-    </section>
-  );
-}
 
 export function HomeWhatsappComparisonSection() {
   return (

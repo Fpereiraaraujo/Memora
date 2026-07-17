@@ -81,7 +81,7 @@ function QrCodeWeddingInfoSection() {
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            'Os noivos criam a página personalizada do evento.',
+            'Os anfitriões criam a página personalizada do evento.',
             'O QR Code é compartilhado nas mesas, no convite ou na entrada.',
             'Os convidados acessam a página pelo celular e enviam fotos e recados.',
             'Tudo chega a uma galeria privada para organizar, favoritar e baixar depois.',

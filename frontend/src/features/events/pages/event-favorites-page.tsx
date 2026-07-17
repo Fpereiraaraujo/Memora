@@ -58,7 +58,7 @@ export function EventFavoritesPage() {
             requiredPlanLabel="Evento"
             eyebrow="Favoritas premium"
             title="Ative suas favoritas"
-            description="Esse espaço fica disponível a partir do plano Evento para você destacar as melhores fotos do casamento."
+            description="Esse espaço fica disponível a partir do plano Evento para você destacar as melhores fotos da celebração."
           />
         )
       ) : null}

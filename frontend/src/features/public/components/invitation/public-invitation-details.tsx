@@ -109,7 +109,7 @@ export function PublicInvitationDetails({
         </h1>
 
         <p className="memora-invite-copy__subtitle">
-          Convidam para o seu casamento
+          Você é nosso convidado especial
         </p>
 
         {date ? (

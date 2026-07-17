@@ -52,16 +52,25 @@ export function EventPublicPageCard({
         </Link>
 
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">
-            Esta é a página que os convidados vão ver
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-bold text-[#ef7885]">
+              Esta é a página que os convidados vão ver
+            </p>
+            <span className={`rounded-full px-3 py-1.5 text-xs font-black ${
+              customization.publicGalleryEnabled
+                ? 'bg-[#eefbf1] text-[#3f8b46]'
+                : 'bg-[#fff1f2] text-[#b75c68]'
+            }`}>
+              {customization.publicGalleryEnabled ? 'Galeria pública' : 'Galeria privada'}
+            </span>
+          </div>
 
           <h2 className="mt-2 font-display text-[36px] font-semibold leading-none tracking-[-0.04em] text-[#161314]">
             Personalize sua página pública
           </h2>
 
           <p className="mt-3 max-w-2xl text-base leading-8 text-[#2c2927]/65">
-            Defina foto de capa, destaques, nome dos noivos, data e a mensagem principal para deixar a experiência dos convidados mais bonita e clara.
+            Defina capa, destaques, mensagem e se os convidados podem ver as fotos enviadas.
           </p>
         </div>
 

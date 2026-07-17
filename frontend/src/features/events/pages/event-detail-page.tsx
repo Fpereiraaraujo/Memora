@@ -72,6 +72,7 @@ export function EventDetailPage() {
               favorites={dashboard.favorites}
               galleryPath={galleryPath}
               onToggleFavorite={dashboard.toggleFavorite}
+              onRemovePhoto={dashboard.removePhoto}
             />
 
             <EventMessagesCard

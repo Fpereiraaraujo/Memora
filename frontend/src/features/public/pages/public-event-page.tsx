@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
-import { CoupleHighlightsSection } from '@/features/public/components/event-page/couple-highlights-section';
+import { EventHighlightsSection } from '@/features/public/components/event-page/event-highlights-section';
 import { PublicEventCover } from '@/features/public/components/event-page/public-event-cover';
 import { PublicGallerySection } from '@/features/public/components/event-page/public-gallery-section';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
@@ -25,6 +25,12 @@ const PUBLIC_EVENT_NAV_ITEMS = [
   { label: 'Enviar fotos', href: '#upload' },
   { label: 'Galeria', href: '#galeria' },
 ];
+
+function getPublicEventNavItems(publicGalleryEnabled: boolean) {
+  return publicGalleryEnabled
+    ? PUBLIC_EVENT_NAV_ITEMS
+    : PUBLIC_EVENT_NAV_ITEMS.filter((item) => item.href !== '#galeria');
+}
 
 function emptyPhotoPage(page: number): PageResponse<Photo> {
   return {
@@ -401,7 +407,9 @@ export function PublicEventPage() {
             : 'Foto enviada com sucesso. Obrigado por compartilhar esse momento!',
       );
 
-      await Promise.all([refreshFirstGalleryPage(slug), loadTopLiked(slug)]);
+      if (customization?.publicGalleryEnabled) {
+        await Promise.all([refreshFirstGalleryPage(slug), loadTopLiked(slug)]);
+      }
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : 'Não foi possível enviar agora. Tente novamente.');
     } finally {
@@ -422,16 +430,21 @@ export function PublicEventPage() {
   }
 
   return (
-    <PublicShell navItems={PUBLIC_EVENT_NAV_ITEMS} hideFooter showAuthActions={false}>
+    <PublicShell
+      navItems={getPublicEventNavItems(customization.publicGalleryEnabled)}
+      hideFooter
+      showAuthActions={false}
+    >
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <PublicEventCover
             event={event}
             customization={customization}
             totalPhotos={totalElements}
+            publicGalleryEnabled={customization.publicGalleryEnabled}
           />
 
-          <CoupleHighlightsSection images={highlightImages} />
+          <EventHighlightsSection images={highlightImages} />
 
           <GuestUploadCard
             event={event}
@@ -467,18 +480,20 @@ export function PublicEventPage() {
             onSubmit={handleSubmit}
           />
 
-          <PublicGallerySection
-            photos={currentPhotos}
-            allLoadedPhotos={allLoadedPhotos}
-            topLikedPhotos={topLikedPhotos}
-            likedPhotoIds={likedPhotoIds}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalElements={totalElements}
-            onPageChange={setCurrentPage}
-            onLikeToggle={handleLikeToggle}
-            onPrefetchMore={handlePrefetchMore}
-          />
+          {customization.publicGalleryEnabled ? (
+            <PublicGallerySection
+              photos={currentPhotos}
+              allLoadedPhotos={allLoadedPhotos}
+              topLikedPhotos={topLikedPhotos}
+              likedPhotoIds={likedPhotoIds}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              onPageChange={setCurrentPage}
+              onLikeToggle={handleLikeToggle}
+              onPrefetchMore={handlePrefetchMore}
+            />
+          ) : null}
         </div>
       </div>
     </PublicShell>

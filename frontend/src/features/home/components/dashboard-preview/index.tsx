@@ -39,7 +39,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
           <div className="mt-4 rounded-[1.2rem] bg-white p-2 shadow-[0_8px_18px_rgba(96,60,36,0.05)]">
             <div className="flex items-center gap-3">
               <img
-                src={marketingWeddingAssets.coupleProfile}
+                src={marketingWeddingAssets.eventProfile}
                 alt="Isadora e Fernando"
                 loading="lazy"
                 className="size-10 rounded-xl object-cover"

@@ -64,6 +64,16 @@ export const EVENT_TYPES: EventType[] = [
   'OTHER',
 ];
 
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  WEDDING: 'Casamento',
+  BIRTHDAY: 'Aniversário',
+  GRADUATION: 'Formatura',
+  BABY_SHOWER: 'Chá de bebê',
+  BAPTISM: 'Batizado',
+  CORPORATE: 'Corporativo',
+  OTHER: 'Outro evento',
+};
+
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   DRAFT: 'Rascunho',
   ACTIVE: 'Ativo',

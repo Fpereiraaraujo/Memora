@@ -94,7 +94,7 @@ export function validateCustomizationInput(input: {
   const errors: string[] = [];
 
   if (!input.title.trim()) {
-    errors.push('Informe o nome dos noivos ou o título do evento.');
+    errors.push('Informe o título do evento.');
   }
 
   if (input.title.trim().length > MAX_PUBLIC_TITLE_LENGTH) {

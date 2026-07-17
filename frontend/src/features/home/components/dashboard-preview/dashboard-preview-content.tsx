@@ -5,7 +5,7 @@ function ImageTile({ photo, index }: { photo: string; index: number }) {
     <div className="group relative h-24 overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#fff1f2,#f4d7c4_48%,#d8a84f)] shadow-[0_10px_22px_rgba(96,60,36,0.06)] transition duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_18px_38px_rgba(96,60,36,0.13)] active:scale-[0.99]">
       <img
         src={photo}
-        alt={`Momento do casamento ${index + 1}`}
+        alt={`Momento do evento ${index + 1}`}
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110"
         onError={(event) => {
@@ -57,7 +57,7 @@ export function DashboardPreviewContent({
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {[
           ['Todas as fotos', '1.248 arquivos prontos para baixar'],
-          ['Favoritas', '142 imagens separadas pelos noivos'],
+          ['Favoritas', '142 imagens separadas pelos anfitriões'],
           ['Recados', '18 mensagens exportáveis para guardar'],
         ].map(([title, description]) => (
           <div

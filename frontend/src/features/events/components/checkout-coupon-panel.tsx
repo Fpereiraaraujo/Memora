@@ -44,7 +44,7 @@ export function CheckoutCouponPanel({
             <Input
               value={couponCode}
               onChange={(event) => onCouponCodeChange(event.target.value)}
-              placeholder="Ex.: NOIVA10"
+              placeholder="Ex.: FESTA10"
               maxLength={80}
               disabled={disabled || applying}
               className="h-12 bg-white"

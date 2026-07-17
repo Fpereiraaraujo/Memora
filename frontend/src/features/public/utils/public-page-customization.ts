@@ -20,6 +20,7 @@ export function normalizePublicPageCustomization(value: unknown): PublicPageCust
     highlightImageUrls: Array.isArray(data.highlightImageUrls)
       ? data.highlightImageUrls.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
       : [],
+    publicGalleryEnabled: data.publicGalleryEnabled !== false,
     updatedAt: typeof data.updatedAt === 'string' && data.updatedAt.trim() ? data.updatedAt : null,
   };
 }
@@ -31,6 +32,7 @@ export function buildDefaultPublicPageCustomization(event: EventSummary): Public
     welcomeMessage: getDefaultWelcomeMessage(event),
     coverImageUrl: null,
     highlightImageUrls: [],
+    publicGalleryEnabled: true,
     updatedAt: null,
   };
 }
@@ -58,7 +60,7 @@ export function mergePublicPageCustomization(
 
 export function getDefaultWelcomeMessage(event: EventSummary) {
   if (event.type === 'WEDDING') {
-    return 'Ajude os noivos a guardar cada detalhe desse dia especial. Compartilhe suas fotos, seus bastidores e seu recado com carinho.';
+    return 'Ajude os anfitriões a guardar cada detalhe desse dia especial. Compartilhe suas fotos, seus bastidores e seu recado com carinho.';
   }
 
   if (event.type === 'BIRTHDAY') {

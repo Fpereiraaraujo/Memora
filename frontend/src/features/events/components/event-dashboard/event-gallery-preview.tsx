@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
+import { RemovePhotoButton } from '@/features/events/components/event-dashboard/remove-photo-button';
 import { getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
 import type { Photo } from '@/types/photo';
 
@@ -11,9 +12,16 @@ interface EventGalleryPreviewProps {
   favorites: string[];
   galleryPath: string;
   onToggleFavorite: (photoId: string) => void;
+  onRemovePhoto: (photoId: string) => Promise<void>;
 }
 
-export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFavorite }: EventGalleryPreviewProps) {
+export function EventGalleryPreview({
+  photos,
+  favorites,
+  galleryPath,
+  onToggleFavorite,
+  onRemovePhoto,
+}: EventGalleryPreviewProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const viewerImages = useMemo(
@@ -99,15 +107,23 @@ export function EventGalleryPreview({ photos, favorites, galleryPath, onToggleFa
               const isFavorite = favorites.includes(image.id);
 
               return (
-                <button
-                  type="button"
-                  onClick={() => onToggleFavorite(image.id)}
-                  className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
-                  aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                >
-                  <HeartIcon className="size-4" filled={isFavorite} />
-                  {isFavorite ? 'Favorita' : 'Favoritar'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onToggleFavorite(image.id)}
+                    className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+                    aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  >
+                    <HeartIcon className="size-4" filled={isFavorite} />
+                    {isFavorite ? 'Favorita' : 'Favoritar'}
+                  </button>
+
+                  <RemovePhotoButton
+                    photoId={image.id}
+                    onRemove={onRemovePhoto}
+                    onRemoved={() => setSelectedIndex(null)}
+                  />
+                </div>
               );
             }}
           />

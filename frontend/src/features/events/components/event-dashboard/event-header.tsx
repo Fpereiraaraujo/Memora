@@ -6,9 +6,9 @@ import { buildEventCheckoutPath } from '@/features/events/utils/event-routes';
 import {
   getEffectivePhotoLimit,
   getEventPlanLabel,
+  EVENT_TYPE_LABELS,
   type EventStatus,
   type EventSummary,
-  type EventType,
 } from '@/types/event';
 import type { Photo } from '@/types/photo';
 
@@ -19,16 +19,6 @@ interface EventHeaderProps {
   onShareEvent: () => void;
   publicLinksEnabled: boolean;
 }
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  WEDDING: 'Casamento',
-  BIRTHDAY: 'Aniversário',
-  GRADUATION: 'Formatura',
-  BABY_SHOWER: 'Chá de bebê',
-  BAPTISM: 'Batizado',
-  CORPORATE: 'Corporativo',
-  OTHER: 'Evento',
-};
 
 const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   DRAFT: 'Modo gratuito',

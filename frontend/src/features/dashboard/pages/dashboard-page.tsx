@@ -88,7 +88,6 @@ export function DashboardPage() {
     try {
       const createdEvent = await api.createEvent(token, {
         ...form,
-        type: 'WEDDING',
         title: form.title.trim(),
         location: form.location?.trim() || null,
       });

@@ -37,7 +37,7 @@ export const dashboardPreviewTabs: Array<{
     id: 'downloads',
     label: 'Downloads',
     shortLabel: 'Baixar',
-    description: 'Organize os arquivos que os noivos vão guardar depois.',
+    description: 'Organize os arquivos que os anfitriões vão guardar depois.',
   },
   {
     id: 'messages',

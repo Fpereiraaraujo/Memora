@@ -4,16 +4,11 @@ import { HomeHowItWorksSection } from '@/features/home/components/home-how-it-wo
 import { HomeIntroSection } from '@/features/home/components/home-intro-section';
 import { LandingFinalCta } from '@/features/home/components/landing-final-cta';
 import { ProductShowcaseSection } from '@/features/home/components/product-showcase-section';
-import {
-  HomeCameraFlowSection,
-  HomeEmotionalSection,
-  HomeWhatsappComparisonSection,
-} from '@/features/home/components/home-story-sections';
+import { HomeCameraFlowSection } from '@/features/home/components/home-story-sections';
 import {
   HomeFaqSection,
   HomePrivacySection,
   HomeQrCodePlacementSection,
-  HomeSocialProofSection,
 } from '@/features/home/components/home-trust-sections';
 import { LANDING_FAQ_ITEMS } from '@/features/home/data/landing-content';
 import { PageSeo } from '@/lib/page-seo';
@@ -31,13 +26,10 @@ export function HomePage() {
       <HomeIntroSection />
       <HomeHowItWorksSection />
       <HomeEventTypesSection />
-      <HomeEmotionalSection />
-      <HomeWhatsappComparisonSection />
       <HomeCameraFlowSection />
       <ProductShowcaseSection />
       <HomePrivacySection />
       <HomeQrCodePlacementSection />
-      <HomeSocialProofSection />
       <HomeFaqSection />
       <LandingFinalCta />
     </PublicShell>

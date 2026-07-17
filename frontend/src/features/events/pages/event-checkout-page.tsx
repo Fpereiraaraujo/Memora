@@ -413,7 +413,7 @@ function CheckoutHelpCard() {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {[
-          ['1', 'Escolha do plano', 'Escolha a opção que combina com o seu casamento.'],
+          ['1', 'Escolha do plano', 'Escolha a opção que combina com o seu evento.'],
           ['2', 'Validação do cupom', 'Veja o desconto antes de seguir, sem criar cobrança.'],
           ['3', 'Pagamento seguro', 'O valor final é recalculado no checkout e o evento só ativa após confirmação.'],
         ].map(([step, title, description]) => (

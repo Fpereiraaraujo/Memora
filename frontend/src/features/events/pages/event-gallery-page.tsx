@@ -90,6 +90,21 @@ export function EventGalleryPage() {
     }));
   }, [dashboard.mediaPhotos, visiblePhotos]);
 
+  async function handleRemovePhoto(photoId: string) {
+    await dashboard.removePhoto(photoId);
+
+    setVisiblePhotos((current) => current.filter((photo) => photo.id !== photoId));
+    setTotalElements((current) => {
+      const nextTotal = Math.max(0, current - 1);
+      setTotalPages(Math.max(1, Math.ceil(nextTotal / GALLERY_PAGE_SIZE)));
+      return nextTotal;
+    });
+
+    if (visiblePhotos.length === 1 && currentPage > 1) {
+      setCurrentPage((current) => current - 1);
+    }
+  }
+
   return (
     <EventPageLayout
       eventId={eventId}
@@ -116,6 +131,7 @@ export function EventGalleryPage() {
             photos={hydratedVisiblePhotos}
             favorites={dashboard.favorites}
             onToggleFavorite={dashboard.toggleFavorite}
+            onRemovePhoto={handleRemovePhoto}
           />
 
           <Pagination

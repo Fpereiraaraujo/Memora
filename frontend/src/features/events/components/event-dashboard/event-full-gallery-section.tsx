@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { EventImageViewer } from '@/features/events/components/event-dashboard/event-image-viewer';
 import { HeartIcon } from '@/features/events/components/event-dashboard/event-icons';
+import { RemovePhotoButton } from '@/features/events/components/event-dashboard/remove-photo-button';
 import { getPhotoSrc } from '@/features/events/utils/event-dashboard-formatters';
 import type { Photo } from '@/types/photo';
 
@@ -9,9 +10,15 @@ interface EventFullGallerySectionProps {
   photos: Photo[];
   favorites: string[];
   onToggleFavorite: (photoId: string) => void;
+  onRemovePhoto: (photoId: string) => Promise<void>;
 }
 
-export function EventFullGallerySection({ photos, favorites, onToggleFavorite }: EventFullGallerySectionProps) {
+export function EventFullGallerySection({
+  photos,
+  favorites,
+  onToggleFavorite,
+  onRemovePhoto,
+}: EventFullGallerySectionProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const viewerImages = useMemo(
@@ -85,7 +92,7 @@ export function EventFullGallerySection({ photos, favorites, onToggleFavorite }:
                   </div>
 
                   <div className="p-4">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setSelectedIndex(index)}
@@ -101,6 +108,12 @@ export function EventFullGallerySection({ photos, favorites, onToggleFavorite }:
                       >
                         Baixar
                       </a>
+
+                      <RemovePhotoButton
+                        photoId={photo.id}
+                        onRemove={onRemovePhoto}
+                        compact
+                      />
                     </div>
                   </div>
                 </div>
@@ -118,15 +131,23 @@ export function EventFullGallerySection({ photos, favorites, onToggleFavorite }:
               const isFavorite = favorites.includes(image.id);
 
               return (
-                <button
-                  type="button"
-                  onClick={() => onToggleFavorite(image.id)}
-                  className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
-                  aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                >
-                  <HeartIcon className="size-4" filled={isFavorite} />
-                  {isFavorite ? 'Favorita' : 'Favoritar'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onToggleFavorite(image.id)}
+                    className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+                    aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  >
+                    <HeartIcon className="size-4" filled={isFavorite} />
+                    {isFavorite ? 'Favorita' : 'Favoritar'}
+                  </button>
+
+                  <RemovePhotoButton
+                    photoId={image.id}
+                    onRemove={onRemovePhoto}
+                    onRemoved={() => setSelectedIndex(null)}
+                  />
+                </div>
               );
             }}
           />

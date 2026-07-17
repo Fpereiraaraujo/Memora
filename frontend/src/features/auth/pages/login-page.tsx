@@ -107,7 +107,7 @@ export function LoginPage() {
 
           <AuthForm
               title="Entrar"
-              description="Acesse o painel do casal para criar eventos, gerar QR Code e acompanhar as fotos enviadas pelos convidados."
+              description="Acesse seu painel para criar eventos, gerar QR Code e acompanhar as fotos enviadas pelos convidados."
               footer={footer}
               submitLabel="Entrar"
               onSubmit={handleSubmit}

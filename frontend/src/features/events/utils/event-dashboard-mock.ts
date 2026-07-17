@@ -29,10 +29,10 @@ export function buildMockEvents(): EventSummary[] {
   return [
     buildMockEvent('demo-event'),
     {
-      id: 'pedido-noivado',
-      type: 'WEDDING',
-      title: 'Noivado Isadora & Fernando',
-      slug: 'noivado-isadora-fernando',
+      id: 'festa-15-anos',
+      type: 'BIRTHDAY',
+      title: '15 anos da Isadora',
+      slug: '15-anos-isadora',
       eventDate: '2024-02-14',
       location: 'Jardim das Camelias',
       status: 'ACTIVE',

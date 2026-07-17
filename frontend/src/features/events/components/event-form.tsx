@@ -3,7 +3,11 @@ import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { type EventCreateRequest } from '@/types/event';
+import {
+  EVENT_TYPES,
+  EVENT_TYPE_LABELS,
+  type EventCreateRequest,
+} from '@/types/event';
 
 interface EventFormProps {
   value: EventCreateRequest;
@@ -22,14 +26,14 @@ export function EventForm({
     <form className="space-y-5" onSubmit={onSubmit}>
       <label className="space-y-2">
         <span className="text-sm font-bold text-ink-800/80">
-          Nome do casamento
+          Título do evento
         </span>
 
         <Input
           type="text"
-          placeholder="Ex: Casamento Isadora & Fernando"
+          placeholder="Ex: Aniversário da Marina"
           value={value.title}
-          onChange={(event) => onChange({ ...value, title: event.target.value, type: 'WEDDING' })}
+          onChange={(event) => onChange({ ...value, title: event.target.value })}
           required
         />
 
@@ -50,7 +54,6 @@ export function EventForm({
             onChange={(event) =>
               onChange({
                 ...value,
-                type: 'WEDDING',
                 eventDate: event.target.value || null,
               })
             }
@@ -62,9 +65,19 @@ export function EventForm({
             Tipo
           </span>
 
-          <div className="flex h-12 items-center rounded-2xl border border-[#ead7ca] bg-[#fffaf7] px-4 text-sm font-semibold text-[#7f5a3c]">
-            Casamento
-          </div>
+          <select
+            value={value.type}
+            onChange={(event) =>
+              onChange({ ...value, type: event.target.value as EventCreateRequest['type'] })
+            }
+            className="h-12 w-full rounded-2xl border border-[#ead7ca] bg-[#fffaf7] px-4 text-sm font-semibold text-[#7f5a3c] outline-none transition focus:border-[#ef7885] focus:ring-4 focus:ring-[#ef7885]/10"
+          >
+            {EVENT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {EVENT_TYPE_LABELS[type]}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -79,7 +92,6 @@ export function EventForm({
           onChange={(event) =>
             onChange({
               ...value,
-              type: 'WEDDING',
               location: event.target.value || null,
             })
           }

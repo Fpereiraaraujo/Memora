@@ -6,6 +6,7 @@ interface PublicEventCoverProps {
   event: EventSummary;
   customization: PublicPageCustomization;
   totalPhotos: number;
+  publicGalleryEnabled: boolean;
 }
 
 function getEventLabel(type: string) {
@@ -26,6 +27,7 @@ export function PublicEventCover({
   event,
   customization,
   totalPhotos,
+  publicGalleryEnabled,
 }: PublicEventCoverProps) {
   return (
     <section
@@ -66,19 +68,27 @@ export function PublicEventCover({
               Enviar fotos
             </a>
 
-            <a
-              href="#galeria"
-              className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-6 text-sm font-bold text-[#201914] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
-            >
-              Ver galeria
-            </a>
+            {publicGalleryEnabled ? (
+              <a
+                href="#galeria"
+                className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-6 text-sm font-bold text-[#201914] shadow-[0_14px_34px_rgba(96,60,36,0.06)] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
+              >
+                Ver galeria
+              </a>
+            ) : null}
           </div>
 
-          <div className="mt-7">
+          {publicGalleryEnabled ? (
+            <div className="mt-7">
             <span className="inline-flex items-center rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
               {totalPhotos} foto{totalPhotos === 1 ? '' : 's'} já compartilhada{totalPhotos === 1 ? '' : 's'}
             </span>
-          </div>
+            </div>
+          ) : (
+            <p className="mt-7 inline-flex rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
+              As fotos enviadas ficam privadas para os anfitriões
+            </p>
+          )}
         </div>
 
         <div className="relative">

@@ -1,8 +1,8 @@
-interface CoupleHighlightsSectionProps {
+interface EventHighlightsSectionProps {
   images: string[];
 }
 
-export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps) {
+export function EventHighlightsSection({ images }: EventHighlightsSectionProps) {
   const visibleImages = images.filter(Boolean).slice(0, 3);
 
   if (visibleImages.length === 0) {
@@ -21,11 +21,11 @@ export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps
           </p>
 
           <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314] sm:text-[44px]">
-            Destaques dos noivos
+            Destaques do evento
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2c2927]/62">
-            Essas são as fotos escolhidas pelos noivos para abrir a experiência pública do evento.
+            Essas são as fotos escolhidas pelos anfitriões para abrir a experiência pública do evento.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export function CoupleHighlightsSection({ images }: CoupleHighlightsSectionProps
           >
             <img
               src={image}
-              alt={`Destaque dos noivos ${index + 1}`}
+              alt={`Destaque do evento ${index + 1}`}
               loading="lazy"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />

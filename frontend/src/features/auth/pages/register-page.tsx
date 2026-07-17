@@ -85,7 +85,7 @@ export function RegisterPage() {
 
           <AuthForm
               title="Criar conta"
-              description="Cadastre o perfil do casal ou anfitrião e comece a montar eventos com página pública, QR Code e galeria privada."
+              description="Crie seu perfil de anfitrião e comece a montar eventos com página pública, QR Code e galeria privada."
               footer={
                 <span>
               Já tem conta?{' '}
