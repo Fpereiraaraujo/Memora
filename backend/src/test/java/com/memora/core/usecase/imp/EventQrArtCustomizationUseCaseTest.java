@@ -59,6 +59,7 @@ class EventQrArtCustomizationUseCaseTest {
 		assertThat(result.getTemplateCode()).isEqualTo(QrArtTemplateCode.PARTY_FUN);
 		assertThat(result.getFormat()).isEqualTo(QrArtFormat.A5_VERTICAL);
 		assertThat(result.isShowMemoraBranding()).isTrue();
+		assertThat(result.getUpdatedAt()).isNull();
 		verify(customizationRepository, never()).save(any());
 	}
 

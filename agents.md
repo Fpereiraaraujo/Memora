@@ -21,6 +21,7 @@ O sistema atualmente cobre:
 - galeria privada do anfitriao
 - curtidas publicas em fotos
 - personalizacao da pagina publica
+- imagem decorativa opcional da pagina publica com posicionamento guiado
 - convite digital individual com RSVP
 - checkout e ativacao de plano via InfinitePay
 - cupons de desconto e influencers afiliadas
@@ -117,6 +118,10 @@ Exemplos:
 
 - `Event`
 - `EventCheckoutPreview`
+- `EventPublicPageCustomization`
+- `EventThemeTemplateCode`
+- `EventDecorationStyle`
+- `EventDecorativeImagePosition`
 - `Photo`
 - `User`
 - `Plan`
@@ -487,6 +492,8 @@ Regra pratica:
 
 - QR Code e parte critica do produto
 - qualquer mudanca em QR Code, upload publico, likes, limite de fotos ou pagina publica precisa respeitar performance, cache e seguranca
+- o PDF de impressao da arte do QR deve preservar o QR sem compressao com perdas, manter 3 mm de sangria e declarar `TrimBox` e `BleedBox`
+- imagens decorativas da pagina publica aceitam apenas PNG/WEBP de ate 10 MB e usam posicoes fixas; nao criar coordenadas livres ou sobrepor conteudo funcional
 
 ### 6.7 Admin
 
@@ -557,6 +564,7 @@ Exemplos:
 - `storage.ts`
 - `cn.ts`
 - `public-assets.ts`
+- `features/public/utils/event-theme.ts` centraliza templates, fallback, contraste e CSS variables da identidade visual
 
 ### 7.4 `types`
 
@@ -579,6 +587,11 @@ Exemplos:
 - tratar o app como produto prioritariamente acessado no celular
 - usar `features/.../components` para componentes de escopo local
 - usar `components/ui` apenas para primitives ou blocos realmente compartilhados
+- manter a selecao e a previa de temas da pagina publica em `features/events/components/public-page`
+- aplicar a identidade visual publica por CSS variables resolvidas em `features/public/utils/event-theme.ts`, sem duplicar folhas de estilo por template
+- renderizar imagens decorativas pelo componente compartilhado `features/public/components/event-page/event-decorative-image.tsx`
+- centralizar a conversao da identidade publica para a arte de QR em `features/events/utils/qr-art-config.ts`; uma arte ja salva nunca deve ser sobrescrita automaticamente
+- manter o QR Code preto sobre fundo branco, com margem de seguranca livre de textos e decoracoes, mesmo quando a arte ao redor herdar as cores do evento
 - chamadas HTTP centralizadas em `lib/api.ts`
 - tipos de request/response centralizados em `types`
 - nao espalhar literals de rota por todo lado se ja existir helper em `features/events/utils/event-routes.ts`

@@ -84,32 +84,32 @@ export function PublicGallerySection({
   return (
     <section
       id="galeria"
-      className="rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-8"
+      className="rounded-[28px] border border-[var(--event-border-color)] bg-white/92 p-6 shadow-[0_22px_60px_var(--event-primary-mist-color)] sm:p-8"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">Galeria pública</p>
+          <p className="text-sm font-bold text-[var(--event-primary-ink-color)]">Galeria pública</p>
 
-          <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314] sm:text-[44px]">
+          <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[var(--event-foreground-color)] sm:text-[44px]">
             Fotos compartilhadas
           </h2>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2c2927]/62">
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--event-muted-foreground-color)]">
             Toque em qualquer foto para abrir em tela cheia, curtir e continuar navegando sem ficar preso apenas na página atual.
           </p>
         </div>
 
-        <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
+        <span className="w-fit rounded-full bg-[var(--event-accent-soft-color)] px-4 py-2 text-xs font-bold text-[var(--event-accent-ink-color)]">
           {totalElements} fotos
         </span>
       </div>
 
       {topFivePhotos.length > 0 ? (
-        <div className="mt-6 rounded-[22px] border border-[#f1ddd1] bg-[#fffaf7] p-4 sm:p-5">
+        <div className="mt-6 rounded-[22px] border border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/35 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Top 5</p>
-              <p className="mt-1 text-sm font-bold text-[#161314]">Fotos favoritas dos convidados</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--event-accent-ink-color)]">Top 5</p>
+              <p className="mt-1 text-sm font-bold text-[var(--event-foreground-color)]">Fotos favoritas dos convidados</p>
             </div>
           </div>
 
@@ -123,7 +123,7 @@ export function PublicGallerySection({
                 <div
                   key={photo.id}
                   className={[
-                    'group relative overflow-hidden rounded-[18px] bg-[#f5ded2] text-left shadow-[0_12px_28px_rgba(96,60,36,0.07)]',
+                    'group relative overflow-hidden rounded-[18px] bg-[var(--event-primary-soft-color)] text-left shadow-[0_12px_28px_var(--event-primary-mist-color)]',
                     isFeatured ? 'aspect-[1.08/1] sm:row-span-2' : 'aspect-square',
                   ].join(' ')}
                 >
@@ -141,7 +141,7 @@ export function PublicGallerySection({
                     />
                   </button>
 
-                  <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[#c5922e] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
+                  <div className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-1 text-[11px] font-black text-[var(--event-accent-ink-color)] shadow-[0_8px_20px_rgba(24,24,27,0.12)]">
                     #{index + 1}
                   </div>
 
@@ -164,7 +164,9 @@ export function PublicGallerySection({
                     }}
                     className={[
                       'absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-bold shadow-[0_8px_20px_rgba(24,24,27,0.12)]',
-                      isLiked ? 'bg-[#ef7885] text-white' : 'bg-white/92 text-[#ef7885]',
+                      isLiked
+                        ? 'bg-[var(--event-primary-color)] text-[var(--event-on-primary-color)]'
+                        : 'bg-white/92 text-[var(--event-primary-ink-color)]',
                     ].join(' ')}
                     aria-label={isLiked ? 'Remover curtida' : 'Curtir foto'}
                   >
@@ -179,18 +181,18 @@ export function PublicGallerySection({
       ) : null}
 
       {photos.length === 0 ? (
-        <div className="mt-6 rounded-[20px] border border-dashed border-[#efcfc4] bg-[#fffaf7] p-8 text-center">
-          <p className="font-display text-3xl font-semibold tracking-[-0.04em] text-[#161314]">
+        <div className="mt-6 rounded-[20px] border border-dashed border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/35 p-8 text-center">
+          <p className="font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--event-foreground-color)]">
             Ainda não existem fotos neste evento.
           </p>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#2c2927]/62">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[var(--event-muted-foreground-color)]">
             Seja a primeira pessoa a compartilhar uma lembrança deste momento.
           </p>
 
           <a
             href="#upload"
-            className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-[#ef7885] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(239,120,133,0.2)] transition hover:-translate-y-0.5 hover:bg-[#e86d7b] active:scale-[0.98]"
+            className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-[var(--event-primary-color)] px-6 text-sm font-bold text-[var(--event-on-primary-color)] shadow-[0_16px_38px_var(--event-primary-shadow-color)] transition hover:-translate-y-0.5 hover:bg-[var(--event-primary-hover-color)] active:scale-[0.98]"
           >
             Enviar fotos
           </a>
@@ -205,7 +207,7 @@ export function PublicGallerySection({
               return (
                 <div
                   key={photo.id}
-                  className="group relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2] text-left shadow-[0_12px_28px_rgba(96,60,36,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(96,60,36,0.13)]"
+                  className="group relative aspect-square overflow-hidden rounded-[18px] bg-[var(--event-primary-soft-color)] text-left shadow-[0_12px_28px_var(--event-primary-mist-color)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_var(--event-primary-shadow-color)]"
                 >
                   <button
                     type="button"
@@ -221,7 +223,7 @@ export function PublicGallerySection({
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="grid h-full w-full place-items-center bg-[#fff7f2] text-xs font-bold text-[#2c2927]/48">
+                      <div className="grid h-full w-full place-items-center bg-[var(--event-primary-soft-color)] text-xs font-bold text-[var(--event-muted-foreground-color)]">
                         Foto indisponível
                       </div>
                     )}
@@ -237,7 +239,9 @@ export function PublicGallerySection({
                     }}
                     className={[
                       'absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-bold shadow-[0_8px_20px_rgba(24,24,27,0.12)]',
-                      isLiked ? 'bg-[#ef7885] text-white' : 'bg-white/92 text-[#ef7885]',
+                      isLiked
+                        ? 'bg-[var(--event-primary-color)] text-[var(--event-on-primary-color)]'
+                        : 'bg-white/92 text-[var(--event-primary-ink-color)]',
                     ].join(' ')}
                     aria-label={isLiked ? 'Remover curtida da foto' : 'Curtir foto'}
                   >
@@ -251,7 +255,7 @@ export function PublicGallerySection({
 
           {totalPages > 1 ? (
             <div className="mt-7 flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm font-semibold text-[#2c2927]/58">
+              <p className="text-sm font-semibold text-[var(--event-muted-foreground-color)]">
                 Página {currentPage} de {totalPages}
               </p>
 
@@ -263,7 +267,7 @@ export function PublicGallerySection({
                     setSelectedIndex(null);
                     onPageChange(currentPage - 1);
                   }}
-                  className="inline-flex h-11 items-center justify-center rounded-[14px] border border-[#e8cfc1] bg-white px-5 text-sm font-bold text-[#201914] transition hover:bg-[#fff7f2] disabled:cursor-not-allowed disabled:opacity-45"
+                  className="inline-flex h-11 items-center justify-center rounded-[14px] border border-[var(--event-border-color)] bg-white px-5 text-sm font-bold text-[var(--event-foreground-color)] transition hover:bg-[var(--event-primary-soft-color)] disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   Anterior
                 </button>
@@ -275,7 +279,7 @@ export function PublicGallerySection({
                     setSelectedIndex(null);
                     onPageChange(currentPage + 1);
                   }}
-                  className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[#ef7885] px-5 text-sm font-bold text-white transition hover:bg-[#e86d7b] disabled:cursor-not-allowed disabled:opacity-45"
+                  className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[var(--event-primary-color)] px-5 text-sm font-bold text-[var(--event-on-primary-color)] shadow-[0_12px_28px_var(--event-primary-mist-color)] transition hover:bg-[var(--event-primary-hover-color)] disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   Próxima
                 </button>

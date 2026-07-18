@@ -3,6 +3,7 @@ package com.memora.entrypoint.api.mapper;
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.dataprovider.storage.FileStorageService;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
+import com.memora.entrypoint.api.dto.EventPublicPageDecorativeImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,14 @@ public class EventPublicPageCustomizationApiMapper {
 			customization.getWelcomeMessage(),
 			resolveUrl(customization.getCoverImageKey()),
 			customization.getHighlightImageKeys().stream().map(this::resolveUrl).toList(),
+			resolveUrl(customization.getDecorativeImageKey()),
+			customization.getDecorativeImagePosition(),
 			customization.isPublicGalleryEnabled(),
+			customization.getTemplateCode(),
+			customization.getPrimaryColor(),
+			customization.getSecondaryColor(),
+			customization.getAccentColor(),
+			customization.getDecorationStyle(),
 			customization.getUpdatedAt()
 		);
 	}
@@ -35,6 +43,14 @@ public class EventPublicPageCustomizationApiMapper {
 		return new EventPublicPageImageUploadResponseDto(
 			null,
 			customization.getHighlightImageKeys().stream().map(this::resolveUrl).toList()
+		);
+	}
+
+	public EventPublicPageDecorativeImageUploadResponseDto toDecorativeUploadResponse(
+		EventPublicPageCustomization customization
+	) {
+		return new EventPublicPageDecorativeImageUploadResponseDto(
+			resolveUrl(customization.getDecorativeImageKey())
 		);
 	}
 

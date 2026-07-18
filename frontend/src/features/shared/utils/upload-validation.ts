@@ -5,6 +5,7 @@ export const ALLOWED_IMAGE_TYPES = [
 ] as const;
 
 export const IMAGE_ACCEPT_ATTRIBUTE = ALLOWED_IMAGE_TYPES.join(',');
+export const DECORATIVE_IMAGE_ACCEPT_ATTRIBUTE = 'image/png,image/webp';
 
 export const MAX_GUEST_UPLOAD_FILES = 5;
 export const MAX_GUEST_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
@@ -90,6 +91,7 @@ export function validateCustomizationInput(input: {
   welcomeMessage: string;
   coverFile: File | null;
   highlightFiles: File[];
+  decorativeFile: File | null;
 }) {
   const errors: string[] = [];
 
@@ -132,6 +134,18 @@ export function validateCustomizationInput(input: {
       errors.push(`A foto "${file.name}" passa de ${formatBytes(MAX_CUSTOMIZATION_IMAGE_SIZE_BYTES)}.`);
     }
   });
+
+  if (input.decorativeFile) {
+    if (!['image/png', 'image/webp'].includes(input.decorativeFile.type)) {
+      errors.push('A imagem decorativa precisa ser PNG ou WEBP.');
+    }
+
+    if (input.decorativeFile.size > MAX_CUSTOMIZATION_IMAGE_SIZE_BYTES) {
+      errors.push(
+        `A imagem decorativa não pode passar de ${formatBytes(MAX_CUSTOMIZATION_IMAGE_SIZE_BYTES)}.`,
+      );
+    }
+  }
 
   return errors;
 }

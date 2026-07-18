@@ -125,19 +125,19 @@ export function PublicImageViewer({
 
   return (
     <div
-      className="fixed inset-0 z-[90] bg-[#fff8f3]/96 px-3 py-4 backdrop-blur-xl sm:px-6 sm:py-6"
+      className="fixed inset-0 z-[90] bg-[var(--event-secondary-color)]/96 px-3 py-4 backdrop-blur-xl sm:px-6 sm:py-6"
       role="dialog"
       aria-modal="true"
       aria-label="Visualizador de fotos do evento"
     >
       <div className="mx-auto flex h-full max-w-6xl flex-col">
-        <header className="mb-3 flex items-center justify-between gap-3 rounded-[20px] border border-[#f1ddd1] bg-white/92 px-4 py-3 shadow-[0_18px_44px_rgba(96,60,36,0.08)]">
+        <header className="mb-3 flex items-center justify-between gap-3 rounded-[20px] border border-[var(--event-border-color)] bg-white/92 px-4 py-3 shadow-[0_18px_44px_var(--event-primary-mist-color)]">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#c5922e]">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--event-accent-ink-color)]">
               Foto {currentIndex + 1} de {photos.length}
             </p>
 
-            <p className="mt-1 truncate text-sm font-bold text-[#161314]">
+            <p className="mt-1 truncate text-sm font-bold text-[var(--event-foreground-color)]">
               {currentPhoto.guestName || 'Memória enviada por um convidado'}
             </p>
           </div>
@@ -146,7 +146,7 @@ export function PublicImageViewer({
             <button
               type="button"
               onClick={() => onToggleLike(currentPhoto)}
-              className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[#efb6bb] bg-[#fff7f7] px-4 text-sm font-bold text-[#ef7885] transition hover:-translate-y-0.5"
+              className="inline-flex h-11 items-center gap-2 rounded-[14px] border border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)] px-4 text-sm font-bold text-[var(--event-primary-ink-color)] transition hover:-translate-y-0.5"
               aria-label={isLiked ? 'Remover curtida da foto' : 'Curtir foto'}
             >
               <HeartIcon filled={isLiked} />
@@ -156,7 +156,7 @@ export function PublicImageViewer({
             <button
               type="button"
               onClick={onClose}
-              className="grid size-11 shrink-0 place-items-center rounded-[14px] border border-[#f1ddd1] bg-white text-[#201914] transition hover:-translate-y-0.5 hover:bg-[#fff7f2] active:scale-[0.98]"
+              className="grid size-11 shrink-0 place-items-center rounded-[14px] border border-[var(--event-border-color)] bg-white text-[var(--event-foreground-color)] transition hover:-translate-y-0.5 hover:bg-[var(--event-primary-soft-color)] active:scale-[0.98]"
               aria-label="Fechar visualizador"
             >
               <CloseIcon />
@@ -164,12 +164,12 @@ export function PublicImageViewer({
           </div>
         </header>
 
-        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-[#f1ddd1] bg-white shadow-[0_24px_70px_rgba(96,60,36,0.1)]">
+        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-[var(--event-border-color)] bg-white shadow-[0_24px_70px_var(--event-primary-mist-color)]">
           <button
             type="button"
             onClick={goPrevious}
             disabled={!hasPrevious}
-            className="absolute left-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#201914] shadow-[0_14px_34px_rgba(24,24,27,0.14)] transition hover:-translate-y-[55%] hover:bg-[#fff7f2] disabled:pointer-events-none disabled:opacity-35 sm:left-5 sm:size-12"
+            className="absolute left-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[var(--event-foreground-color)] shadow-[0_14px_34px_rgba(24,24,27,0.14)] transition hover:-translate-y-[55%] hover:bg-[var(--event-primary-soft-color)] disabled:pointer-events-none disabled:opacity-35 sm:left-5 sm:size-12"
             aria-label="Foto anterior"
           >
             <ArrowLeftIcon />
@@ -201,7 +201,7 @@ export function PublicImageViewer({
               src={currentPhotoUrl}
               alt={currentPhoto.guestName || 'Foto do evento'}
               loading="lazy"
-              className="max-h-full max-w-full rounded-[18px] object-contain shadow-[0_18px_44px_rgba(96,60,36,0.12)]"
+              className="max-h-full max-w-full rounded-[18px] object-contain shadow-[0_18px_44px_var(--event-primary-shadow-color)]"
             />
           </div>
 
@@ -209,18 +209,18 @@ export function PublicImageViewer({
               type="button"
               onClick={goNext}
               disabled={!hasNext}
-              className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#201914] shadow-[0_14px_34px_rgba(24,24,27,0.14)] transition hover:-translate-y-[55%] hover:bg-[#fff7f2] disabled:pointer-events-none disabled:opacity-35 sm:right-5 sm:size-12"
+              className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[var(--event-foreground-color)] shadow-[0_14px_34px_rgba(24,24,27,0.14)] transition hover:-translate-y-[55%] hover:bg-[var(--event-primary-soft-color)] disabled:pointer-events-none disabled:opacity-35 sm:right-5 sm:size-12"
               aria-label="Próxima foto"
             >
               <ArrowRightIcon />
             </button>
         </div>
 
-        <footer className="mt-3 rounded-[20px] border border-[#f1ddd1] bg-white/92 px-4 py-3 shadow-[0_18px_44px_rgba(96,60,36,0.08)]">
+        <footer className="mt-3 rounded-[20px] border border-[var(--event-border-color)] bg-white/92 px-4 py-3 shadow-[0_18px_44px_var(--event-primary-mist-color)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#161314]">Deslize para os lados ou use as setas para continuar vendo as fotos.</p>
-              <p className="mt-1 text-xs text-[#2c2927]/52">Quando você chegar perto do fim, a Memora busca mais fotos automaticamente para não quebrar a experiência.</p>
+              <p className="text-sm font-bold text-[var(--event-foreground-color)]">Deslize para os lados ou use as setas para continuar vendo as fotos.</p>
+              <p className="mt-1 text-xs text-[var(--event-muted-foreground-color)]">Quando você chegar perto do fim, a Memora busca mais fotos automaticamente para não quebrar a experiência.</p>
             </div>
 
             <div className="flex gap-2">
@@ -228,7 +228,7 @@ export function PublicImageViewer({
                 type="button"
                 onClick={goPrevious}
                 disabled={!hasPrevious}
-                className="inline-flex h-10 items-center justify-center rounded-[12px] border border-[#e8cfc1] bg-white px-4 text-xs font-bold text-[#201914] transition hover:bg-[#fff7f2] disabled:pointer-events-none disabled:opacity-40"
+                className="inline-flex h-10 items-center justify-center rounded-[12px] border border-[var(--event-border-color)] bg-white px-4 text-xs font-bold text-[var(--event-foreground-color)] transition hover:bg-[var(--event-primary-soft-color)] disabled:pointer-events-none disabled:opacity-40"
               >
                 Anterior
               </button>
@@ -237,7 +237,7 @@ export function PublicImageViewer({
                 type="button"
                 onClick={goNext}
                 disabled={!hasNext}
-                className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#ef7885] px-4 text-xs font-bold text-white transition hover:bg-[#e86d7b] disabled:pointer-events-none disabled:opacity-40"
+                className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--event-primary-color)] px-4 text-xs font-bold text-[var(--event-on-primary-color)] transition hover:bg-[var(--event-primary-hover-color)] disabled:pointer-events-none disabled:opacity-40"
               >
                 Próxima
               </button>

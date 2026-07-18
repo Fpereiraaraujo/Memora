@@ -39,7 +39,7 @@ final class EventQrArtCustomizationSupport {
 			.showEventDate(false)
 			.showEventLocation(false)
 			.createdAt(now)
-			.updatedAt(now)
+			.updatedAt(null)
 			.build();
 	}
 

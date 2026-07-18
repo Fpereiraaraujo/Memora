@@ -4,16 +4,26 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { EventPageHeader } from '@/features/events/components/event-dashboard/event-page-header';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
+import { QrArtPageIdentityCard } from '@/features/events/components/qr-art/qr-art-page-identity-card';
 import { QrArtEditor } from '@/features/events/components/qr-art/qr-art-editor';
 import { QrArtPreview } from '@/features/events/components/qr-art/qr-art-preview';
 import { useAuth } from '@/features/auth/auth-context';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
 import {
   buildDefaultQrArtCustomization,
+  applyPublicPageIdentityToQrArt,
+  isQrArtPrintFormat,
   QR_ART_FORMATS,
   toQrArtUpdateRequest,
 } from '@/features/events/utils/qr-art-config';
-import { downloadQrArtPng } from '@/features/events/utils/qr-art-export';
+import {
+  downloadQrArtPdf,
+  downloadQrArtPng,
+} from '@/features/events/utils/qr-art-export';
+import {
+  resolveEventTheme,
+  toEventThemeCssVariables,
+} from '@/features/public/utils/event-theme';
 import { api } from '@/lib/api';
 import type { EventQrArtCustomization } from '@/types/qr-art';
 
@@ -36,7 +46,9 @@ export function EventQrArtPage() {
   const [loadingArt, setLoadingArt] = useState(true);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
+  const pageTheme = resolveEventTheme(dashboard.publicPageCustomization);
 
   useEffect(() => {
     let active = true;
@@ -52,9 +64,13 @@ export function EventQrArtPage() {
           api.getEventQrArtCustomization(token, eventId),
           api.fetchEventQrCode(token, eventId, 1024),
         ]);
-        const savedArt = artResult.status === 'fulfilled'
+        const baseArt = artResult.status === 'fulfilled'
           ? artResult.value
           : buildDefaultQrArtCustomization(dashboard.event);
+        const hasPublicPageIdentity = Boolean(dashboard.publicPageCustomization.title.trim());
+        const savedArt = baseArt.updatedAt === null && hasPublicPageIdentity
+          ? applyPublicPageIdentityToQrArt(baseArt, dashboard.publicPageCustomization)
+          : baseArt;
         const qrDataUrl = qrResult.status === 'fulfilled'
           ? await blobToDataUrl(qrResult.value)
           : dashboard.qrPreviewUrl;
@@ -90,7 +106,7 @@ export function EventQrArtPage() {
     return () => {
       active = false;
     };
-  }, [dashboard.event, eventId, token]);
+  }, [dashboard.event, dashboard.publicPageCustomization, eventId, token]);
 
   async function saveCustomization() {
     if (!customization || !eventId || !token) return;
@@ -129,6 +145,18 @@ export function EventQrArtPage() {
     });
   }
 
+  function applyPublicPageIdentity() {
+    if (!customization || !dashboard.publicPageCustomization.title.trim()) return;
+
+    setCustomization(
+      applyPublicPageIdentityToQrArt(customization, dashboard.publicPageCustomization),
+    );
+    setFeedback({
+      tone: 'success',
+      message: 'Identidade da página aplicada na prévia. Clique em salvar para confirmar.',
+    });
+  }
+
   async function exportPng() {
     if (!customization || !previewRef.current || !qrCodeDataUrl) {
       setFeedback({ tone: 'error', message: 'Aguarde o QR Code carregar antes de baixar.' });
@@ -151,9 +179,42 @@ export function EventQrArtPage() {
     }
   }
 
+  async function exportPdf() {
+    if (!customization || !previewRef.current || !qrCodeDataUrl) {
+      setFeedback({ tone: 'error', message: 'Aguarde o QR Code carregar antes de baixar.' });
+      return;
+    }
+
+    setExportingPdf(true);
+    setFeedback(null);
+
+    try {
+      await downloadQrArtPdf(
+        previewRef.current,
+        customization.format,
+        customization.title,
+        customization.secondaryColor,
+      );
+      setFeedback({
+        tone: 'success',
+        message: 'PDF para impressão gerado com sangria e marcas de corte.',
+      });
+    } catch (error) {
+      setFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível gerar o PDF.',
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  }
+
   const selectedFormat = customization
     ? QR_ART_FORMATS.find((format) => format.value === customization.format)
     : null;
+  const supportsPrintPdf = customization
+    ? isQrArtPrintFormat(customization.format)
+    : false;
 
   return (
     <EventPageLayout
@@ -163,7 +224,7 @@ export function EventQrArtPage() {
       emptyDescription="Não foi possível abrir o editor de arte deste evento."
     >
       {dashboard.event ? (
-        <>
+        <div className="space-y-6" style={toEventThemeCssVariables(pageTheme)}>
           <EventPageHeader
             eyebrow="Arte personalizada"
             title="Seu QR Code pronto para a festa"
@@ -195,6 +256,14 @@ export function EventQrArtPage() {
           ) : (
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
               <section className="order-2 rounded-[28px] border border-[#f1ddd1] bg-[#fffaf7]/94 p-5 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-7 xl:order-1">
+                {dashboard.publicPageCustomization.title.trim() ? (
+                  <QrArtPageIdentityCard
+                    art={customization}
+                    publicPage={dashboard.publicPageCustomization}
+                    onApply={applyPublicPageIdentity}
+                  />
+                ) : null}
+
                 <QrArtEditor value={customization} onChange={setCustomization} />
 
                 <div className="mt-8 flex flex-col gap-3 border-t border-[#f0ddd2] pt-6 sm:flex-row">
@@ -234,19 +303,31 @@ export function EventQrArtPage() {
                     type="button"
                     onClick={() => void exportPng()}
                     loading={exporting}
-                    disabled={!qrCodeDataUrl}
+                    disabled={!qrCodeDataUrl || exportingPdf}
                     className="mt-4 w-full"
                   >
                     Baixar arte em PNG
                   </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void exportPdf()}
+                    loading={exportingPdf}
+                    disabled={!qrCodeDataUrl || exporting || !supportsPrintPdf}
+                    className="mt-3 w-full"
+                  >
+                    Baixar PDF para impressão
+                  </Button>
                   <p className="mt-3 text-center text-[11px] leading-5 text-white/48">
-                    O QR Code possui área branca de segurança e abre diretamente o envio de fotos do evento.
+                    {supportsPrintPdf
+                      ? 'PDF em 300 DPI com 3 mm de sangria, marcas de corte e área segura para o QR Code.'
+                      : 'Escolha A5 ou A4 para gerar o PDF de gráfica. O PNG continua disponível neste formato.'}
                   </p>
                 </section>
               </aside>
             </div>
           )}
-        </>
+        </div>
       ) : null}
     </EventPageLayout>
   );

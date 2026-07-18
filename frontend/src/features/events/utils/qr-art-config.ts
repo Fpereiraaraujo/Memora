@@ -1,4 +1,6 @@
 import type { EventSummary, EventType } from '@/types/event';
+import { getEventThemeTemplate, resolveEventTheme } from '@/features/public/utils/event-theme';
+import type { EventThemeTemplateCode, PublicPageCustomization } from '@/types/customization';
 import type {
   EventQrArtCustomization,
   QrArtFormat,
@@ -17,6 +19,15 @@ export interface QrArtTemplate {
 }
 
 export const QR_ART_TEMPLATES: QrArtTemplate[] = [
+  {
+    code: 'MEMORA_CLASSIC',
+    name: 'Memora clássico',
+    description: 'Corações delicados, creme e toque dourado.',
+    style: 'DELICATE',
+    primaryColor: '#EF7885',
+    secondaryColor: '#FFF3E6',
+    accentColor: '#C5922E',
+  },
   {
     code: 'KIDS_BLUE',
     name: 'Infantil azul',
@@ -64,6 +75,14 @@ export const QR_ART_TEMPLATES: QrArtTemplate[] = [
   },
 ];
 
+const QR_TEMPLATE_BY_EVENT_THEME: Record<EventThemeTemplateCode, QrArtTemplateCode> = {
+  MEMORA_CLASSIC: 'MEMORA_CLASSIC',
+  KIDS_SKY: 'KIDS_BLUE',
+  KIDS_BLUSH: 'BABY_REVEAL',
+  FLORAL_ELEGANT: 'ELEGANT_FLORAL',
+  PARTY_BOLD: 'PARTY_FUN',
+};
+
 export const QR_ART_FORMATS: Array<{
   value: QrArtFormat;
   label: string;
@@ -81,6 +100,22 @@ export const QR_ART_EXPORT_SIZE: Record<QrArtFormat, { width: number; height: nu
   SQUARE: { width: 1080, height: 1080 },
   STORY: { width: 1080, height: 1920 },
 };
+
+export type QrArtPrintFormat = Extract<QrArtFormat, 'A5_VERTICAL' | 'A4_VERTICAL'>;
+
+export const QR_ART_PRINT_BLEED_MM = 3;
+
+export const QR_ART_PRINT_SIZE: Record<
+  QrArtPrintFormat,
+  { widthMm: number; heightMm: number }
+> = {
+  A5_VERTICAL: { widthMm: 148, heightMm: 210 },
+  A4_VERTICAL: { widthMm: 210, heightMm: 297 },
+};
+
+export function isQrArtPrintFormat(format: QrArtFormat): format is QrArtPrintFormat {
+  return format === 'A5_VERTICAL' || format === 'A4_VERTICAL';
+}
 
 export const QR_ART_VIEWBOX: Record<QrArtFormat, { width: number; height: number }> = {
   A5_VERTICAL: { width: 700, height: 994 },
@@ -142,6 +177,28 @@ export function applyQrArtTemplate(
     primaryColor: template.primaryColor,
     secondaryColor: template.secondaryColor,
     accentColor: template.accentColor,
+  };
+}
+
+export function applyPublicPageIdentityToQrArt(
+  customization: EventQrArtCustomization,
+  publicPage: PublicPageCustomization,
+): EventQrArtCustomization {
+  const theme = resolveEventTheme(publicPage);
+  const templateCode = QR_TEMPLATE_BY_EVENT_THEME[theme.templateCode];
+  const template = QR_ART_TEMPLATES.find((candidate) => candidate.code === templateCode)
+    ?? QR_ART_TEMPLATES[0];
+  const publicTemplate = getEventThemeTemplate(theme.templateCode);
+
+  return {
+    ...customization,
+    title: publicPage.title.trim() || customization.title,
+    themeName: publicTemplate.name,
+    primaryColor: theme.primary,
+    secondaryColor: theme.secondary,
+    accentColor: theme.accent,
+    visualStyle: template.style,
+    templateCode: template.code,
   };
 }
 

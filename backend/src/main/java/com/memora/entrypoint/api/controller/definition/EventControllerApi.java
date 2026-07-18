@@ -8,6 +8,7 @@ import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventCheckoutStatusResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventPublicPageDecorativeImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
@@ -362,6 +363,29 @@ public interface EventControllerApi {
 		security = { @SecurityRequirement(name = "bearerAuth") }
 	)
 	ResponseEntity<EventPublicPageImageUploadResponseDto> removePublicPageHighlightImages(
+		@PathVariable UUID eventId,
+		Authentication authentication
+	);
+
+	@PostMapping(value = "/api/events/{eventId}/public-page/decorative-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(
+		summary = "Upload event public page decorative image",
+		description = "Uploads one controlled decorative PNG or WEBP for the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageDecorativeImageUploadResponseDto> uploadPublicPageDecorativeImage(
+		@PathVariable UUID eventId,
+		@RequestPart("file") MultipartFile file,
+		Authentication authentication
+	);
+
+	@DeleteMapping("/api/events/{eventId}/public-page/decorative-image")
+	@Operation(
+		summary = "Remove event public page decorative image",
+		description = "Removes the decorative image currently used on the public event page.",
+		security = { @SecurityRequirement(name = "bearerAuth") }
+	)
+	ResponseEntity<EventPublicPageDecorativeImageUploadResponseDto> removePublicPageDecorativeImage(
 		@PathVariable UUID eventId,
 		Authentication authentication
 	);

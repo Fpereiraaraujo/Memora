@@ -67,25 +67,25 @@ export function GuestUploadFormCard({
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
+      className="rounded-[24px] border border-[var(--event-border-color)] bg-white p-6 shadow-[0_22px_60px_var(--event-primary-mist-color)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">Envio dos convidados</p>
+          <p className="text-sm font-bold text-[var(--event-primary-ink-color)]">Envio dos convidados</p>
 
-          <h2 className="mt-2 text-xl font-black text-[#161314]">Enviar fotos ou recado</h2>
+          <h2 className="mt-2 text-xl font-black text-[var(--event-foreground-color)]">Enviar fotos ou recado</h2>
 
-          <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
+          <p className="mt-3 text-sm leading-7 text-[var(--event-muted-foreground-color)]">
             Se a foto estiver pesada, a Memora tenta ajustar automaticamente antes do envio.
           </p>
         </div>
 
-        <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff8e9] text-[#c5922e]">+</div>
+        <div className="grid size-12 place-items-center rounded-[16px] bg-[var(--event-accent-soft-color)] text-[var(--event-accent-ink-color)]">+</div>
       </div>
 
       <label
         htmlFor="guest-photo-file"
-        className="mt-6 block cursor-pointer rounded-[22px] border border-dashed border-[#efb6bb] bg-[#fff7f7] p-4 text-center transition hover:-translate-y-0.5 hover:border-[#ef7885] hover:bg-white active:scale-[0.99]"
+        className="mt-6 block cursor-pointer rounded-[22px] border border-dashed border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/55 p-4 text-center transition hover:-translate-y-0.5 hover:border-[var(--event-primary-color)] hover:bg-white active:scale-[0.99]"
       >
         <input
           key={inputKey}
@@ -100,7 +100,7 @@ export function GuestUploadFormCard({
         {previewUrls.length > 0 ? (
           <div className="grid min-h-[280px] grid-cols-2 gap-3 md:grid-cols-3">
             {previewUrls.slice(0, 6).map((url, index) => (
-              <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[#f5ded2]">
+              <div key={url} className="relative aspect-square overflow-hidden rounded-[18px] bg-[var(--event-primary-soft-color)]">
                 <button
                   type="button"
                   onClick={(event) => {
@@ -125,7 +125,7 @@ export function GuestUploadFormCard({
                     event.stopPropagation();
                     onRemoveFile(index);
                   }}
-                  className="absolute right-2 top-2 inline-flex h-8 items-center justify-center rounded-full bg-white/92 px-3 text-xs font-bold text-[#ef7885] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
+                  className="absolute right-2 top-2 inline-flex h-8 items-center justify-center rounded-full bg-white/92 px-3 text-xs font-bold text-[var(--event-primary-ink-color)] shadow-[0_8px_20px_rgba(24,24,27,0.12)]"
                 >
                   Remover
                 </button>
@@ -133,20 +133,20 @@ export function GuestUploadFormCard({
             ))}
 
             {previewUrls.length > 6 ? (
-              <div className="grid aspect-square place-items-center rounded-[18px] bg-white text-sm font-black text-[#ef7885]">
+              <div className="grid aspect-square place-items-center rounded-[18px] bg-white text-sm font-black text-[var(--event-primary-ink-color)]">
                 +{previewUrls.length - 6}
               </div>
             ) : null}
           </div>
         ) : (
           <div className="flex min-h-[280px] flex-col items-center justify-center px-4">
-            <div className="grid size-16 place-items-center rounded-[20px] bg-white text-[#ef7885] shadow-[0_14px_34px_rgba(96,60,36,0.08)]">
+            <div className="grid size-16 place-items-center rounded-[20px] bg-white text-[var(--event-primary-ink-color)] shadow-[0_14px_34px_var(--event-primary-mist-color)]">
               ♡
             </div>
 
-            <p className="mt-5 text-base font-black text-[#161314]">Toque para escolher até 5 fotos</p>
+            <p className="mt-5 text-base font-black text-[var(--event-foreground-color)]">Toque para escolher até 5 fotos</p>
 
-            <p className="mt-2 max-w-sm text-sm leading-6 text-[#2c2927]/58">
+            <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--event-muted-foreground-color)]">
               Aceitamos JPG, PNG e WEBP. Se quiser, você também pode seguir sem anexos e mandar apenas um recado.
             </p>
           </div>
@@ -154,17 +154,17 @@ export function GuestUploadFormCard({
       </label>
 
       {files.length > 0 ? (
-        <div className="mt-4 rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
+        <div className="mt-4 rounded-[18px] border border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/40 p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Arquivos selecionados</p>
-              <p className="mt-1 text-xs text-[#2c2927]/52">{files.length} foto(s), {formatBytes(totalBytes)} no total</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--event-accent-ink-color)]">Arquivos selecionados</p>
+              <p className="mt-1 text-xs text-[var(--event-muted-foreground-color)]">{files.length} foto(s), {formatBytes(totalBytes)} no total</p>
             </div>
 
             <button
               type="button"
               onClick={onClearFiles}
-              className="inline-flex h-10 w-fit items-center justify-center rounded-[12px] border border-[#efb6bb] bg-white px-4 text-xs font-bold text-[#ef7885] transition hover:bg-[#fff7f7]"
+              className="inline-flex h-10 w-fit items-center justify-center rounded-[12px] border border-[var(--event-border-color)] bg-white px-4 text-xs font-bold text-[var(--event-primary-ink-color)] transition hover:bg-[var(--event-primary-soft-color)]"
             >
               Limpar tudo
             </button>
@@ -174,7 +174,7 @@ export function GuestUploadFormCard({
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Seu nome</span>
+          <span className="flex items-center gap-2 text-sm font-bold text-[var(--event-foreground-color)]">Seu nome</span>
 
           <Input
             value={guestName}
@@ -182,42 +182,44 @@ export function GuestUploadFormCard({
             onChange={(event) => onGuestNameChange(event.target.value)}
             placeholder="Opcional, mas precisa vir com recado"
             autoComplete="name"
+            className="border-[var(--event-border-color)] text-[var(--event-foreground-color)] focus:border-[var(--event-primary-color)] focus:ring-[var(--event-primary-mist-color)]"
           />
         </label>
 
-        <div className="rounded-[16px] border border-[#f1ddd1] bg-[#fffaf7] px-4 py-3">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Regras rápidas</p>
+        <div className="rounded-[16px] border border-[var(--event-border-color)] bg-[var(--event-accent-soft-color)]/55 px-4 py-3">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--event-accent-ink-color)]">Regras rápidas</p>
 
-          <p className="mt-2 text-xs leading-5 text-[#2c2927]/62">
+          <p className="mt-2 text-xs leading-5 text-[var(--event-muted-foreground-color)]">
             Fotos podem ser anônimas. Se preencher o nome, escreva também um recado.
           </p>
         </div>
       </div>
 
       <label className="mt-5 block space-y-2">
-        <span className="flex items-center gap-2 text-sm font-bold text-[#2c2927]/80">Recado para os anfitriões</span>
+        <span className="flex items-center gap-2 text-sm font-bold text-[var(--event-foreground-color)]">Recado para os anfitriões</span>
 
         <Textarea
           value={guestMessage}
           maxLength={MAX_GUEST_MESSAGE_LENGTH}
           onChange={(event) => onGuestMessageChange(event.target.value)}
           placeholder="Opcional. Ex: Que dia lindo! Felicidades para vocês."
+          className="border-[var(--event-border-color)] text-[var(--event-foreground-color)] focus:border-[var(--event-primary-color)] focus:ring-[var(--event-primary-mist-color)]"
         />
 
-        <span className="block text-right text-xs text-[#2c2927]/42">
+        <span className="block text-right text-xs text-[var(--event-muted-foreground-color)]">
           {guestMessage.length}/{MAX_GUEST_MESSAGE_LENGTH}
         </span>
       </label>
 
-      <label className="mt-5 flex cursor-pointer gap-3 rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4 text-left transition hover:bg-[#fff7f2]">
+      <label className="mt-5 flex cursor-pointer gap-3 rounded-[18px] border border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/35 p-4 text-left transition hover:bg-[var(--event-primary-soft-color)]">
         <input
           type="checkbox"
           checked={confirmed}
           onChange={(event) => onConfirmedChange(event.target.checked)}
-          className="mt-1 size-4 accent-[#ef7885]"
+          className="mt-1 size-4 accent-[var(--event-primary-color)]"
         />
 
-        <span className="text-sm leading-6 text-[#2c2927]/68">
+        <span className="text-sm leading-6 text-[var(--event-muted-foreground-color)]">
           Confirmo que estou enviando conteúdo relacionado a este evento e entendo que os anfitriões podem remover imagens inadequadas.
         </span>
       </label>
@@ -234,12 +236,17 @@ export function GuestUploadFormCard({
         </div>
       ) : null}
 
-      <Button type="submit" disabled={!canSubmit} className="mt-6 h-12 w-full rounded-[14px]" loading={busy}>
+      <Button
+        type="submit"
+        disabled={!canSubmit}
+        className="mt-6 h-12 w-full rounded-[14px] border-[var(--event-primary-color)] bg-[var(--event-primary-color)] text-[var(--event-on-primary-color)] shadow-[0_18px_40px_var(--event-primary-shadow-color)] hover:border-[var(--event-primary-hover-color)] hover:bg-[var(--event-primary-hover-color)]"
+        loading={busy}
+      >
         {busy ? 'Preparando envio...' : 'Enviar para os anfitriões'}
       </Button>
 
       {!confirmed ? (
-        <p className="mt-3 text-center text-xs leading-5 text-[#2c2927]/48">
+        <p className="mt-3 text-center text-xs leading-5 text-[var(--event-muted-foreground-color)]">
           Marque a confirmação acima para liberar o envio.
         </p>
       ) : null}

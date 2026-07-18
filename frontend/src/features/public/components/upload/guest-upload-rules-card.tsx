@@ -25,14 +25,14 @@ export function GuestUploadRulesCard({ event }: GuestUploadRulesCardProps) {
   ];
 
   return (
-    <aside className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
-      <div className="grid size-14 place-items-center rounded-[18px] bg-[#fff1f2] text-[#ef7885]">♡</div>
+    <aside className="rounded-[24px] border border-[var(--event-border-color)] bg-white p-6 shadow-[0_22px_60px_var(--event-primary-mist-color)]">
+      <div className="grid size-14 place-items-center rounded-[18px] bg-[var(--event-primary-soft-color)] text-[var(--event-primary-ink-color)]">♡</div>
 
-      <h2 className="mt-5 font-display text-[40px] font-semibold leading-none tracking-[-0.045em] text-[#161314]">
+      <h2 className="mt-5 font-display text-[40px] font-semibold leading-none tracking-[-0.045em] text-[var(--event-foreground-color)]">
         Compartilhe esse momento
       </h2>
 
-      <p className="mt-4 text-sm leading-7 text-[#2c2927]/66">
+      <p className="mt-4 text-sm leading-7 text-[var(--event-muted-foreground-color)]">
         {event.status === 'ACTIVE' && event.planCode
           ? `Este evento está no plano ${planLabel}, com espaço para até ${photoLimit} fotos.`
           : 'Os anfitriões ainda estão preparando o envio de fotos deste evento.'}
@@ -40,26 +40,26 @@ export function GuestUploadRulesCard({ event }: GuestUploadRulesCardProps) {
 
       <div className="mt-6 space-y-3">
         {steps.map((item, index) => (
-          <div key={item.title} className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
+          <div key={item.title} className="rounded-[18px] border border-[var(--event-border-color)] bg-[var(--event-primary-soft-color)]/40 p-4">
             <div className="flex gap-4">
-              <div className="grid size-10 shrink-0 place-items-center rounded-[14px] bg-[#fff1f2] text-sm font-black text-[#ef7885]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-[14px] bg-white text-sm font-black text-[var(--event-primary-ink-color)] shadow-[0_8px_20px_var(--event-primary-mist-color)]">
                 0{index + 1}
               </div>
 
               <div>
-                <h3 className="text-sm font-black text-[#161314]">{item.title}</h3>
+                <h3 className="text-sm font-black text-[var(--event-foreground-color)]">{item.title}</h3>
 
-                <p className="mt-1 text-sm leading-6 text-[#2c2927]/62">{item.description}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--event-muted-foreground-color)]">{item.description}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 rounded-[18px] border border-[#f1ddd1] bg-[#fff8ef] p-5">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">Importante</p>
+      <div className="mt-6 rounded-[18px] border border-[var(--event-border-color)] bg-[var(--event-accent-soft-color)] p-5">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--event-accent-ink-color)]">Importante</p>
 
-        <p className="mt-3 text-sm leading-7 text-[#2c2927]/68">
+        <p className="mt-3 text-sm leading-7 text-[var(--event-muted-foreground-color)]">
           Envie apenas fotos relacionadas ao evento. Os anfitriões poderão remover imagens inadequadas.
         </p>
       </div>

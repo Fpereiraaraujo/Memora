@@ -1,8 +1,29 @@
-import type { PublicPageCustomization } from '@/types/customization';
+import type {
+  EventDecorativeImagePosition,
+  PublicPageCustomization,
+} from '@/types/customization';
 import type { EventSummary } from '@/types/event';
+import {
+  isEventDecorationStyle,
+  isEventThemeTemplateCode,
+  resolveEventTheme,
+} from '@/features/public/utils/event-theme';
 
 function safeString(value: unknown) {
   return typeof value === 'string' ? value : '';
+}
+
+const DECORATIVE_IMAGE_POSITIONS: EventDecorativeImagePosition[] = [
+  'HERO_RIGHT',
+  'HERO_BOTTOM',
+  'PAGE_TOP_RIGHT',
+  'PAGE_BOTTOM_LEFT',
+];
+
+function normalizeDecorativeImagePosition(value: unknown): EventDecorativeImagePosition {
+  return DECORATIVE_IMAGE_POSITIONS.includes(value as EventDecorativeImagePosition)
+    ? value as EventDecorativeImagePosition
+    : 'HERO_RIGHT';
 }
 
 export function normalizePublicPageCustomization(value: unknown): PublicPageCustomization | null {
@@ -11,6 +32,7 @@ export function normalizePublicPageCustomization(value: unknown): PublicPageCust
   }
 
   const data = value as Partial<PublicPageCustomization>;
+  const theme = resolveEventTheme(data);
 
   return {
     title: safeString(data.title),
@@ -20,19 +42,42 @@ export function normalizePublicPageCustomization(value: unknown): PublicPageCust
     highlightImageUrls: Array.isArray(data.highlightImageUrls)
       ? data.highlightImageUrls.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
       : [],
+    decorativeImageUrl:
+      typeof data.decorativeImageUrl === 'string' && data.decorativeImageUrl.trim()
+        ? data.decorativeImageUrl
+        : null,
+    decorativeImagePosition: normalizeDecorativeImagePosition(data.decorativeImagePosition),
     publicGalleryEnabled: data.publicGalleryEnabled !== false,
+    templateCode: isEventThemeTemplateCode(data.templateCode)
+      ? data.templateCode
+      : theme.templateCode,
+    primaryColor: theme.primary,
+    secondaryColor: theme.secondary,
+    accentColor: theme.accent,
+    decorationStyle: isEventDecorationStyle(data.decorationStyle)
+      ? data.decorationStyle
+      : theme.decorationStyle,
     updatedAt: typeof data.updatedAt === 'string' && data.updatedAt.trim() ? data.updatedAt : null,
   };
 }
 
 export function buildDefaultPublicPageCustomization(event: EventSummary): PublicPageCustomization {
+  const theme = resolveEventTheme();
+
   return {
     title: event.title,
     eventDate: event.eventDate,
     welcomeMessage: getDefaultWelcomeMessage(event),
     coverImageUrl: null,
     highlightImageUrls: [],
+    decorativeImageUrl: null,
+    decorativeImagePosition: 'HERO_RIGHT',
     publicGalleryEnabled: true,
+    templateCode: theme.templateCode,
+    primaryColor: theme.primary,
+    secondaryColor: theme.secondary,
+    accentColor: theme.accent,
+    decorationStyle: theme.decorationStyle,
     updatedAt: null,
   };
 }
@@ -42,19 +87,21 @@ export function mergePublicPageCustomization(
   customization?: PublicPageCustomization | null,
 ): PublicPageCustomization {
   const fallback = buildDefaultPublicPageCustomization(event);
+  const normalized = normalizePublicPageCustomization(customization);
 
-  if (!customization) {
+  if (!normalized) {
     return fallback;
   }
 
   return {
     ...fallback,
-    ...customization,
-    title: customization.title.trim() || fallback.title,
-    welcomeMessage: customization.welcomeMessage.trim() || fallback.welcomeMessage,
-    eventDate: customization.eventDate ?? fallback.eventDate,
-    coverImageUrl: customization.coverImageUrl ?? fallback.coverImageUrl,
-    highlightImageUrls: customization.highlightImageUrls ?? [],
+    ...normalized,
+    title: normalized.title.trim() || fallback.title,
+    welcomeMessage: normalized.welcomeMessage.trim() || fallback.welcomeMessage,
+    eventDate: normalized.eventDate ?? fallback.eventDate,
+    coverImageUrl: normalized.coverImageUrl ?? fallback.coverImageUrl,
+    highlightImageUrls: normalized.highlightImageUrls,
+    decorativeImageUrl: normalized.decorativeImageUrl,
   };
 }
 

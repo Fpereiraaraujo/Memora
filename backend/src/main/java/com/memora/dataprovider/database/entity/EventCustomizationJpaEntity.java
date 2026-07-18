@@ -33,14 +33,29 @@ public class EventCustomizationJpaEntity {
 	@Column(name = "primary_color")
 	private String primaryColor;
 
+	@Column(name = "secondary_color", length = 7)
+	private String secondaryColor;
+
+	@Column(name = "accent_color", length = 7)
+	private String accentColor;
+
 	@Column(name = "cover_image_key")
 	private String coverImageKey;
 
 	@Column(name = "theme")
-	private String theme;
+	private String templateCode;
+
+	@Column(name = "decoration_style", length = 40)
+	private String decorationStyle;
 
 	@Column(name = "highlight_image_keys")
 	private String highlightImageKeys;
+
+	@Column(name = "decorative_image_key", length = 1024)
+	private String decorativeImageKey;
+
+	@Column(name = "decorative_image_position", length = 40)
+	private String decorativeImagePosition;
 
 	@Builder.Default
 	@Column(name = "public_gallery_enabled", nullable = false)

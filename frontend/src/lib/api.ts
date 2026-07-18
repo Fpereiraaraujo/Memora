@@ -12,6 +12,7 @@ import type {
 import type {
   PublicPageCustomization,
   PublicPageCustomizationUpdateRequest,
+  PublicPageDecorativeImageUploadResponse,
   PublicPageImageUploadResponse,
 } from '@/types/customization';
 import type {
@@ -463,6 +464,25 @@ export const api = {
       method: 'DELETE',
       token,
     });
+  },
+  uploadEventPublicPageDecorativeImage(token: string, eventId: string, formData: FormData) {
+    return request<PublicPageDecorativeImageUploadResponse>(
+      `/api/events/${eventId}/public-page/decorative-image`,
+      {
+        method: 'POST',
+        token,
+        data: formData,
+      },
+    );
+  },
+  removeEventPublicPageDecorativeImage(token: string, eventId: string) {
+    return request<PublicPageDecorativeImageUploadResponse>(
+      `/api/events/${eventId}/public-page/decorative-image`,
+      {
+        method: 'DELETE',
+        token,
+      },
+    );
   },
   getEventQrArtCustomization(token: string, eventId: string) {
     return request<EventQrArtCustomization>(`/api/events/${eventId}/qr-art`, {

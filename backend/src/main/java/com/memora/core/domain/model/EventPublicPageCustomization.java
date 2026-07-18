@@ -16,6 +16,13 @@ public class EventPublicPageCustomization {
 	String welcomeMessage;
 	String coverImageKey;
 	List<String> highlightImageKeys;
+	String decorativeImageKey;
+	EventDecorativeImagePosition decorativeImagePosition;
+	EventThemeTemplateCode templateCode;
+	String primaryColor;
+	String secondaryColor;
+	String accentColor;
+	EventDecorationStyle decorationStyle;
 	@Builder.Default
 	boolean publicGalleryEnabled = true;
 	LocalDateTime updatedAt;

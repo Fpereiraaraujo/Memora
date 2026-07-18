@@ -8,11 +8,14 @@ import static org.mockito.Mockito.when;
 
 import com.memora.config.AppProperties;
 import com.memora.core.domain.model.Event;
+import com.memora.core.domain.model.EventDecorationStyle;
+import com.memora.core.domain.model.EventDecorativeImagePosition;
 import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.EventCheckoutPreview;
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventType;
+import com.memora.core.domain.model.EventThemeTemplateCode;
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.PaymentOrder;
 import com.memora.core.domain.model.PaymentOrderStatus;
@@ -29,6 +32,7 @@ import com.memora.core.usecase.ListEventPhotosPageUseCase;
 import com.memora.core.usecase.ListEventPhotosUseCase;
 import com.memora.core.usecase.ListEventsUseCase;
 import com.memora.core.usecase.RemoveEventPublicPageCoverImageUseCase;
+import com.memora.core.usecase.RemoveEventPublicPageDecorativeImageUseCase;
 import com.memora.core.usecase.RemoveEventPublicPageHighlightImagesUseCase;
 import com.memora.core.usecase.UpdateEventPublicPageCustomizationUseCase;
 import com.memora.core.usecase.UpdateEventStatusUseCase;
@@ -36,6 +40,7 @@ import com.memora.core.usecase.UpdateEventUseCase;
 import com.memora.core.usecase.UpdatePhotoFavoriteUseCase;
 import com.memora.core.usecase.UpdatePhotoStatusUseCase;
 import com.memora.core.usecase.UploadEventPublicPageCoverImageUseCase;
+import com.memora.core.usecase.UploadEventPublicPageDecorativeImageUseCase;
 import com.memora.core.usecase.UploadEventPublicPageHighlightImagesUseCase;
 import com.memora.core.usecase.GetEventInvitationUseCase;
 import com.memora.core.usecase.UpdateEventInvitationUseCase;
@@ -51,6 +56,7 @@ import com.memora.entrypoint.api.dto.EventCheckoutResponseDto;
 import com.memora.entrypoint.api.dto.EventCreateRequestDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageCustomizationUpdateRequestDto;
+import com.memora.entrypoint.api.dto.EventPublicPageDecorativeImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventPublicPageImageUploadResponseDto;
 import com.memora.entrypoint.api.dto.EventResponseDto;
 import com.memora.entrypoint.api.dto.EventStatusUpdateRequestDto;
@@ -94,8 +100,10 @@ class EventControllerTest {
 	@Mock private GetEventPublicPageCustomizationUseCase getEventPublicPageCustomizationUseCase;
 	@Mock private UpdateEventPublicPageCustomizationUseCase updateEventPublicPageCustomizationUseCase;
 	@Mock private RemoveEventPublicPageCoverImageUseCase removeEventPublicPageCoverImageUseCase;
+	@Mock private RemoveEventPublicPageDecorativeImageUseCase removeEventPublicPageDecorativeImageUseCase;
 	@Mock private RemoveEventPublicPageHighlightImagesUseCase removeEventPublicPageHighlightImagesUseCase;
 	@Mock private UploadEventPublicPageCoverImageUseCase uploadEventPublicPageCoverImageUseCase;
+	@Mock private UploadEventPublicPageDecorativeImageUseCase uploadEventPublicPageDecorativeImageUseCase;
 	@Mock private UploadEventPublicPageHighlightImagesUseCase uploadEventPublicPageHighlightImagesUseCase;
 	@Mock private ListEventPhotosUseCase listEventPhotosUseCase;
 	@Mock private ListEventPhotosPageUseCase listEventPhotosPageUseCase;
@@ -130,8 +138,10 @@ class EventControllerTest {
 			getEventPublicPageCustomizationUseCase,
 			updateEventPublicPageCustomizationUseCase,
 			removeEventPublicPageCoverImageUseCase,
+			removeEventPublicPageDecorativeImageUseCase,
 			removeEventPublicPageHighlightImagesUseCase,
 			uploadEventPublicPageCoverImageUseCase,
+			uploadEventPublicPageDecorativeImageUseCase,
 			uploadEventPublicPageHighlightImagesUseCase,
 			listEventPhotosUseCase,
 			listEventPhotosPageUseCase,
@@ -313,7 +323,14 @@ class EventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			null,
+			EventDecorativeImagePosition.HERO_RIGHT,
 			true,
+			EventThemeTemplateCode.MEMORA_CLASSIC,
+			"#EF7885",
+			"#FFF3E6",
+			"#C5922E",
+			EventDecorationStyle.HEARTS,
 			LocalDateTime.now()
 		);
 		when(getEventPublicPageCustomizationUseCase.execute(any())).thenReturn(customization);
@@ -337,7 +354,14 @@ class EventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			null,
+			EventDecorativeImagePosition.HERO_RIGHT,
 			false,
+			EventThemeTemplateCode.MEMORA_CLASSIC,
+			"#EF7885",
+			"#FFF3E6",
+			"#C5922E",
+			EventDecorationStyle.HEARTS,
 			LocalDateTime.now()
 		);
 		when(updateEventPublicPageCustomizationUseCase.execute(any())).thenReturn(customization);
@@ -345,7 +369,18 @@ class EventControllerTest {
 
 		ResponseEntity<EventPublicPageCustomizationResponseDto> response = controller.updatePublicPageCustomization(
 			sampleEvent().getId(),
-			new EventPublicPageCustomizationUpdateRequestDto("Isadora & Fernando", LocalDate.of(2026, 10, 8), "Bem-vindos", false),
+			new EventPublicPageCustomizationUpdateRequestDto(
+				"Isadora & Fernando",
+				LocalDate.of(2026, 10, 8),
+				"Bem-vindos",
+				false,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
+			),
 			authentication
 		);
 
@@ -417,6 +452,42 @@ class EventControllerTest {
 			sampleEvent().getId(),
 			authentication
 		);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(dto);
+	}
+
+	@Test
+	void uploadPublicPageDecorativeImageReturnsMappedResponse() {
+		EventPublicPageCustomization customization = sampleCustomization();
+		var dto = new EventPublicPageDecorativeImageUploadResponseDto(
+			"https://cdn/decorative/theme.webp"
+		);
+		when(uploadEventPublicPageDecorativeImageUseCase.execute(any())).thenReturn(customization);
+		when(eventPublicPageCustomizationApiMapper.toDecorativeUploadResponse(customization))
+			.thenReturn(dto);
+
+		ResponseEntity<EventPublicPageDecorativeImageUploadResponseDto> response =
+			controller.uploadPublicPageDecorativeImage(
+				sampleEvent().getId(),
+				new MockMultipartFile("file", "theme.webp", "image/webp", new byte[] {1, 2, 3}),
+				authentication
+			);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(dto);
+	}
+
+	@Test
+	void removePublicPageDecorativeImageReturnsMappedResponse() {
+		EventPublicPageCustomization customization = sampleCustomization();
+		var dto = new EventPublicPageDecorativeImageUploadResponseDto(null);
+		when(removeEventPublicPageDecorativeImageUseCase.execute(any())).thenReturn(customization);
+		when(eventPublicPageCustomizationApiMapper.toDecorativeUploadResponse(customization))
+			.thenReturn(dto);
+
+		ResponseEntity<EventPublicPageDecorativeImageUploadResponseDto> response =
+			controller.removePublicPageDecorativeImage(sampleEvent().getId(), authentication);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isEqualTo(dto);
@@ -567,6 +638,11 @@ class EventControllerTest {
 			.welcomeMessage("Bem-vindos")
 			.coverImageKey("cover.png")
 			.highlightImageKeys(List.of("highlight-1.png"))
+			.templateCode(EventThemeTemplateCode.MEMORA_CLASSIC)
+			.primaryColor("#EF7885")
+			.secondaryColor("#FFF3E6")
+			.accentColor("#C5922E")
+			.decorationStyle(EventDecorationStyle.HEARTS)
 			.updatedAt(LocalDateTime.now())
 			.build();
 	}

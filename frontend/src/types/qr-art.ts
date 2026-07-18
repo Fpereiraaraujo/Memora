@@ -2,6 +2,7 @@ import type { EventType } from '@/types/event';
 
 export type QrArtVisualStyle = 'DELICATE' | 'FUN' | 'ELEGANT' | 'MINIMAL' | 'KIDS';
 export type QrArtTemplateCode =
+  | 'MEMORA_CLASSIC'
   | 'KIDS_BLUE'
   | 'ELEGANT_FLORAL'
   | 'PARTY_FUN'

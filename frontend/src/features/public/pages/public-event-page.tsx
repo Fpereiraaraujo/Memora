@@ -4,9 +4,14 @@ import { useParams } from 'react-router-dom';
 import { PublicShell } from '@/components/layout/public-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { EventHighlightsSection } from '@/features/public/components/event-page/event-highlights-section';
+import { EventDecorativeImage } from '@/features/public/components/event-page/event-decorative-image';
 import { PublicEventCover } from '@/features/public/components/event-page/public-event-cover';
 import { PublicGallerySection } from '@/features/public/components/event-page/public-gallery-section';
 import { GuestUploadCard } from '@/features/public/components/upload/guest-upload-card';
+import {
+  resolveEventTheme,
+  toEventThemeCssVariables,
+} from '@/features/public/utils/event-theme';
 import { buildFallbackPublicEvent } from '@/features/public/utils/public-event-fallback';
 import { getLikedPhotoIds, setLikedPhotoIds } from '@/features/public/utils/public-photo-likes';
 import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
@@ -101,6 +106,16 @@ export function PublicEventPage() {
   const customization = useMemo(
     () => (event ? mergePublicPageCustomization(event, savedCustomization) : null),
     [savedCustomization, event],
+  );
+
+  const eventTheme = useMemo(
+    () => resolveEventTheme(customization),
+    [customization],
+  );
+
+  const eventThemeVariables = useMemo(
+    () => toEventThemeCssVariables(eventTheme),
+    [eventTheme],
   );
 
   const currentPhotos = useMemo(() => photoPages[currentPage - 1] ?? [], [currentPage, photoPages]);
@@ -435,65 +450,81 @@ export function PublicEventPage() {
       hideFooter
       showAuthActions={false}
     >
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
-        <div className="space-y-8">
-          <PublicEventCover
-            event={event}
-            customization={customization}
-            totalPhotos={totalElements}
-            publicGalleryEnabled={customization.publicGalleryEnabled}
-          />
+      <div
+        className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-[var(--event-surface-color)]"
+        style={eventThemeVariables}
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[760px]">
+          <div className="absolute -left-32 top-10 size-[30rem] rounded-full bg-[var(--event-primary-mist-color)] blur-[100px]" />
+          <div className="absolute -right-32 top-36 size-[28rem] rounded-full bg-[var(--event-accent-mist-color)] blur-[110px]" />
+          <div className="absolute inset-x-0 top-0 h-[520px] bg-[linear-gradient(180deg,var(--event-secondary-color),transparent)] opacity-35" />
+        </div>
+        <EventDecorativeImage
+          imageUrl={customization.decorativeImageUrl}
+          position={customization.decorativeImagePosition}
+          scope="page"
+        />
 
-          <EventHighlightsSection images={highlightImages} />
-
-          <GuestUploadCard
-            event={event}
-            guestName={guestName}
-            guestMessage={guestMessage}
-            files={files}
-            previewUrls={previewUrls}
-            busy={busy || processingFiles}
-            success={success}
-            successMessage={successMessage}
-            error={error}
-            inputKey={inputKey}
-            confirmed={confirmed}
-            onGuestNameChange={(value) => {
-              setGuestName(value);
-              setSuccess(false);
-              setSuccessMessage(null);
-              setError(null);
-            }}
-            onGuestMessageChange={(value) => {
-              setGuestMessage(value);
-              setSuccess(false);
-              setSuccessMessage(null);
-              setError(null);
-            }}
-            onFilesChange={handleFilesChange}
-            onRemoveFile={handleRemoveFile}
-            onClearFiles={handleClearFiles}
-            onConfirmedChange={(value) => {
-              setConfirmed(value);
-              setError(null);
-            }}
-            onSubmit={handleSubmit}
-          />
-
-          {customization.publicGalleryEnabled ? (
-            <PublicGallerySection
-              photos={currentPhotos}
-              allLoadedPhotos={allLoadedPhotos}
-              topLikedPhotos={topLikedPhotos}
-              likedPhotoIds={likedPhotoIds}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalElements={totalElements}
-              onPageChange={setCurrentPage}
-              onLikeToggle={handleLikeToggle}
-              onPrefetchMore={handlePrefetchMore}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+          <div className="space-y-8">
+            <PublicEventCover
+              event={event}
+              customization={customization}
+              totalPhotos={totalElements}
+              publicGalleryEnabled={customization.publicGalleryEnabled}
             />
-          ) : null}
+
+            <EventHighlightsSection images={highlightImages} />
+
+            <GuestUploadCard
+              event={event}
+              guestName={guestName}
+              guestMessage={guestMessage}
+              files={files}
+              previewUrls={previewUrls}
+              busy={busy || processingFiles}
+              success={success}
+              successMessage={successMessage}
+              error={error}
+              inputKey={inputKey}
+              confirmed={confirmed}
+              onGuestNameChange={(value) => {
+                setGuestName(value);
+                setSuccess(false);
+                setSuccessMessage(null);
+                setError(null);
+              }}
+              onGuestMessageChange={(value) => {
+                setGuestMessage(value);
+                setSuccess(false);
+                setSuccessMessage(null);
+                setError(null);
+              }}
+              onFilesChange={handleFilesChange}
+              onRemoveFile={handleRemoveFile}
+              onClearFiles={handleClearFiles}
+              onConfirmedChange={(value) => {
+                setConfirmed(value);
+                setError(null);
+              }}
+              onSubmit={handleSubmit}
+            />
+
+            {customization.publicGalleryEnabled ? (
+              <PublicGallerySection
+                photos={currentPhotos}
+                allLoadedPhotos={allLoadedPhotos}
+                topLikedPhotos={topLikedPhotos}
+                likedPhotoIds={likedPhotoIds}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                onPageChange={setCurrentPage}
+                onLikeToggle={handleLikeToggle}
+                onPrefetchMore={handlePrefetchMore}
+              />
+            ) : null}
+          </div>
         </div>
       </div>
     </PublicShell>

@@ -8,10 +8,13 @@ import static org.mockito.Mockito.when;
 
 import com.memora.config.UploadProperties;
 import com.memora.core.domain.model.Event;
+import com.memora.core.domain.model.EventDecorationStyle;
+import com.memora.core.domain.model.EventDecorativeImagePosition;
 import com.memora.core.domain.model.EventPlanCode;
 import com.memora.core.domain.model.EventPublicPageCustomization;
 import com.memora.core.domain.model.EventStatus;
 import com.memora.core.domain.model.EventType;
+import com.memora.core.domain.model.EventThemeTemplateCode;
 import com.memora.core.domain.model.PageResult;
 import com.memora.core.domain.model.Photo;
 import com.memora.core.domain.model.PhotoStatus;
@@ -147,7 +150,14 @@ class PublicEventControllerTest {
 			"Bem-vindos",
 			"https://cdn/cover.png",
 			List.of("https://cdn/highlight-1.png"),
+			null,
+			EventDecorativeImagePosition.HERO_RIGHT,
 			true,
+			EventThemeTemplateCode.MEMORA_CLASSIC,
+			"#EF7885",
+			"#FFF3E6",
+			"#C5922E",
+			EventDecorationStyle.HEARTS,
 			LocalDateTime.now()
 		);
 		when(getPublicEventCustomizationUseCase.execute(any())).thenReturn(customization);
@@ -278,6 +288,11 @@ class PublicEventControllerTest {
 			.welcomeMessage("Bem-vindos")
 			.coverImageKey("cover.png")
 			.highlightImageKeys(List.of("highlight-1.png"))
+			.templateCode(EventThemeTemplateCode.MEMORA_CLASSIC)
+			.primaryColor("#EF7885")
+			.secondaryColor("#FFF3E6")
+			.accentColor("#C5922E")
+			.decorationStyle(EventDecorationStyle.HEARTS)
 			.updatedAt(LocalDateTime.now())
 			.build();
 	}

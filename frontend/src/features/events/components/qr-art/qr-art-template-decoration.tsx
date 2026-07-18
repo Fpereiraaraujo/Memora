@@ -25,6 +25,38 @@ export function QrArtTemplateDecoration({
   primary,
   accent,
 }: QrArtTemplateDecorationProps) {
+  if (template === 'MEMORA_CLASSIC') {
+    return (
+      <g aria-hidden="true">
+        <circle cx="54" cy="72" r="92" fill={primary} opacity="0.12" />
+        <circle cx={width - 42} cy={height - 66} r="112" fill={accent} opacity="0.1" />
+        <path
+          d="M30 36 C20 18, -5 26, 2 48 C9 68, 30 79, 30 79 C30 79, 51 68, 58 48 C65 26, 40 18, 30 36Z"
+          fill="none"
+          stroke={accent}
+          strokeWidth="3"
+          opacity="0.82"
+          transform="translate(42 42) rotate(-10 30 48)"
+        />
+        <path
+          d="M30 36 C20 18, -5 26, 2 48 C9 68, 30 79, 30 79 C30 79, 51 68, 58 48 C65 26, 40 18, 30 36Z"
+          fill={primary}
+          opacity="0.34"
+          transform={`translate(${width - 126} ${height - 142}) rotate(12 30 48)`}
+        />
+        <path
+          d={`M0 ${height - 104} C122 ${height - 164}, 226 ${height - 62}, 344 ${height - 118} C470 ${height - 176}, 574 ${height - 72}, ${width} ${height - 126} L${width} ${height} L0 ${height}Z`}
+          fill={primary}
+          opacity="0.1"
+        />
+        <Star x={width - 82} y={108} size={12} color={accent} />
+        <Star x={78} y={height * 0.64} size={8} color={primary} />
+        <circle cx={width - 58} cy={height * 0.52} r="6" fill={primary} opacity="0.54" />
+        <circle cx="62" cy={height * 0.43} r="5" fill={accent} opacity="0.62" />
+      </g>
+    );
+  }
+
   if (template === 'KIDS_BLUE') {
     return (
       <g aria-hidden="true">

@@ -12,24 +12,24 @@ export function EventHighlightsSection({ images }: EventHighlightsSectionProps) 
   return (
     <section
       id="destaques"
-      className="rounded-[28px] border border-[#f1ddd1] bg-white/92 p-6 shadow-[0_22px_60px_rgba(96,60,36,0.07)] sm:p-8"
+      className="rounded-[28px] border border-[var(--event-border-color)] bg-white/92 p-6 shadow-[0_22px_60px_var(--event-primary-mist-color)] sm:p-8"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-[#ef7885]">
+          <p className="text-sm font-bold text-[var(--event-primary-ink-color)]">
             Escolhidas pelos anfitriões
           </p>
 
-          <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[#161314] sm:text-[44px]">
+          <h2 className="mt-2 font-display text-[38px] font-semibold leading-none tracking-[-0.045em] text-[var(--event-foreground-color)] sm:text-[44px]">
             Destaques do evento
           </h2>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#2c2927]/62">
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--event-muted-foreground-color)]">
             Essas são as fotos escolhidas pelos anfitriões para abrir a experiência pública do evento.
           </p>
         </div>
 
-        <span className="w-fit rounded-full bg-[#fff3e6] px-4 py-2 text-xs font-bold text-[#c5922e]">
+        <span className="w-fit rounded-full bg-[var(--event-accent-soft-color)] px-4 py-2 text-xs font-bold text-[var(--event-accent-ink-color)]">
           {visibleImages.length}/3 fotos
         </span>
       </div>
@@ -38,7 +38,7 @@ export function EventHighlightsSection({ images }: EventHighlightsSectionProps) 
         {visibleImages.map((image, index) => (
           <div
             key={`${image}-${index}`}
-            className="group aspect-[4/5] overflow-hidden rounded-[20px] bg-[#f5ded2] shadow-[0_14px_32px_rgba(96,60,36,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(96,60,36,0.13)] active:scale-[0.99]"
+            className="group aspect-[4/5] overflow-hidden rounded-[20px] bg-[var(--event-primary-soft-color)] shadow-[0_14px_32px_var(--event-primary-mist-color)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_var(--event-primary-shadow-color)] active:scale-[0.99]"
           >
             <img
               src={image}

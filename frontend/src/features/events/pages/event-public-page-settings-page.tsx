@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/features/auth/auth-context';
-import {
-  ExternalIcon,
-  ImagesIcon,
-} from '@/features/events/components/event-dashboard/event-icons';
+import { ExternalIcon } from '@/features/events/components/event-dashboard/event-icons';
 import { EventPageLayout } from '@/features/events/components/event-dashboard/event-page-layout';
+import { EventDecorativeImageEditor } from '@/features/events/components/public-page/event-decorative-image-editor';
+import { EventThemeEditor } from '@/features/events/components/public-page/event-theme-editor';
+import { EventThemePreview } from '@/features/events/components/public-page/event-theme-preview';
 import { useEventDashboard } from '@/features/events/hooks/use-event-dashboard';
 import { buildEventOverviewPath } from '@/features/events/utils/event-routes';
 import { mergePublicPageCustomization } from '@/features/public/utils/public-page-customization';
@@ -23,17 +23,17 @@ import {
 import { api } from '@/lib/api';
 import type { PublicPageCustomization } from '@/types/customization';
 
-interface SettingsFormState {
-  title: string;
-  eventDate: string | null;
-  welcomeMessage: string;
-  coverImageUrl: string | null;
-  highlightImageUrls: string[];
-  publicGalleryEnabled: boolean;
-}
+type SettingsFormState = PublicPageCustomization;
 
 function createLocalPreviewUrls(files: File[]) {
   return files.map((file) => URL.createObjectURL(file));
+}
+
+function toSettingsForm(customization: PublicPageCustomization): SettingsFormState {
+  return {
+    ...customization,
+    highlightImageUrls: customization.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
+  };
 }
 
 export function EventPublicPageSettingsPage() {
@@ -45,6 +45,7 @@ export function EventPublicPageSettingsPage() {
   const [form, setForm] = useState<SettingsFormState | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [highlightFiles, setHighlightFiles] = useState<File[]>([]);
+  const [decorativeFile, setDecorativeFile] = useState<File | null>(null);
   const [loadingCustomization, setLoadingCustomization] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -60,6 +61,11 @@ export function EventPublicPageSettingsPage() {
     [highlightFiles],
   );
 
+  const decorativePreviewUrl = useMemo(
+    () => (decorativeFile ? URL.createObjectURL(decorativeFile) : null),
+    [decorativeFile],
+  );
+
   useEffect(() => {
     return () => {
       if (coverPreviewUrl) {
@@ -73,6 +79,14 @@ export function EventPublicPageSettingsPage() {
       highlightPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [highlightPreviewUrls]);
+
+  useEffect(() => {
+    return () => {
+      if (decorativePreviewUrl) {
+        URL.revokeObjectURL(decorativePreviewUrl);
+      }
+    };
+  }, [decorativePreviewUrl]);
 
   useEffect(() => {
     let active = true;
@@ -98,25 +112,11 @@ export function EventPublicPageSettingsPage() {
         );
 
         if (active) {
-          setForm({
-            title: resolved.title,
-            eventDate: resolved.eventDate,
-            welcomeMessage: resolved.welcomeMessage,
-            coverImageUrl: resolved.coverImageUrl,
-            highlightImageUrls: resolved.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
-            publicGalleryEnabled: resolved.publicGalleryEnabled,
-          });
+          setForm(toSettingsForm(resolved));
         }
       } catch {
         if (active) {
-          setForm({
-            title: fallback.title,
-            eventDate: fallback.eventDate,
-            welcomeMessage: fallback.welcomeMessage,
-            coverImageUrl: fallback.coverImageUrl,
-            highlightImageUrls: fallback.highlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
-            publicGalleryEnabled: fallback.publicGalleryEnabled,
-          });
+          setForm(toSettingsForm(fallback));
         }
       } finally {
         if (active) {
@@ -227,6 +227,34 @@ export function EventPublicPageSettingsPage() {
     }
   }
 
+  async function handleRemoveCurrentDecorativeImage() {
+    if (!event || !token || !form) {
+      return;
+    }
+
+    setSaving(true);
+    setSaved(false);
+    setError(null);
+
+    try {
+      await api.removeEventPublicPageDecorativeImage(token, event.id);
+      setDecorativeFile(null);
+      setForm({
+        ...form,
+        decorativeImageUrl: null,
+      });
+      setSaved(true);
+    } catch (exception) {
+      setError(
+        exception instanceof Error
+          ? exception.message
+          : 'Não foi possível remover a imagem decorativa agora. Tente novamente.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleSubmit(eventSubmit: FormEvent<HTMLFormElement>) {
     eventSubmit.preventDefault();
 
@@ -240,6 +268,7 @@ export function EventPublicPageSettingsPage() {
       welcomeMessage: form.welcomeMessage,
       coverFile,
       highlightFiles,
+      decorativeFile,
     });
 
     if (validationErrors.length > 0) {
@@ -257,10 +286,17 @@ export function EventPublicPageSettingsPage() {
         eventDate: form.eventDate,
         welcomeMessage: form.welcomeMessage.trim(),
         publicGalleryEnabled: form.publicGalleryEnabled,
+        templateCode: form.templateCode,
+        primaryColor: form.primaryColor,
+        secondaryColor: form.secondaryColor,
+        accentColor: form.accentColor,
+        decorationStyle: form.decorationStyle,
+        decorativeImagePosition: form.decorativeImagePosition,
       });
 
       let nextCoverImageUrl = updated.coverImageUrl ?? form.coverImageUrl;
       let nextHighlightImageUrls = updated.highlightImageUrls ?? form.highlightImageUrls;
+      let nextDecorativeImageUrl = updated.decorativeImageUrl ?? form.decorativeImageUrl;
 
       if (coverFile) {
         const coverData = new FormData();
@@ -284,16 +320,27 @@ export function EventPublicPageSettingsPage() {
         nextHighlightImageUrls = highlightResponse.highlightImageUrls ?? nextHighlightImageUrls;
       }
 
-      setForm({
-        title: updated.title,
-        eventDate: updated.eventDate,
-        welcomeMessage: updated.welcomeMessage,
+      if (decorativeFile) {
+        const decorativeData = new FormData();
+        decorativeData.append('file', decorativeFile);
+        const decorativeResponse = await api.uploadEventPublicPageDecorativeImage(
+          token,
+          event.id,
+          decorativeData,
+        );
+        nextDecorativeImageUrl =
+          decorativeResponse.decorativeImageUrl ?? nextDecorativeImageUrl;
+      }
+
+      setForm(toSettingsForm({
+        ...updated,
         coverImageUrl: nextCoverImageUrl,
-        highlightImageUrls: nextHighlightImageUrls.slice(0, MAX_HIGHLIGHT_IMAGES),
-        publicGalleryEnabled: updated.publicGalleryEnabled,
-      });
+        highlightImageUrls: nextHighlightImageUrls,
+        decorativeImageUrl: nextDecorativeImageUrl,
+      }));
       setCoverFile(null);
       setHighlightFiles([]);
+      setDecorativeFile(null);
       setSaved(true);
     } catch (exception) {
       setError(
@@ -356,8 +403,30 @@ export function EventPublicPageSettingsPage() {
           <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
             <form
               onSubmit={handleSubmit}
-              className="space-y-6 rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
+              className="min-w-0 space-y-6 rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]"
             >
+              <EventThemeEditor
+                value={form}
+                onChange={(value) => updateForm(value)}
+                mobilePreview={(
+                  <div className="-mx-5 sm:mx-0">
+                    <EventThemePreview
+                      event={event}
+                      customization={form}
+                      coverImageUrl={coverPreviewUrl ?? form.coverImageUrl}
+                      highlightImageUrls={
+                        highlightPreviewUrls.length > 0
+                          ? highlightPreviewUrls
+                          : form.highlightImageUrls
+                      }
+                      decorativeImageUrl={
+                        decorativePreviewUrl ?? form.decorativeImageUrl
+                      }
+                    />
+                  </div>
+                )}
+              />
+
               <div>
                 <h2 className="text-xl font-black text-[#161314]">
                   Informações principais
@@ -492,6 +561,22 @@ export function EventPublicPageSettingsPage() {
                 </label>
               </div>
 
+              <EventDecorativeImageEditor
+                currentImageUrl={form.decorativeImageUrl}
+                previewImageUrl={decorativePreviewUrl}
+                position={form.decorativeImagePosition}
+                busy={saving}
+                onFileChange={(file) => {
+                  setDecorativeFile(file);
+                  setSaved(false);
+                  setError(null);
+                }}
+                onPositionChange={(decorativeImagePosition) =>
+                  updateForm({ decorativeImagePosition })
+                }
+                onRemoveCurrent={() => void handleRemoveCurrentDecorativeImage()}
+              />
+
               {(coverPreviewUrl || form.coverImageUrl) ? (
                 <div className="rounded-[18px] border border-[#f1ddd1] bg-[#fffaf7] p-4">
                   <div className="flex items-center justify-between gap-3">
@@ -577,7 +662,7 @@ export function EventPublicPageSettingsPage() {
 
               {saved ? (
                 <div className="rounded-[16px] border border-[#c8e6c9] bg-[#f1fbf2] px-4 py-3 text-sm font-semibold text-[#3f8b46]">
-                  Personalização salva. Abra a prévia pública para visualizar.
+                  Personalização visual salva com sucesso.
                 </div>
               ) : null}
 
@@ -590,68 +675,21 @@ export function EventPublicPageSettingsPage() {
               </Button>
             </form>
 
-            <section className="rounded-[24px] border border-[#f1ddd1] bg-white p-6 shadow-[0_22px_60px_rgba(96,60,36,0.08)]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold text-[#ef7885]">
-                    Prévia dos convidados
-                  </p>
-                  <h2 className="mt-2 text-xl font-black text-[#161314]">
-                    Como a página vai aparecer
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-[#2c2927]/64">
-                    Esta área simula a primeira dobra da página pública.
-                  </p>
-                </div>
-                <div className="grid size-12 place-items-center rounded-[16px] bg-[#fff1f2] text-[#ef7885]">
-                  <ImagesIcon className="size-6" />
-                </div>
-              </div>
-
-              <div className="mt-6 overflow-hidden rounded-[22px] border border-[#f1ddd1] bg-[#fffaf7] p-5">
-                <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr] lg:items-center">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c5922e]">
-                      Evento especial
-                    </p>
-                    <h3 className="mt-3 font-display text-[42px] font-semibold leading-none tracking-[-0.05em] text-[#161314]">
-                      {form.title || event.title}
-                    </h3>
-                    <p className="mt-4 text-sm leading-7 text-[#2c2927]/65">
-                      {form.welcomeMessage}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {(coverPreviewUrl || form.coverImageUrl) ? (
-                      <img
-                        src={coverPreviewUrl ?? form.coverImageUrl ?? ''}
-                        alt="Prévia da capa"
-                        loading="lazy"
-                        className="col-span-2 h-40 w-full rounded-[18px] object-cover"
-                      />
-                    ) : (
-                      <div className="col-span-2 h-40 rounded-[18px] bg-[#f9d7dc]" />
-                    )}
-
-                    {(highlightPreviewUrls.length > 0
-                      ? highlightPreviewUrls
-                      : form.highlightImageUrls
-                    )
-                      .slice(0, MAX_HIGHLIGHT_IMAGES)
-                      .map((image, index) => (
-                        <img
-                          key={`${image}-${index}`}
-                          src={image}
-                          alt={`Destaque ${index + 1}`}
-                          loading="lazy"
-                          className="h-28 w-full rounded-[16px] object-cover"
-                        />
-                      ))}
-                  </div>
-                </div>
-              </div>
-            </section>
+            <div className="hidden xl:block">
+              <EventThemePreview
+                event={event}
+                customization={form}
+                coverImageUrl={coverPreviewUrl ?? form.coverImageUrl}
+                highlightImageUrls={
+                  highlightPreviewUrls.length > 0
+                    ? highlightPreviewUrls
+                    : form.highlightImageUrls
+                }
+                decorativeImageUrl={
+                  decorativePreviewUrl ?? form.decorativeImageUrl
+                }
+              />
+            </div>
           </div>
         </div>
       ) : null}
