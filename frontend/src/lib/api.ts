@@ -61,6 +61,8 @@ export interface AdminUser { id: string; name: string; email: string; role: stri
 export interface AdminEvent { eventId: string; title: string; slug: string; ownerName: string; ownerEmail: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; paidAt: string | null; createdAt: string; }
 export interface AdminPayment { paymentOrderId: string; userEmail: string; userName: string; eventTitle: string; planCode: string; provider: string; status: string; amountCents: number; paidAmountCents: number | null; paidAt: string | null; createdAt: string; }
 export interface AdminAuditLog { id: string; createdAt: string; adminUserId: string; adminEmail: string; action: string; targetType: string; targetId: string | null; targetEmail: string | null; reason: string | null; ipAddress: string | null; }
+export interface AdminCustomerRecoveryPreview { userId: string; name: string; email: string; maskedWhatsapp: string | null; campaignCode: 'REGISTERED_NO_EVENT' | 'EVENT_CREATED_NO_PLAN' | 'CHECKOUT_ABANDONED'; eligibleAt: string; }
+export interface AdminCustomerFollowUp { id: string; userId: string; name: string; email: string | null; maskedWhatsapp: string | null; campaignCode: AdminCustomerRecoveryPreview['campaignCode']; status: 'PROCESSING' | 'FAILED'; attemptCount: number; scheduledAt: string; nextAttemptAt: string | null; sentAt: string | null; lastError: string | null; }
 export interface AdminActionResponse { message: string; }
 export interface AdminUserEvent { eventId: string; title: string; slug: string; status: string; planCode: string | null; photoLimit: number | null; totalPhotos: number; }
 export interface AdminUserDetails extends AdminUser { events: AdminUserEvent[]; payments: AdminPayment[]; }
@@ -298,6 +300,15 @@ export const api = {
   },
   getAdminDashboard(token: string) {
     return request<AdminDashboardResponse>('/api/admin/dashboard', { method: 'GET', token });
+  },
+  previewAdminCustomerRecovery(token: string, limit = 50) {
+    return request<AdminCustomerRecoveryPreview[]>(`/api/admin/customer-recovery/preview?limit=${limit}`, { method: 'GET', token });
+  },
+  listAdminCustomerRecoveryFollowUps(token: string) {
+    return request<AdminCustomerFollowUp[]>('/api/admin/customer-recovery/follow-ups', { method: 'GET', token });
+  },
+  cancelAdminCustomerRecoveryFollowUp(token: string, followUpId: string, reason: string) {
+    return request<AdminActionResponse>(`/api/admin/customer-recovery/follow-ups/${followUpId}/cancel`, { method: 'POST', token, data: { reason } });
   },
   listAdminUsers(token: string, page = 0, search = '') {
     return request<PageResponse<AdminUser>>(`/api/admin/users?page=${page}&size=20${search ? `&search=${encodeURIComponent(search)}` : ''}`, { method: 'GET', token });

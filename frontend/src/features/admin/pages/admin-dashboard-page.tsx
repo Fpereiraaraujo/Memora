@@ -27,6 +27,8 @@ import {
   type AdminPayment,
   type AdminUser,
   type AdminUserDetails,
+  type AdminCustomerRecoveryPreview,
+  type AdminCustomerFollowUp,
 } from '@/lib/api';
 
 function formatMoney(cents: number) {
@@ -74,6 +76,8 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [logs, setLogs] = useState<AdminAuditLog[]>([]);
+  const [recoveryPreviews, setRecoveryPreviews] = useState<AdminCustomerRecoveryPreview[]>([]);
+  const [recoveryFollowUps, setRecoveryFollowUps] = useState<AdminCustomerFollowUp[]>([]);
   const [affiliateSummary, setAffiliateSummary] = useState<AdminAffiliateSummary | null>(null);
   const [influencers, setInfluencers] = useState<AdminInfluencer[]>([]);
   const [coupons, setCoupons] = useState<AdminCoupon[]>([]);
@@ -111,8 +115,10 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
         ? api.listAdminUsers(token, 0, deferredSearch)
         : section === 'events'
           ? api.listAdminEvents(token)
-          : section === 'payments'
-            ? api.listAdminPayments(token)
+            : section === 'payments'
+              ? api.listAdminPayments(token)
+              : section === 'recovery'
+                ? Promise.all([api.previewAdminCustomerRecovery(token), api.listAdminCustomerRecoveryFollowUps(token)])
             : section === 'partnerships'
               ? Promise.all([
                 api.getAdminAffiliateSummary(token),
@@ -128,6 +134,7 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
       if (section === 'users') setUsers((response as { content: AdminUser[] }).content);
       if (section === 'events') setEvents((response as { content: AdminEvent[] }).content);
       if (section === 'payments') setPayments((response as { content: AdminPayment[] }).content);
+      if (section === 'recovery') { const [previews, followUps] = response as [AdminCustomerRecoveryPreview[], AdminCustomerFollowUp[]]; setRecoveryPreviews(previews); setRecoveryFollowUps(followUps); }
       if (section === 'partnerships') {
         const [summaryResponse, influencersResponse, couponsResponse] = response as [AdminAffiliateSummary, AdminInfluencer[], AdminCoupon[]];
         setAffiliateSummary(summaryResponse);
@@ -348,6 +355,17 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
     }
   }
 
+  async function cancelRecoveryFollowUp(item: AdminCustomerFollowUp) {
+    const reason = window.prompt('Motivo do cancelamento (ficará na auditoria):');
+    if (!reason?.trim() || !token) return;
+    try {
+      await api.cancelAdminCustomerRecoveryFollowUp(token, item.id, reason.trim());
+      setRecoveryFollowUps((current) => current.filter((followUp) => followUp.id !== item.id));
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : 'Não foi possível cancelar o contato.');
+    }
+  }
+
   if (accessDenied) {
     return <><TopBrandHeader logoTo="/" rightContent={<button type="button" onClick={logout} className="rounded-[14px] border border-[#ead1c4] bg-white px-4 py-2 text-sm font-bold">Sair</button>} /><AdminAccessDeniedPage /></>;
   }
@@ -375,6 +393,8 @@ export function AdminDashboardPage({ accessDenied = false }: { accessDenied?: bo
             {!loading && section === 'events' ? <section><div className="mb-5"><h1 className="font-display text-4xl font-semibold tracking-[-0.05em]">Eventos</h1><p className="mt-1 text-sm text-[#725b4e]">Acompanhe a ativacao e o uso por evento.</p></div>{events.length ? <><TableShell><thead className="bg-[#fff6f2] text-xs uppercase tracking-[0.12em] text-[#9a7667]"><tr><th className="px-5 py-4">Evento</th><th className="px-5 py-4">Anfitriao</th><th className="px-5 py-4">Plano</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Fotos</th><th className="px-5 py-4">Criado em</th></tr></thead><tbody>{events.map((event) => <tr key={event.eventId} className="border-t border-[#f5e8e0]"><td className="px-5 py-4"><strong>{event.title}</strong><br /><span className="text-xs text-[#80685c]">/{event.slug}</span></td><td className="px-5 py-4">{event.ownerName}<br /><span className="text-xs text-[#80685c]">{event.ownerEmail}</span></td><td className="px-5 py-4">{event.planCode ?? 'Gratuito'}</td><td className="px-5 py-4"><StatusBadge value={event.status} /></td><td className="px-5 py-4">{event.totalPhotos}</td><td className="px-5 py-4">{formatDate(event.createdAt)}</td></tr>)}</tbody></TableShell><div className="space-y-3 md:hidden">{events.map((event) => <MobileRecord key={event.eventId}><div className="flex items-start justify-between gap-3"><div><strong className="block text-base">{event.title}</strong><span className="mt-1 block text-xs text-[#80685c]">{event.ownerName}</span></div><StatusBadge value={event.status} /></div><div className="mt-4 grid grid-cols-2 gap-3"><MobileMeta label="Plano">{event.planCode ?? 'Gratuito'}</MobileMeta><MobileMeta label="Fotos">{event.totalPhotos}</MobileMeta><MobileMeta label="E-mail"><span className="break-all text-xs">{event.ownerEmail}</span></MobileMeta><MobileMeta label="Criado em">{formatDate(event.createdAt)}</MobileMeta></div></MobileRecord>)}</div></> : <EmptyTable label="eventos" />}</section> : null}
 
             {!loading && section === 'payments' ? <section><div className="mb-5"><h1 className="font-display text-4xl font-semibold tracking-[-0.05em]">Pagamentos</h1><p className="mt-1 text-sm text-[#725b4e]">Acompanhe as tentativas e confirmacoes da InfinitePay.</p></div>{payments.length ? <><TableShell><thead className="bg-[#fff6f2] text-xs uppercase tracking-[0.12em] text-[#9a7667]"><tr><th className="px-5 py-4">Cliente</th><th className="px-5 py-4">Evento</th><th className="px-5 py-4">Plano</th><th className="px-5 py-4">Valor</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Criado em</th></tr></thead><tbody>{payments.map((payment) => <tr key={payment.paymentOrderId} className="border-t border-[#f5e8e0]"><td className="px-5 py-4">{payment.userName}<br /><span className="text-xs text-[#80685c]">{payment.userEmail}</span></td><td className="px-5 py-4">{payment.eventTitle}</td><td className="px-5 py-4">{payment.planCode}</td><td className="px-5 py-4">{formatMoney(payment.paidAmountCents ?? payment.amountCents)}</td><td className="px-5 py-4"><StatusBadge value={payment.status} /></td><td className="px-5 py-4">{formatDate(payment.createdAt)}</td></tr>)}</tbody></TableShell><div className="space-y-3 md:hidden">{payments.map((payment) => <MobileRecord key={payment.paymentOrderId}><div className="flex items-start justify-between gap-3"><div><strong className="block text-base">{payment.userName}</strong><span className="mt-1 block text-xs text-[#80685c]">{payment.eventTitle}</span></div><StatusBadge value={payment.status} /></div><div className="mt-4 grid grid-cols-2 gap-3"><MobileMeta label="Plano">{payment.planCode}</MobileMeta><MobileMeta label="Valor">{formatMoney(payment.paidAmountCents ?? payment.amountCents)}</MobileMeta><MobileMeta label="Criado em">{formatDate(payment.createdAt)}</MobileMeta><MobileMeta label="Cliente"><span className="break-all text-xs">{payment.userEmail}</span></MobileMeta></div></MobileRecord>)}</div></> : <EmptyTable label="pagamentos" />}</section> : null}
+
+            {!loading && section === 'recovery' ? <section><div className="mb-5"><h1 className="font-display text-4xl font-semibold tracking-[-0.05em]">Recuperação de clientes</h1><p className="mt-1 text-sm text-[#725b4e]">Prévia segura e itens que exigem revisão. Nenhuma mensagem é enviada nesta tela.</p></div>{recoveryFollowUps.length ? <div className="mb-8"><h2 className="mb-3 text-lg font-bold">Revisão necessária</h2><TableShell><thead className="bg-[#fff6f2] text-xs uppercase tracking-[0.12em] text-[#9a7667]"><tr><th className="px-5 py-4">Cliente</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Motivo</th><th className="px-5 py-4">Ação</th></tr></thead><tbody>{recoveryFollowUps.map((item) => <tr key={item.id} className="border-t border-[#f5e8e0]"><td className="px-5 py-4"><strong>{item.name}</strong><br /><span className="text-xs text-[#80685c]">{item.email}</span></td><td className="px-5 py-4"><StatusBadge value={item.status} /></td><td className="px-5 py-4 text-xs text-[#80685c]">{item.lastError ?? 'Sem motivo informado'}<br />{item.attemptCount} tentativa(s)</td><td className="px-5 py-4"><button type="button" onClick={() => void cancelRecoveryFollowUp(item)} className="text-xs font-bold text-[#d65f68] hover:underline">Cancelar contato</button></td></tr>)}</tbody></TableShell></div> : null}{recoveryPreviews.length ? <TableShell><thead className="bg-[#fff6f2] text-xs uppercase tracking-[0.12em] text-[#9a7667]"><tr><th className="px-5 py-4">Cliente</th><th className="px-5 py-4">WhatsApp</th><th className="px-5 py-4">Campanha</th><th className="px-5 py-4">Elegível desde</th></tr></thead><tbody>{recoveryPreviews.map((item) => <tr key={item.userId} className="border-t border-[#f5e8e0]"><td className="px-5 py-4"><strong>{item.name}</strong><br /><span className="text-xs text-[#80685c]">{item.email}</span></td><td className="px-5 py-4">{item.maskedWhatsapp}</td><td className="px-5 py-4">{item.campaignCode}</td><td className="px-5 py-4">{formatDate(item.eligibleAt)}</td></tr>)}</tbody></TableShell> : !recoveryFollowUps.length ? <EmptyTable label="clientes elegíveis" /> : null}</section> : null}
 
             {!loading && section === 'partnerships' ? <AdminPartnerships
               summary={affiliateSummary}

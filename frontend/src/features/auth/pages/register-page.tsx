@@ -12,6 +12,8 @@ export function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +25,12 @@ export function RegisterPage() {
     setError(null);
 
     try {
-      await api.register({ name, email, password });
+      if (whatsappOptIn && !phone.trim()) {
+        setError('Informe seu WhatsApp para receber ajuda pela Memora.');
+        return;
+      }
+
+      await api.register({ name, email, password, phone, whatsappOptIn });
 
       navigate('/login?registered=1');
     } catch (exception) {
@@ -35,6 +42,14 @@ export function RegisterPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function formatBrazilianPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : '';
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
   return (
@@ -115,6 +130,35 @@ export function RegisterPage() {
                   autoComplete="name"
                   required
               />
+            </label>
+
+            <label className="space-y-2">
+            <span className="text-sm font-bold text-ink-800/80">
+              WhatsApp <span className="font-normal text-ink-800/55">(opcional)</span>
+            </span>
+
+              <Input
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="(41) 99999-9999"
+                  value={phone}
+                  onChange={(event) => {
+                    const nextPhone = formatBrazilianPhone(event.target.value);
+                    setPhone(nextPhone);
+                    if (!nextPhone) setWhatsappOptIn(false);
+                  }}
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#f0d8ca] bg-[#fffaf7] p-4 text-sm leading-6 text-ink-800/75">
+              <input
+                  type="checkbox"
+                  checked={whatsappOptIn}
+                  onChange={(event) => setWhatsappOptIn(event.target.checked)}
+                  className="mt-1 size-4 rounded border-[#d6b9aa] accent-[#ef7885]"
+              />
+              <span>Quero receber ajuda e informações da Memora pelo WhatsApp.</span>
             </label>
 
             <label className="space-y-2">
